@@ -11,7 +11,7 @@
   <ion-toolbar mode="ios" class="pol-toolbar">
     <ion-searchbar
       class="pol-search"
-      [(ngModel)]="query"
+      [(ngModel)]="query"  [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'"
       [placeholder]="'policies.search_placeholder' | translate"
       debounce="150"
       mode="ios">
@@ -23,13 +23,9 @@
 
   <ion-card class="pol-hero" mode="ios">
     <ion-card-header>
-      <ion-card-title>
+      <ion-card-title  [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'" style="font-style: 'Tajawal', 'Cairo', system-ui, sans-serif;;">
         {{ 'policies.hero_title' | translate:{ appName: appName } }}
       </ion-card-title>
-
-      <ion-card-subtitle>
-        {{ 'policies.last_updated' | translate:{ date: lastUpdated } }}
-      </ion-card-subtitle>
     </ion-card-header>
 
     <ion-card-content>
@@ -48,7 +44,7 @@
       *ngFor="let s of filteredSections"
       [value]="s.id">
 
-      <ion-item class="pol-acc-header" slot="header" lines="none">
+      <ion-item class="pol-acc-header" slot="header" lines="none"  [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <ion-icon
           class="pol-acc-icon"
           [name]="s.icon || 'document-outline'"
@@ -62,10 +58,12 @@
 
       <div class="ion-padding pol-body" slot="content">
         <ng-container *ngFor="let b of s.blocks">
-          <p *ngIf="b.type === 'p'" class="pre-line">{{ b.text }}</p>
+          <p *ngIf="b.type === 'p'" class="pre-line" [attr.dir]="!(text | isArabic) ? 'rtl' : 'ltr'"
+          [style.text-align]="!(text | isArabic) ? 'right' : 'left'">{{ b.text }}</p>
 
           <ul *ngIf="b.type === 'ul'">
-            <li *ngFor="let it of b.items">{{ it }}</li>
+            <li *ngFor="let it of b.items" [attr.dir]="(it | isArabic) ? 'rtl' : 'ltr'"
+            [style.text-align]="(it | isArabic) ? 'right' : 'left'">{{ it }}</li>
           </ul>
         </ng-container>
       </div>

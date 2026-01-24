@@ -48,6 +48,37 @@
   --app-font-family: 'Tajawal', 'Cairo', system-ui, sans-serif;
 }
 
+/* ✅ Arabic dropdown options in Tajawal */
+body.lang-ar ion-alert,
+body.lang-ar ion-alert .alert-wrapper,
+body.lang-ar ion-alert .alert-title,
+body.lang-ar ion-alert .alert-radio-label,
+body.lang-ar ion-alert button,
+body.lang-ar ion-alert .alert-button,
+body.lang-ar ion-popover,
+body.lang-ar ion-popover .popover-content,
+body.lang-ar ion-select-popover,
+body.lang-ar ion-select-popover ion-item,
+body.lang-ar ion-select-popover ion-label,
+body.lang-ar ion-select-popover .item-inner,
+body.lang-ar ion-select-popover ion-radio,
+body.lang-ar ion-select-popover ion-radio-group {
+  font-family: 'Tajawal', system-ui !important;
+  direction: rtl;
+}
+
+
+body.lang-ar .arabic,
+body.lang-ar ion-select,
+body.lang-ar ion-select::part(text),
+body.lang-ar ion-select-option,
+body.lang-ar ion-label,
+body.lang-ar ion-input,
+body.lang-ar ion-textarea {
+  font-family: 'Tajawal', system-ui !important;
+}
+
+
 body {
   /* This ensures the body respects system bars */
   padding-top: env(safe-area-inset-top);

@@ -37,7 +37,7 @@
     <div class="home-top">
 
       <!-- ✅ STORIES (with show/hide arrow) -->
-      <div class="stories-wrapper">
+      <div class="stories-wrapper" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
 
         <div class="stories-header">
           <div class="stories-title">
@@ -91,7 +91,7 @@
       </div>
 
       <!-- ✅ Category Chips -->
-      <div class="category-chips-container">
+      <div class="category-chips-container" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <ion-chip *ngFor="let category of categories" [color]="category.selected ? 'primary' : 'medium'"
           [outline]="!category.selected" (click)="onCategorySelect(category)">
 
@@ -103,7 +103,7 @@
       </div>
 
       <!-- ✅ Sub Category (ONLY when category != all) -->
-      <div class="subcat-bar" *ngIf="selectedCategoryKey !== 'all'">
+      <div class="subcat-bar" *ngIf="selectedCategoryKey !== 'all'" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <ion-select interface="popover" class="subcat-select" [value]="selectedSubCategoryKey"
           (ionChange)="onSubCategorySelect($event.detail.value)" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
 
@@ -218,39 +218,94 @@
         <ion-toolbar>
           <ion-title>{{ selectedLanguage=='en' ? 'Add Story' : 'إضافة قصة' }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="closeAddStoryModal()">
+            <ion-button (click)="closeAddStoryModal()" style="--color: var(--button-color); --background: var(--primary-color);">
               {{ selectedLanguage=='en' ? 'Close' : 'إغلاق' }}
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding">
-        <div class="story-pick-box" (click)="pickStoryImage()">
-          <ng-container *ngIf="!pickedStoryPreview">
-            <ion-icon name="images-outline"></ion-icon>
-            <p>{{ selectedLanguage=='en' ? 'Tap to pick from gallery' : 'اضغط لاختيار صورة من المعرض' }}</p>
-          </ng-container>
-          <img *ngIf="pickedStoryPreview" [src]="pickedStoryPreview" class="story-preview" />
+      <ion-content class="ion-padding story-modal">
+
+        <!-- Header area -->
+        <div class="story-head" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+          <div class="story-head-title" >
+            {{ selectedLanguage=='en' ? 'New Story' : 'قصة جديدة' }}
+          </div>
+          <div class="story-head-sub">
+            {{ selectedLanguage=='en' ? 'Add a photo and caption' : 'أضف صورة ووصف' }}
+          </div>
         </div>
 
-        <ion-item class="mt12">
-          <ion-label position="stacked">
+        <!-- Pick box -->
+        <button type="button" class="story-pick-box" (click)="pickStoryImage()">
+          <ng-container *ngIf="!pickedStoryPreview">
+            <div class="story-pick-icon">
+              <ion-icon name="images-outline"></ion-icon>
+            </div>
+
+            <div class="story-pick-text">
+              <div class="t1">
+                {{ selectedLanguage=='en' ? 'Tap to pick a photo' : 'اضغط لاختيار صورة' }}
+              </div>
+              <div class="t2">
+                {{ selectedLanguage=='en' ? 'From your gallery' : 'من المعرض' }}
+              </div>
+            </div>
+          </ng-container>
+
+          <img *ngIf="pickedStoryPreview" [src]="pickedStoryPreview" class="story-preview" />
+          <div class="story-change-badge" *ngIf="pickedStoryPreview">
+            <ion-icon name="create-outline"></ion-icon>
+            <span>{{ selectedLanguage=='en' ? 'Change' : 'تغيير' }}</span>
+          </div>
+        </button>
+
+        <!-- Caption -->
+        <div class="field-card mt12" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+          <ion-label class="field-label">
             {{ selectedLanguage=='en' ? 'Caption (optional)' : 'وصف (اختياري)' }}
           </ion-label>
-          <ion-textarea [(ngModel)]="newStoryCaption" autoGrow="true"></ion-textarea>
-        </ion-item>
 
-        <ion-button expand="block" class="mt16" [disabled]="uploadingStory" (click)="addStory()">
-          <ng-container *ngIf="!uploadingStory">
-            {{ selectedLanguage=='en' ? 'Post Story' : 'نشر القصة' }}
-          </ng-container>
-          <ng-container *ngIf="uploadingStory">
-            <ion-spinner name="crescent" slot="start"></ion-spinner>
-            {{ selectedLanguage=='en' ? 'Uploading...' : 'جارٍ الرفع...' }}
-          </ng-container>
-        </ion-button>
+          <ion-textarea
+            class="field-textarea"
+            [(ngModel)]="newStoryCaption"
+            autoGrow="true"
+            rows="3"
+            placeholder="{{ selectedLanguage=='en' ? 'Write something…' : 'اكتب شيئاً…' }}">
+          </ion-textarea>
+
+          <div class="hint-row">
+            <span class="hint">
+              {{ selectedLanguage=='en' ? 'Tip: keep it short' : 'نصيحة: اجعل الوصف قصيراً' }}
+            </span>
+            <span class="count">{{ (newStoryCaption?.length || 0) }}/120</span>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="story-actions mt16">
+          <ion-button
+            expand="block"
+            class="story-submit"
+            [disabled]="uploadingStory"
+            (click)="addStory()">
+
+            <ng-container *ngIf="!uploadingStory">
+              <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+              {{ selectedLanguage=='en' ? 'Post Story' : 'نشر القصة' }}
+            </ng-container>
+
+            <ng-container *ngIf="uploadingStory">
+              <ion-spinner name="crescent" slot="start"></ion-spinner>
+              {{ selectedLanguage=='en' ? 'Uploading...' : 'جارٍ الرفع...' }}
+            </ng-container>
+
+          </ion-button>
+        </div>
+
       </ion-content>
+
     </ng-template>
   </ion-modal>
 
@@ -262,7 +317,7 @@
           <ion-title>{{ activeStory?.userName }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeStoryViewer()"
-              style="--background: var(--primary-color); --color: var(--secondary-color);">
+            style="--color: var(--button-color); --background: var(--primary-color);">
               {{ selectedLanguage=='en' ? 'Close' : 'إغلاق' }}
             </ion-button>
           </ion-buttons>

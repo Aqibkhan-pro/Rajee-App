@@ -81,9 +81,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ✅ Categories (added furniture because you have furniture sub categories)
   categories: Category[] = [
     { key: 'all', ar: 'الكل', en: 'All', icon: 'grid-outline', selected: true },
-    { key: 'cars', ar: 'حراج السيارات', en: 'Cars & Vehicles', icon: 'car-outline', selected: false },
-    { key: 'electronics', ar: 'حراج الأجهزة', en: 'Electronics & Devices', icon: 'phone-portrait-outline', selected: false },
-    { key: 'furniture', ar: 'حراج الأثاث', en: 'Furniture', icon: 'bed-outline', selected: false },
+    { key: 'cars', ar: 'رجيع السيارات', en: 'Cars & Vehicles', icon: 'car-outline', selected: false },
+    { key: 'electronics', ar: 'رجيع الأجهزة', en: 'Electronics & Devices', icon: 'phone-portrait-outline', selected: false },
+    { key: 'furniture', ar: 'رجيع الأثاث', en: 'Furniture', icon: 'bed-outline', selected: false },
     { key: 'personal_items', ar: 'مستلزمات شخصية', en: 'Personal Items & Accessories', icon: 'bag-handle-outline', selected: false },
     { key: 'services', ar: 'خدمات', en: 'Services', icon: 'construct-outline', selected: false },
     { key: 'jobs', ar: 'وظائف', en: 'Jobs', icon: 'briefcase-outline', selected: false },

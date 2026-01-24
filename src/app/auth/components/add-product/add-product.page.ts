@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
@@ -10,12 +11,14 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { storage } from 'src/environments/firebase-config';
 import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Camera } from '@capacitor/camera';
 
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 
 import { UserService } from 'src/app/services/user.service';
 import { MapComponentComponent } from './map-component/map-component.component';
+import { District, Province, SAUDI_PROVINCES } from 'src/app/shared/saudi-provinces';
+
 
 interface PickedImage {
   dataUrl: string;  // data:image/...;base64,...
@@ -46,12 +49,15 @@ export class AddProductPage implements OnInit {
   category: any[] = [];
   subCategoryOptions: Array<{ key: string; ar: string; en: string }> = [];
 
+  // ✅ City/Province + District
+  provinces: Province[] = SAUDI_PROVINCES;
+  districtOptions: District[] = [];
+
   // ✅ Conditions shown in UI (translated)
   conditions: string[] = [];
 
-  // ✅ Sub Categories Map (FULL LIST you asked)
+  // ✅ Sub Categories Map
   subCategoriesMap: Record<string, Array<{ key: string; ar: string; en: string }>> = {
-    // ===================== CARS =====================
     cars: [
       { key: 'parts', ar: 'قطع غيار وملحقات', en: 'Parts & Accessories' },
       { key: 'trucks', ar: 'شاحنات ومعدات ثقيلة', en: 'Trucks & Heavy Equipment' },
@@ -61,8 +67,6 @@ export class AddProductPage implements OnInit {
       { key: 'transfer', ar: 'سيارات للتنازل', en: 'Transfer Cars' },
     ],
 
-
-    // ===================== ELECTRONICS =====================
     electronics: [
       { key: 'mobiles', ar: 'جوالات', en: 'Mobiles' },
       { key: 'tablets', ar: 'تابلت', en: 'Tablets' },
@@ -78,9 +82,6 @@ export class AddProductPage implements OnInit {
       { key: 'printers', ar: 'طابعات وملحقاتها', en: 'Printers & Accessories' },
     ],
 
-
-
-    // ===================== FURNITURE =====================
     furniture: [
       { key: 'majlis', ar: 'مجالس ومفروشات', en: 'Majlis & Upholstery' },
       { key: 'tables', ar: 'طاولات وكراسي', en: 'Tables & Chairs' },
@@ -94,7 +95,6 @@ export class AddProductPage implements OnInit {
       { key: 'carpets', ar: 'سجاد وستائر', en: 'Carpets & Curtains' },
     ],
 
-    // ===================== PERSONAL ITEMS =====================
     personal_items: [
       { key: 'watches', ar: 'ساعات', en: 'Watches' },
       { key: 'perfumes', ar: 'عطور', en: 'Perfumes' },
@@ -109,7 +109,6 @@ export class AddProductPage implements OnInit {
       { key: 'jewelry', ar: 'ذهب ومجوهرات', en: 'Gold & Jewelry' },
     ],
 
-    // ===================== SERVICES =====================
     services: [
       { key: 'construction', ar: 'بناء ومقاولات', en: 'Construction & Contracting' },
       { key: 'ac', ar: 'تكييف وتبريد', en: 'AC & Cooling' },
@@ -122,7 +121,6 @@ export class AddProductPage implements OnInit {
       { key: 'other_services', ar: 'خدمات أخرى', en: 'Other Services' },
     ],
 
-    // ===================== JOBS =====================
     jobs: [
       { key: 'admin', ar: 'إدارية وسكرتارية', en: 'Admin & Secretary' },
       { key: 'sales', ar: 'تسويق ومبيعات', en: 'Sales & Marketing' },
@@ -143,7 +141,6 @@ export class AddProductPage implements OnInit {
       { key: 'remote', ar: 'عمل من المنزل', en: 'Work From Home' },
     ],
 
-    // ===================== OTHER CATEGORIES (you can keep empty or add later) =====================
     games: [
       { key: 'console_games', ar: 'ألعاب بلايستيشن/إكس بوكس', en: 'Console Games' },
       { key: 'consoles', ar: 'أجهزة ألعاب', en: 'Gaming Consoles' },
@@ -168,9 +165,9 @@ export class AddProductPage implements OnInit {
   ) {
     // ✅ Your categories
     this.category = [
-      { key: 'cars', ar: 'حراج السيارات', en: 'Cars & Vehicles' },
-      { key: 'electronics', ar: 'حراج الأجهزة', en: 'Electronics & Devices' },
-      { key: 'furniture', ar: 'حراج الأثاث', en: 'Furniture' },
+      { key: 'cars', ar: 'رجيع السيارات', en: 'Cars & Vehicles' },
+      { key: 'electronics', ar: 'رجيع الأجهزة', en: 'Electronics & Devices' },
+      { key: 'furniture', ar: 'رجيع الأثاث', en: 'Furniture' },
       { key: 'personal_items', ar: 'مستلزمات شخصية', en: 'Personal Items & Accessories' },
       { key: 'services', ar: 'خدمات', en: 'Services' },
       { key: 'jobs', ar: 'وظائف', en: 'Jobs' },
@@ -185,15 +182,27 @@ export class AddProductPage implements OnInit {
     const defaultSectionKey = this.category?.[0]?.key || '';
     const defaultCondition = this.conditions?.[0] || '';
 
+    // ✅ Province/District defaults
+    const defaultProvinceKey = this.provinces?.[0]?.key || '';
+    const defaultDistrictKey = this.provinces?.[0]?.districts?.[0]?.key || '';
+
+    // ✅ Phone validation (flexible): 7-15 digits, optional +
+    const phoneRegex = /^\+?[0-9]{7,15}$/;
+
     this.form = this.fb.group({
       title: ['', Validators.required],
       price: ['', Validators.required],
 
-      section: [defaultSectionKey, Validators.required], // ✅ default category option 1
-      subCategory: ['', Validators.required],            // ✅ auto-set to option 1
+      section: [defaultSectionKey, Validators.required],
+      subCategory: ['', Validators.required],
 
-      condition: [defaultCondition, Validators.required], // ✅ default condition option 1
+      condition: [defaultCondition, Validators.required],
       description: ['', Validators.required],
+
+      // ✅ NEW City/District + Phone
+      province: [defaultProvinceKey, Validators.required],
+      district: [defaultDistrictKey, Validators.required],
+      contactPhone: ['', [Validators.required, Validators.pattern(phoneRegex)]],
 
       address: [''],
       images: [[]],
@@ -206,8 +215,6 @@ export class AddProductPage implements OnInit {
 
     // refresh translated strings
     this.refreshConditions();
-
-    // ✅ ensure condition default exists
     this.setDefaultConditionIfEmpty();
 
     // ✅ section change -> load subcats and auto-select first
@@ -218,6 +225,15 @@ export class AddProductPage implements OnInit {
     // ✅ init default subcats
     const defaultSection = this.form.get('section')?.value;
     this.applySubCategories(defaultSection, true);
+
+    // ✅ province change -> load districts and auto-select first
+    this.form.get('province')?.valueChanges.subscribe((provinceKey: string) => {
+      this.applyDistricts(provinceKey, true);
+    });
+
+    // ✅ init default districts
+    const defaultProvince = this.form.get('province')?.value;
+    this.applyDistricts(defaultProvince, true);
 
     // ✅ location on load
     await this.getCurrentLocation();
@@ -252,6 +268,24 @@ export class AddProductPage implements OnInit {
     sc?.updateValueAndValidity();
   }
 
+  private applyDistricts(provinceKey: string, autoSelectFirst: boolean) {
+    const province = this.provinces.find(p => p.key === provinceKey);
+    this.districtOptions = province?.districts || [];
+
+    const dCtrl = this.form.get('district');
+
+    if (this.districtOptions.length) {
+      dCtrl?.setValidators([Validators.required]);
+      if (autoSelectFirst) dCtrl?.setValue(this.districtOptions[0].key);
+      else if (!dCtrl?.value) dCtrl?.setValue(this.districtOptions[0].key);
+    } else {
+      dCtrl?.setValue('');
+      dCtrl?.clearValidators();
+    }
+
+    dCtrl?.updateValueAndValidity();
+  }
+
   async pickMultipleImages() {
     try {
       const remainingSlots = this.MAX_IMAGES - this.pickedImages.length;
@@ -265,7 +299,7 @@ export class AddProductPage implements OnInit {
         limit: remainingSlots, // ✅ Android 13+ / iOS (else ignored)
       });
 
-      const photos = (result?.photos || []).slice(0, remainingSlots); // ✅ enforce max on all devices
+      const photos = (result?.photos || []).slice(0, remainingSlots);
       if (!photos.length) return;
 
       const dataUrls = await Promise.all(
@@ -294,13 +328,23 @@ export class AddProductPage implements OnInit {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
-      reader.readAsDataURL(blob); // ✅ returns "data:image/...;base64,..."
+      reader.readAsDataURL(blob);
     });
   }
 
-
   removePickedImage(index: number) {
     this.pickedImages = this.pickedImages.filter((_, i) => i !== index);
+  }
+
+  private getProvinceName(key: string) {
+    const p = this.provinces.find(x => x.key === key);
+    return { en: p?.en || '', ar: p?.ar || '' };
+  }
+
+  private getDistrictName(provinceKey: string, districtKey: string) {
+    const p = this.provinces.find(x => x.key === provinceKey);
+    const d = p?.districts?.find(x => x.key === districtKey);
+    return { en: d?.en || '', ar: d?.ar || '' };
   }
 
   async handleSubmit() {
@@ -341,16 +385,30 @@ export class AddProductPage implements OnInit {
 
       const pUser: any = await this.userService.getUserById(userData.uid);
 
+      // ✅ manual phone from input (priority)
+      const manualPhone = (this.form.value.contactPhone || '').trim();
+
+      const provinceKey = this.form.value.province;
+      const districtKey = this.form.value.district;
+
+      const provinceName = this.getProvinceName(provinceKey);
+      const districtName = this.getDistrictName(provinceKey, districtKey);
+
       // 3) final product
       const productData = {
-        ...this.form.value, // includes section + subCategory + condition
+        ...this.form.value, // includes section/subCategory/condition/province/district/contactPhone
         user: {
           uid: userData.uid,
           name: userData.name,
           email: userData.email,
-          phone: pUser?.phone || '',
+          phone: manualPhone || pUser?.phone || '',
           photoURL: userData.photoURL,
         },
+
+        // ✅ save readable names too
+        provinceName,
+        districtName,
+
         location: this.productLocation || {},
         createdAt: Date.now(),
       };
@@ -365,14 +423,22 @@ export class AddProductPage implements OnInit {
       this.form.reset();
       this.pickedImages = [];
       this.subCategoryOptions = [];
+      this.districtOptions = [];
 
       // set defaults again after reset
       const defaultSectionKey = this.category?.[0]?.key || '';
+      const defaultProvinceKey = this.provinces?.[0]?.key || '';
+      const defaultDistrictKey = this.provinces?.[0]?.districts?.[0]?.key || '';
+
       this.form.patchValue({
         section: defaultSectionKey,
         condition: this.conditions?.[0] || '',
+        province: defaultProvinceKey,
+        district: defaultDistrictKey,
       });
+
       this.applySubCategories(defaultSectionKey, true);
+      this.applyDistricts(defaultProvinceKey, true);
 
       this.navCtrl.navigateRoot('/home');
     } catch (err: any) {
@@ -408,12 +474,10 @@ export class AddProductPage implements OnInit {
       await this.getAddressFromCoordinatesOSM(this.productLocation.lat, this.productLocation.lng);
     } catch (err) {
       console.error('Error getting location:', err);
-      // this.showToast(this.translate.instant('location_permission_required'), 'danger');
     }
   }
 
   async openMapPicker() {
-    return ;
     const modal = await this.modalCtrl.create({
       component: MapComponentComponent,
       componentProps: { location: this.productLocation },

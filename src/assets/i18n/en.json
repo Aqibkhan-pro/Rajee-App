@@ -19,7 +19,7 @@
   "contact_us": "Contact Us",
   "login": "Login",
   "register": "Register",
-  "search_placeholder": "Search on Haraj",
+  "search_placeholder": "Search on Rajee",
   "listening": "🎤 Listening...",
   "voice_not_supported": "Voice search not supported on web",
   "permission_denied": "Permission denied",
@@ -154,11 +154,11 @@
   "admin_panel": "Admin Panel",
   "logout": "Logout",
   "no_items":"No items found",
-
+  "district": "District",
     "welcome_back_let": "Welcome back! Let's sign in",
     "email_placeholder": "Enter email...",
     "password_placeholder": "Enter password...",
-
+    "city":"City",
       "create_account": "Create a new account",
       "signup_subtitle": "Fill in your details to get started",
       "full_name": "Full Name",
@@ -196,14 +196,14 @@
           "policies": {
             "title": "Policies",
             "search_placeholder": "Search policy...",
-            "hero_title": "{{appName}} Policies",
+            "hero_title": "Rajee Policies",
             "last_updated": "Last Updated: {{date}}",
             "email_support": "Email Support",
 
             "sections": {
               "overview": {
                 "title": "Overview",
-                "p1": "{{appName}} is a marketplace app where users post ads/listings and buyers/sellers deal with each other. We are not a direct party to transactions, but we enforce platform rules.",
+                "p1": "Rajee is a marketplace app where users post ads/listings and buyers/sellers deal with each other. We are not a direct party to transactions, but we enforce platform rules.",
                 "ul1": {
                   "i1": "By using the platform, you agree to these policies and terms.",
                   "i2": "We may update policies; please check the “Last Updated” date.",

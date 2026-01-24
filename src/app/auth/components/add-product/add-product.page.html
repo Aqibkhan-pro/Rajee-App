@@ -21,7 +21,6 @@
             class="pick-tile"
             *ngIf="pickedImages.length < 3"
             (click)="pickMultipleImages()">
-
             <ion-icon name="camera"></ion-icon>
             <span class="pick-text">
               {{ 'add_image' | translate }} ({{ pickedImages.length }}/3)
@@ -44,27 +43,6 @@
 
         </div>
       </ion-item>
-
-      <!-- MULTIPLE IMAGE PICKER (MAX 3) -->
-<!-- <ion-item lines="none">
-  <div class="select_img" *ngIf="pickedImages.length < 3" (click)="pickMultipleImages()">
-    <div class="sub_select">
-      <ion-icon name="camera" style="font-size: 32px;"></ion-icon>
-      <ion-text>
-        {{ 'add_image' | translate }} ({{ pickedImages.length }}/3)
-      </ion-text>
-    </div>
-  </div>
-
-  <div class="picked-image-container" *ngIf="pickedImages.length">
-    <img
-      *ngFor="let img of pickedImages; let i = index"
-      [src]="img.dataUrl"
-      class="picked-image"
-    />
-  </div>
-</ion-item>  -->
-
 
       <!-- ✅ Location (with map picker button) -->
       <ion-item lines="none" class="no-pad">
@@ -90,11 +68,78 @@
             </ion-item>
 
             <ng-template #checkPermission>
-
               <p style="color:var(--text-black)">Please Check Permission</p>
+            </ng-template>
 
-          </ng-template>
+          </div>
+        </div>
+      </ion-item>
 
+      <!-- ✅ City / Province -->
+      <ion-item lines="none" class="no-pad">
+        <div class="select_location">
+          <div class="sub_select_location">
+            <ion-text class="subject" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+              {{ 'city' | translate }}
+            </ion-text>
+
+            <ion-select
+              formControlName="province"
+              interface="popover"
+              class="change_subject arabic"
+              [slot]="selectedLanguage=='en' ? 'end':'start'"
+              [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+
+              <ion-select-option *ngFor="let p of provinces" [value]="p.key">
+                {{ selectedLanguage === 'en' ? p.en : p.ar }}
+              </ion-select-option>
+
+            </ion-select>
+          </div>
+        </div>
+      </ion-item>
+
+      <!-- ✅ District (depends on City/Province) -->
+      <ion-item lines="none" class="no-pad">
+        <div class="select_location">
+          <div class="sub_select_location">
+            <ion-text class="subject" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+              {{ 'district' | translate }}
+            </ion-text>
+
+            <ion-select
+              formControlName="district"
+              interface="popover"
+              class="change_subject arabic"
+              [disabled]="!districtOptions?.length"
+              [slot]="selectedLanguage=='en' ? 'end':'start'"
+              [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+
+              <ion-select-option *ngFor="let d of districtOptions" [value]="d.key">
+                {{ selectedLanguage === 'en' ? d.en : d.ar }}
+              </ion-select-option>
+
+            </ion-select>
+          </div>
+        </div>
+      </ion-item>
+
+      <!-- ✅ Phone Number input -->
+      <ion-item lines="none" class="no-pad">
+        <div class="select_location">
+          <div class="sub_select_location">
+            <ion-text class="subject" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+              {{ 'phone' | translate }}
+            </ion-text>
+
+            <ion-input
+              class="change_subject"
+              formControlName="contactPhone"
+              inputmode="tel"
+              type="tel"
+              placeholder="e.g: 05XXXXXXXX"
+              [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+            </ion-input>
           </div>
         </div>
       </ion-item>
@@ -103,9 +148,7 @@
       <ion-item lines="none" class="no-pad">
         <div class="select_location">
           <div class="sub_select_location">
-            <!-- style="color: #343434;" -->
-            <ion-text class="subject"
-              [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+            <ion-text class="subject" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
               {{ 'offer_subject' | translate }}
             </ion-text>
 
@@ -232,7 +275,7 @@
 
     </ion-list>
 
-    <!-- ✅ STICKY SAFE-AREA SUBMIT (never hide behind hardware/gesture bar) -->
+    <!-- ✅ STICKY SAFE-AREA SUBMIT -->
     <div class="submit-bar">
       <ion-button expand="block" mode="ios" type="submit" class="submit-btn">
         {{ 'submit' | translate }}
