@@ -1,0 +1,86 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'favorites' | translate }}</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterFavorites()"
+      [placeholder]="'search_favorites' | translate"
+      mode="ios">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content id="main-content">
+  <!-- Card List -->
+  <div class="card-container">
+    <ion-card *ngFor="let item of filteredItems" mode="ios">
+      <ion-item class="card-item" lines="none" (click)="onCardClick(item)">
+        <img [src]="item.product?.image" [alt]="item.product?.title" class="card-image" />
+
+        <ion-list class="card-details">
+          <div class="card-title">{{ item.product?.title | titlecase }}</div>
+
+          <div class="card-info">
+            <!-- Price -->
+            <span class="card-info-item-price">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <span>{{ item.product?.price }}</span>
+            </span>
+
+            <!-- Time -->
+            <span class="card-info-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ item.addedAt | date: 'dd MMM yy' }}</span>
+            </span>
+
+            <!-- Location -->
+            <span class="card-info-item" style="justify-content:right">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>24.56, 45.65</span>
+            </span>
+          </div>
+
+          <div class="card-info">
+            <!-- User Initial -->
+            <span class="card-info-item user-initial" style="justify-content: left;">
+              <span class="initial-circle">{{ item.product?.user?.name?.charAt(0) }}</span>
+              <span>{{ item.product?.user?.name }}</span>
+            </span>
+
+            <!-- Remove from favorites -->
+            <span class="card-info-item" style="justify-content:right">
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="removeFavorite(item, $event)"
+                color="danger">
+                <ion-icon slot="icon-only" name="heart"></ion-icon>
+              </ion-button>
+            </span>
+          </div>
+        </ion-list>
+      </ion-item>
+    </ion-card>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredItems.length === 0 && !isLoading" class="empty-state">
+      <ion-icon name="heart-outline" size="large"></ion-icon>
+      <h3>{{ 'no_favorites' | translate }}</h3>
+      <p>{{ 'no_favorites_message' | translate }}</p>
+      <ion-button mode="ios" shape="round" (click)="goToHome()">
+        {{ 'browse_products' | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>{{ 'loading_favorites' | translate }}</p>
+    </div>
+  </div>
+</ion-content>

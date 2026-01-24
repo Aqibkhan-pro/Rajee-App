@@ -1,0 +1,73 @@
+.pol-content {
+  --background: var(--secondary-color-2) !important;
+  background: var(--secondary-color-2) !important;
+}
+
+.pol-toolbar {
+  --background: var(--primary-color);
+  color: var(--button-color);
+}
+
+.pol-title {
+  font-weight: 700;
+}
+
+.pol-hero {
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.pol-search {
+  --background: rgba(255, 255, 255, 0.14);
+  --color: #fff;
+  --placeholder-color: rgba(255, 255, 255, 0.7);
+  --icon-color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pol-btn {
+  --border-color: rgba(255, 255, 255, 0.35);
+  --color: #fff;
+}
+
+.pol-acc-group {
+  margin-top: 12px;
+}
+
+.pol-acc {
+  background: var(--secondary-color);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.pol-acc-header {
+  --background: var(--secondary-color);
+}
+
+.pol-acc-icon {
+  color: var(--secondary-color-2);
+}
+
+.pol-acc-label h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pol-body {
+  background: var(--secondary-color);
+  color: var(--text-black);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pre-line {
+  white-space: pre-line; // so contact section new lines show
+}

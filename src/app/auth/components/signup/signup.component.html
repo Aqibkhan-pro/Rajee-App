@@ -1,0 +1,172 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="false" [fullscreen]="true">
+  <ion-list class="top-list">
+    <ion-item lines="none">
+      <div class="avatar-center">
+        <lottie-player
+          src="../../../../assets/anim/data.json"
+          background="transparent"
+          speed="1"
+          loop
+          autoplay
+          style="width: 130px; height: 130px;">
+        </lottie-player>
+      </div>
+    </ion-item>
+
+    <!-- ✅ Signup Form Only -->
+    <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
+      <ion-list class="text-center mt-4">
+        <ion-label>
+          <h2 class="text-20">{{ 'create_account' | translate }}</h2>
+          <p class="subtitle">{{ 'signup_subtitle' | translate }}</p>
+        </ion-label>
+
+        <!-- Full Name -->
+        <ion-item class="custom-input mt-12 input-item" lines="none">
+          <ion-icon
+            slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
+            name="person"
+            class="text-20">
+          </ion-icon>
+
+          <ion-input
+            type="text"
+            style="color: black; --color:black; padding-right: 10px; --padding-end:10px"
+            placeholder="{{ 'full_name' | translate }}"
+            formControlName="fullName"
+            [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          </ion-input>
+        </ion-item>
+        <ion-text color="danger" *ngIf="submitted && fullName?.errors">
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="fullName?.errors?.required">
+            {{ 'full_name_required' | translate }}
+          </p>
+        </ion-text>
+
+        <!-- Phone -->
+        <ion-item class="custom-input mt-12 input-item" lines="none">
+          <ion-icon
+            slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
+            name="call"
+            class="text-20">
+          </ion-icon>
+
+          <ion-input
+            type="tel"
+            style="color: black; --color:black; padding-right: 10px; --padding-end:10px"
+            placeholder="{{ 'phone' | translate }}"
+            formControlName="phone"
+            [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          </ion-input>
+        </ion-item>
+        <ion-text color="danger" *ngIf="submitted && phone?.errors">
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="phone?.errors?.required">
+            {{ 'phone_required' | translate }}
+          </p>
+        </ion-text>
+
+        <!-- Email -->
+        <ion-item class="custom-input mt-12 input-item" lines="none">
+          <ion-icon
+            slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
+            name="mail"
+            class="text-20">
+          </ion-icon>
+
+          <ion-input
+            type="email"
+            style="color: black; --color:black; padding-right: 10px; --padding-end:10px"
+            placeholder="{{ 'email' | translate }}"
+            formControlName="email"
+            [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          </ion-input>
+        </ion-item>
+        <ion-text color="danger" *ngIf="submitted && email?.errors">
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="email?.errors?.required">
+            {{ 'email_required' | translate }}
+          </p>
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="email?.errors?.email">
+            {{ 'email_invalid' | translate }}
+          </p>
+        </ion-text>
+
+        <!-- Password -->
+        <ion-item class="custom-input mt-12 input-item" lines="none">
+          <ion-icon
+            slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
+            name="lock-closed"
+            class="text-20">
+          </ion-icon>
+
+          <ion-input
+            type="password"
+            style="color: black; --color:black; padding-right: 10px; --padding-end:10px"
+            placeholder="{{ 'password' | translate }}"
+            formControlName="password"
+            [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          </ion-input>
+        </ion-item>
+        <ion-text color="danger" *ngIf="submitted && password?.errors">
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="password?.errors?.required">
+            {{ 'password_required' | translate }}
+          </p>
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="password?.errors?.minlength">
+            {{ 'password_minlength' | translate }}
+          </p>
+        </ion-text>
+
+        <!-- Confirm Password -->
+        <ion-item class="custom-input mt-12 input-item" lines="none">
+          <ion-icon
+            slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
+            name="lock-closed"
+            class="text-20">
+          </ion-icon>
+
+          <ion-input
+            type="password"
+            style="color: black; --color:black; padding-right: 10px; --padding-end:10px"
+            placeholder="{{ 'confirm_password' | translate }}"
+            formControlName="confirmPassword"
+            [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          </ion-input>
+        </ion-item>
+
+        <ion-text color="danger" *ngIf="submitted && (confirmPassword?.errors || signupForm?.errors)">
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="confirmPassword?.errors?.required">
+            {{ 'confirm_password_required' | translate }}
+          </p>
+          <p [style.text-align]="selectedLanguage=='en' ? 'start':'end'" *ngIf="signupForm?.errors?.passwordMismatch">
+            {{ 'password_mismatch' | translate }}
+          </p>
+        </ion-text>
+
+        <!-- Signup Button -->
+        <ion-button expand="block" type="submit" mode="ios" [disabled]="isLoading" class="text-16 mt-20">
+          <ng-container *ngIf="!isLoading">{{ 'sign_up' | translate }}</ng-container>
+          <ng-container *ngIf="isLoading">
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            {{ 'creating' | translate }}
+          </ng-container>
+        </ion-button>
+
+        <!-- Login Redirect -->
+        <ion-label>
+          <p class="login-text text-14 mt-12"
+             [style.text-align]="selectedLanguage=='en' ? 'start':'end'"
+             (click)="goToLogin()">
+            {{ 'already_have_account' | translate }}
+            <u style="color: aqua; margin-left: 5px;">{{ 'login' | translate }}</u>
+          </p>
+        </ion-label>
+
+      </ion-list>
+    </form>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,144 @@
+<ion-tabs>
+  <ion-menu [side]="selectedLanguage=='en'? 'start': 'end'" contentId="main-content" menuId="homeMenu">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <!-- User Profile Section -->
+        <div class="user-profile-header">
+          <div class="avatar" [style.background]="'rgb(150 150 150)'">
+            {{ userName?.charAt(0) ?? 'G' }}
+          </div>
+          <h3 class="user-name">{{ userName ?? 'Guest User' }}</h3>
+          <p class="user-role">{{ userEmail ?? 'example@mail.com'}}</p>
+        </div>
+      </ion-toolbar>
+
+    </ion-header>
+
+    <ion-content fullscreen="true">
+      <ion-list>
+        <ion-item button (click)="onMenuItemClick('profile')" lines="none">
+          <ion-icon name="person-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'profile_label'| translate }}</ion-label>
+        </ion-item>
+        <ion-item button (click)="onMenuItemClick('admin-panel')" lines="none"  *ngIf="isAdmin">
+          <ion-icon name="id-card-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'admin_panel'| translate }}</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onMenuItemClick('policies')" lines="none">
+          <ion-icon name="shield-checkmark-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">
+            {{ 'policies_title' | translate }}
+          </ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onMenuItemClick('settings')" lines="none">
+          <ion-icon name="settings-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'settings'| translate }}</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onMenuItemClick('about')" lines="none">
+          <ion-icon name="information-circle-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'about'| translate}}</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onMenuItemClick('help')" lines="none">
+          <ion-icon name="help-circle-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'help' | translate}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+
+    <!-- Footer with Language and Logout -->
+    <ion-footer style="padding-bottom: env(safe-area-inset-bottom);">
+      <ion-list>
+        <ion-item lines="none">
+          <ion-lable slot="start">Dark Theme</ion-lable>
+        <ion-toggle slot="end" mode="ios" (ionChange)="switch($event)" [checked]="!theme" style="--track-background:#C7C7C7" ></ion-toggle>
+        </ion-item>
+        <!-- Language Selection -->
+        <ion-item lines="none">
+          <ion-icon name="language-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label>
+            <p [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'language'|translate}}</p>
+            <div class="language-chips" [style]="selectedLanguage=='en' ? 'justify-content:flex-start': 'justify-content:flex-end'">
+              <ion-chip [color]="selectedLanguage === 'en' ? 'primary' : 'medium'" (click)="onLanguageChange('en')">
+                <ion-label>{{'english'|translate}}</ion-label>
+              </ion-chip>
+              <ion-chip [color]="selectedLanguage === 'ar' ? 'primary' : 'medium'" (click)="onLanguageChange('ar')">
+                <ion-label>{{'arabic'|translate }}</ion-label>
+              </ion-chip>
+            </div>
+          </ion-label>
+        </ion-item>
+
+        <!-- Logout -->
+        <ion-item lines="none" button (click)="onMenuItemClick('logout')" class="logout-item">
+          <ion-icon name="log-out-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'" color="danger"></ion-icon>
+          <ion-label color="danger">{{'logout'| translate}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-footer>
+  </ion-menu>
+
+  <ion-fab vertical="bottom" horizontal="center" translucent="true">
+    <ion-fab-button (click)="onAddClick()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-tab-bar slot="bottom" class="ion-no-border">
+
+    <ion-tab-button tab="home" [routerLink]="['/main']"
+      [class.selected]="selectedTab === 'home'" (click)="selectTab('home')">
+      <ion-icon
+        name="home"
+        [ngClass]="selectedTab=='home' ? 'selected' : ''">
+      </ion-icon>
+      <ion-text [ngClass]="selectedTab=='home' ? 'selected' : ''">
+        {{ 'home' | translate  }}
+      </ion-text>
+    </ion-tab-button>
+
+    <ion-tab-button tab="favorites" class="comments"
+      [class.selected]="selectedTab === 'favorites'" (click)="selectTab('favorites')">
+      <ion-icon
+        name="heart"
+        [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
+      </ion-icon>
+      <ion-text [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
+        {{ 'favorites' | translate  }}
+      </ion-text>
+    </ion-tab-button>
+
+    <!-- Optional Middle SVG -->
+    <svg height="50" viewBox="0 0 100 50" width="100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 0v50H0V0c.543 27.153 22.72 49 50 49S99.457 27.153 99.99 0h.01z" fill="red" fill-rule="evenodd">
+      </path>
+    </svg>
+
+    <ion-tab-button tab="chat" class="notifs"
+      [class.selected]="selectedTab === 'chat'" (click)="selectTab('chat')">
+      <ion-icon
+        name="chatbubbles"
+        [ngClass]="selectedTab=='chat' ? 'selected' : ''">
+      </ion-icon>
+      <ion-text [ngClass]="selectedTab=='chat' ? 'selected' : ''">
+        {{ 'chat' | translate  }}
+      </ion-text>
+    </ion-tab-button>
+
+    <ion-tab-button tab="profile"
+      [class.selected]="selectedTab === 'profile'" (click)="selectTab('profile')">
+      <ion-icon
+        name="person"
+        [ngClass]="selectedTab=='profile' ? 'selected' : ''">
+      </ion-icon>
+      <ion-text [ngClass]="selectedTab=='profile' ? 'selected' : ''">
+        {{ 'profile' | translate }}
+      </ion-text>
+    </ion-tab-button>
+
+  </ion-tab-bar>
+
+</ion-tabs>

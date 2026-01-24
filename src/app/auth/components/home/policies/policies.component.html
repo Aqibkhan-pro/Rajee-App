@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar mode="ios" class="pol-toolbar">
+    <ion-buttons slot="start" >
+      <ion-back-button  style="color: var(--button-color);"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title class="pol-title">{{ 'policies.title' | translate }}</ion-title>
+
+  </ion-toolbar>
+
+  <ion-toolbar mode="ios" class="pol-toolbar">
+    <ion-searchbar
+      class="pol-search"
+      [(ngModel)]="query"
+      [placeholder]="'policies.search_placeholder' | translate"
+      debounce="150"
+      mode="ios">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pol-content ion-padding">
+
+  <ion-card class="pol-hero" mode="ios">
+    <ion-card-header>
+      <ion-card-title>
+        {{ 'policies.hero_title' | translate:{ appName: appName } }}
+      </ion-card-title>
+
+      <ion-card-subtitle>
+        {{ 'policies.last_updated' | translate:{ date: lastUpdated } }}
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <div class="top-actions">
+        <ion-button class="pol-btn" fill="outline" size="small" (click)="mailToSupport()">
+          <ion-icon name="mail-outline" slot="start"></ion-icon>
+          {{ 'policies.email_support' | translate }}
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-accordion-group class="pol-acc-group" [value]="defaultOpenSectionId">
+    <ion-accordion
+      class="pol-acc"
+      *ngFor="let s of filteredSections"
+      [value]="s.id">
+
+      <ion-item class="pol-acc-header" slot="header" lines="none">
+        <ion-icon
+          class="pol-acc-icon"
+          [name]="s.icon || 'document-outline'"
+          slot="start">
+        </ion-icon>
+
+        <ion-label class="pol-acc-label">
+          <h2>{{ s.title }}</h2>
+        </ion-label>
+      </ion-item>
+
+      <div class="ion-padding pol-body" slot="content">
+        <ng-container *ngFor="let b of s.blocks">
+          <p *ngIf="b.type === 'p'" class="pre-line">{{ b.text }}</p>
+
+          <ul *ngIf="b.type === 'ul'">
+            <li *ngFor="let it of b.items">{{ it }}</li>
+          </ul>
+        </ng-container>
+      </div>
+
+    </ion-accordion>
+  </ion-accordion-group>
+
+  <div style="width: 100%; height:200px"></div>
+</ion-content>

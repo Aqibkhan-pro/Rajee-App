@@ -1,0 +1,74 @@
+:root {
+  --ion-color-primary: #0573c1;
+  --secondary-color: #ffffff;
+  --primary-color: #0573c1;
+  --background-color: #0573c1;
+  --text-color: #ffffff;
+  --btn-text-color: #4ABCFD;
+  --logo-color: #ffffff;
+  --button-color: #26b5fc;
+  --border-effect: #cbcbcb;
+  --theme-text-color: #ffffff;
+  --button-color: #ffffff;
+  --secondary-color-2: #fafafa;
+  --card-border-color: #cfd3d2;
+  --sub-title-color: #e2e2e2;
+  --background-progress: #c8c8c8;
+  --completed-color: #14CC8A;
+  --pending-color: #f59e0b;
+  --returned-color: #8b5cf6;
+  --text-black:#222222;
+
+  --card-title : #0b6b4c;
+
+  --ion-font-family: system-ui, -apple-system, BlinkMacSystemFont,
+  'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+  'Helvetica Neue', Arial, sans-serif;
+}
+
+.light {
+  --ion-color-primary: #0093ff;
+  --secondary-color: #ffffff;
+  --primary-color: #0093ff;
+  --background-color: #0093ff;
+  --text-color: #ffffff;
+  --btn-text-color: #4ABCFD;
+  --logo-color: #ffffff;
+  --button-color: #26b5fc;
+  --border-effect: #cbcbcb;
+  --theme-text-color: #ffffff;
+  --button-color: #ffffff;
+  --secondary-color-2: #fafafa;
+  --card-border-color: #cfd3d2;
+  --sub-title-color: #e2e2e2;
+  --background-progress: #c8c8c8;
+  --completed-color: #14CC8A;
+  --pending-color: #f59e0b;
+  --returned-color: #8b5cf6;
+  --text-black:#222222;
+  --card-title : #0b6b4c;
+}
+
+.dark {
+  --ion-color-primary: #0573c1;
+  --primary-color: #0573c1;
+  --background-color: #0573c1;
+  --text-color: #ffffff;
+  --btn-text-color: #4ABCFD;
+  --logo-color: #ffffff;
+  --border-effect: #cbcbcb;
+  --theme-text-color: #ffffff;
+  --card-border-color: #cfd3d2;
+  --sub-title-color: #e2e2e2;
+  --background-progress: #c8c8c8;
+  --completed-color: #14CC8A;
+  --pending-color: #f59e0b;
+  --returned-color: #8b5cf6;
+
+  --button-color: #ffffff;
+  --secondary-color: #1e1e1e;
+  --secondary-color-2: #282828;
+  --text-black:#fafafa;
+  --card-title:#00ba7e;
+}
+

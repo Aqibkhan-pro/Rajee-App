@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Messages</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+  <div class="chat-list">
+    <div *ngFor="let chat of users"
+         class="chat-item"
+         (click)="openChat(chat)">
+
+      <!-- Avatar -->
+      <div class="avatar-container">
+        <div class="avatar" [style.background]="getDummyColor(getOtherUser(chat)?.name)">
+          {{ getOtherUser(chat)?.name?.charAt(0) }}
+        </div>
+      </div>
+
+      <!-- Chat info -->
+      <div class="chat-info">
+        <div class="chat-header">
+          <h3 class="chat-name">{{ getOtherUser(chat)?.name }}</h3>
+          <span class="chat-time">
+            {{ chat.lastMessageTime ? (chat.lastMessageTime | date:'shortTime') : '' }}
+          </span>
+        </div>
+        <div class="chat-preview">
+          <p class="last-message" [class.unread]="getOtherUser(chat)?.unreadCount > 0">
+            {{ chat.lastMessage || 'No messages yet' }}
+          </p>
+          <span class="unread-badge" *ngIf="getOtherUser(chat)?.unreadCount > 0">
+            {{ getOtherUser(chat)?.unreadCount }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-content>
