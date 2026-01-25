@@ -9,6 +9,7 @@ import { AdminPanelPageRoutingModule } from './admin-panel-routing.module';
 import { AdminPanelPage } from './admin-panel.page';
 import { ManageProductsComponent } from './manage-products/manage-products.component';
 import { ManageUsersComponent } from './manage-users/manage-users.component';
+import { ProductDeleteComponent } from './product-delete/product-delete.component';
 
 @NgModule({
   imports: [
@@ -17,6 +18,6 @@ import { ManageUsersComponent } from './manage-users/manage-users.component';
     IonicModule,
     AdminPanelPageRoutingModule
   ],
-  declarations: [AdminPanelPage, ManageProductsComponent, ManageUsersComponent]
+  declarations: [AdminPanelPage, ManageProductsComponent, ManageUsersComponent, ProductDeleteComponent]
 })
 export class AdminPanelPageModule {}

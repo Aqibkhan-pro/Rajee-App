@@ -652,3 +652,12 @@ body.lang-ar .story-head {
   direction: rtl;
   text-align: right;
 }
+
+
+.one-line-ellipsis {
+  display: block;          /* or inline-block */
+  width: 100%;             /* make sure it has a width */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

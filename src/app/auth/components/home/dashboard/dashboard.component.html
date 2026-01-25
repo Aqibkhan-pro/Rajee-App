@@ -153,18 +153,17 @@
               <div class="card-row">
                 <div class="meta">
                   <ion-icon name="location-outline"></ion-icon>
-
-                  <span *ngIf="item?.location">
-                    {{ (+item?.location?.lat) | number:'1.2-2' }},
-                    {{ (+item?.location?.lng) | number:'1.2-2' }}
+                  <span *ngIf="item?.provinceName">
+                    {{ selectedLanguage === 'en' ? item.provinceName?.en : item.provinceName?.ar }}
                   </span>
 
-                  <span *ngIf="!item?.location">N/A</span>
+                  <span *ngIf="!item?.provinceName">N/A</span>
+
                 </div>
 
                 <div class="user">
                   <span class="initial-circle">{{ item.user?.name?.charAt(0) }}</span>
-                  <span class="user-name">{{ item.user?.name }}</span>
+                  <span class="user-name" style="color:var(--text-black)">{{ item.user?.name }}</span>
                 </div>
               </div>
 

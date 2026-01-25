@@ -64,8 +64,35 @@
         </ion-card>
       </ion-col>
 
+        <!-- Manage Products -->
+        <ion-col size="12" size-md="6">
+          <ion-card mode="ios" class="admin-card" (click)="openRemoveProduct()">
+
+            <div class="card-header">
+              <div class="icon-circle indigo">
+                <ion-icon name="cube-outline"></ion-icon>
+              </div>
+              <span class="badge indigo">Products</span>
+            </div>
+
+            <h2>Remove Products</h2>
+            <p>Remove products in Rajee.</p>
+
+            <div class="card-footer">
+              <div>
+                <h3>{{ totalProducts }}</h3>
+                <span> Products</span>
+              </div>
+              <ion-button color="secondary" size="small" mode="ios" [shape]="'round'">Open</ion-button>
+            </div>
+
+            <div class="card-strip indigo"></div>
+          </ion-card>
+        </ion-col>
+
     </ion-row>
   </ion-grid>
+
 
   <!-- Quick Stats -->
   <!-- <ion-grid class="stats">

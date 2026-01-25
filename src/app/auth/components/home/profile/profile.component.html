@@ -7,37 +7,31 @@
 <ion-content class="profile-content">
   <div class="profile-header-bg"></div>
 
-  <form [formGroup]="profileForm">
+  <!-- ✅ Guard so Angular doesn't bind formGroup before form exists -->
+  <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
 
-    <!-- Profile Picture Section -->
     <div class="profile-picture-container">
       <div class="profile-avatar-wrapper">
         <ion-avatar class="profile-avatar">
-          <img [src]="profileForm.value.photoURL || '../../../../../assets/image/four.jpg'" alt="Profile" />
+          <img src="../../../../../assets/image/icon.png" alt="Profile" />
         </ion-avatar>
-
-        <!-- (optional) change picture icon -->
-        <button type="button" class="edit-avatar-btn" (click)="changeProfilePicture()">
-          <ion-icon name="camera-outline"></ion-icon>
-        </button>
       </div>
 
       <h2 class="profile-name">{{ profileForm.get('fullName')?.value || 'Your Name' }}</h2>
       <p class="profile-subtitle">{{ profileForm.get('email')?.value }}</p>
     </div>
 
-    <!-- Form Card -->
     <div class="form-card">
       <div class="section-title">
         <ion-icon name="person-outline"></ion-icon>
         <span>Personal Information</span>
       </div>
 
-      <!-- Full Name -->
       <ion-list class="text-start">
         <ion-item class="custom-input mt-8 input-item" lines="none">
           <ion-icon slot="start" name="person-outline" class="text-20"></ion-icon>
           <ion-input
+            style="color: var(--text-black); --color: var(--text-black)"
             type="text"
             placeholder="Enter your full name"
             formControlName="fullName">
@@ -45,25 +39,24 @@
         </ion-item>
       </ion-list>
 
-      <!-- Email -->
       <ion-list class="text-start">
         <ion-item class="custom-input mt-8 input-item" lines="none">
           <ion-icon slot="start" name="mail-outline" class="text-20"></ion-icon>
           <ion-input
+            style="color: var(--text-black); --color: var(--text-black)"
             type="email"
             placeholder="Email address"
-            formControlName="email"
-            disabled>
+            formControlName="email">
           </ion-input>
         </ion-item>
       </ion-list>
       <p class="helper-text">Email cannot be changed</p>
 
-      <!-- Phone -->
       <ion-list class="text-start">
         <ion-item class="custom-input mt-8 input-item" lines="none">
           <ion-icon slot="start" name="call-outline" class="text-20"></ion-icon>
           <ion-input
+            style="color: var(--text-black); --color: var(--text-black)"
             type="tel"
             placeholder="+92 300 1234567"
             formControlName="phoneNumber">
@@ -76,11 +69,11 @@
         <span>Preferences</span>
       </div>
 
-      <!-- Language -->
       <ion-list class="text-start">
         <ion-item class="custom-input mt-8 input-item" lines="none">
           <ion-icon slot="start" name="language-outline" class="text-20"></ion-icon>
           <ion-select
+            style="color: var(--text-black); --color: var(--text-black)"
             formControlName="language"
             (ionChange)="onLanguageChange($event)"
             placeholder="Select Language"
@@ -91,7 +84,8 @@
         </ion-item>
       </ion-list>
 
-      <ion-button expand="block" mode="ios" class="save-btn" (click)="saveProfile()">
+      <!-- ✅ submit button -->
+      <ion-button expand="block" mode="ios" class="save-btn" type="submit">
         <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
         Save Changes
       </ion-button>

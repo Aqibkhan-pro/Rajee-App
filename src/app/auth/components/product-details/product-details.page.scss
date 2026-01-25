@@ -12,6 +12,11 @@ ion-content, ion-list, ion-item {
   background: var(--secondary-color) !important;
 }
 
+/* ✅ Footer ki space ke liye */
+ion-content.detail-content {
+  --padding-bottom: 90px;
+}
+
 .card-details{
   padding: 16px;
   background-color: var(--secondary-color) !important;
@@ -89,7 +94,7 @@ ion-content, ion-list, ion-item {
   background: #f0f0f0;
 }
 
-// Enhanced Rating Section
+/* Enhanced Rating Section */
 .product-rating {
   padding: 16px;
   background: var(--secondary-color);
@@ -181,7 +186,7 @@ ion-content, ion-list, ion-item {
   }
 }
 
-// Enhanced Comments Section
+/* Enhanced Comments Section */
 .product-comments {
   padding: 16px;
   background: var(--secondary-color);
@@ -206,79 +211,86 @@ ion-content, ion-list, ion-item {
     ion-item {
       --padding-start: 0;
       --inner-padding-end: 0;
-      margin-bottom: 12px;
-    }
-  }
-
-  .comment-card {
-    width: 100%;
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 8px;
-
-    .comment-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-
-      .user-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 14px;
-      }
-
-      .user-info {
-        flex: 1;
-
-        h4 {
-          margin: 0;
-          font-size: 14px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .comment-time {
-          margin: 2px 0 0;
-          font-size: 11px;
-          color: #999;
-        }
-      }
-    }
-
-    .comment-text {
-      margin: 0;
-      font-size: 13px;
-      color: #555;
-      line-height: 1.4;
-    }
-  }
-
-  .no-comments {
-    text-align: center;
-    padding: 32px 16px;
-    color: #999;
-
-    ion-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-
-    p {
-      margin: 0;
-      font-size: 14px;
+      margin-bottom: 16px;
     }
   }
 }
 
-// Rating Modal Styles
+/* ✅ Inline Full Comment Card (same look as modal) */
+.full-comment-card {
+  width: 100%;
+  background: var(--secondary-color);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .user-avatar-large {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .user-info {
+      flex: 1;
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .comment-time {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #999;
+      }
+    }
+  }
+
+  .comment-text {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+  }
+}
+
+.no-comments-full {
+  text-align: center;
+  padding: 32px 24px;
+  color: #999;
+
+  ion-icon {
+    font-size: 60px;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+/* Rating Modal Styles */
 .rating-modal-content {
   .rating-container {
     padding: 32px 24px;
@@ -390,93 +402,7 @@ ion-content, ion-list, ion-item {
   }
 }
 
-// Comments Modal Styles
-.comments-modal-content {
-  ion-list {
-    background: transparent;
-    padding: 16px;
-
-    ion-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-      margin-bottom: 16px;
-    }
-  }
-
-  .full-comment-card {
-    width: 100%;
-    background: var(--secondary-color);
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-
-    .comment-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-
-      .user-avatar-large {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 18px;
-      }
-
-      .user-info {
-        flex: 1;
-
-        h4 {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .comment-time {
-          margin: 4px 0 0;
-          font-size: 12px;
-          color: #999;
-        }
-      }
-    }
-
-    .comment-text {
-      margin: 0;
-      font-size: 14px;
-      color: #555;
-      line-height: 1.5;
-    }
-  }
-
-  .no-comments-full {
-    text-align: center;
-    padding: 64px 24px;
-    color: #999;
-
-    ion-icon {
-      font-size: 80px;
-      margin-bottom: 16px;
-    }
-
-    h3 {
-      color: #666;
-      margin-bottom: 8px;
-    }
-
-    p {
-      margin: 0;
-      font-size: 14px;
-    }
-  }
-}
-
+/* Footer */
 ion-footer {
   ion-toolbar {
     --background: var(--secondary-color);
@@ -491,8 +417,7 @@ ion-footer {
       .comment-input {
         flex: 1;
         --background: #f0f0f0;
-
-    --color: black;
+        --color: black;
         --padding-start: 16px;
         --padding-end: 16px;
         border-radius: 24px;

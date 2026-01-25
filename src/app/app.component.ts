@@ -7,6 +7,7 @@ import { constants } from './shared/utils/constants';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { environment } from '../environments/environment';
+import { UserService } from './services/user.service';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ export class AppComponent {
   constructor(
     private authService: AuthService,
     private translate: TranslateService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private userService : UserService
   ) {
     this.initThemeAndLanguage();
     this.initializeApp();
@@ -74,12 +76,16 @@ export class AppComponent {
           try {
             // Refresh token
             const idToken = await user.getIdToken(true);
+            const pUser = await this.userService.getUserById(user.uid);
+
+            // ✅ If API returns empty, stop
+            if (!pUser) throw new Error('User profile not found');
 
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             userData.idToken = idToken;
             userData.uid = user.uid;
             userData.email = user.email;
-            userData.name = user.displayName || '';
+            userData.name = pUser?.name ||  user.displayName || '';
             userData.photoURL = user.photoURL || '';
             localStorage.setItem('userData', JSON.stringify(userData));
 

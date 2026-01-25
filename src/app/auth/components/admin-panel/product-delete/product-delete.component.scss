@@ -1,0 +1,156 @@
+@import url(../../home/home.page.scss);
+
+:host {
+  --card-radius: 16px;
+}
+
+.page-title {
+  color: var(--secondary-color) !important;
+  font-weight: 700;
+}
+
+.page-content {
+  --background: #f6f7fb;
+}
+
+ion-searchbar {
+  --color: var(--text-black);
+  --background: var(--secondary-color);
+  font-size: 12px;
+  font-family: inherit;
+}
+
+
+.list-container {
+  padding: 10px 12px 24px 12px;
+}
+
+.product-card {
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  margin: 12px 0;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.card-item {
+  --background: #ffffff;
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  align-items: flex-start;
+}
+
+.thumb {
+  width: 92px;
+  height: 92px;
+
+  img {
+    width: 92px;
+    height: 92px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #e9ecf2;
+  }
+}
+
+.card-body {
+  padding: 12px 0 12px 10px;
+}
+
+.top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #0b5136;
+  line-height: 1.2;
+}
+
+.status-chip {
+  height: 26px;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip {
+  height: 26px;
+  font-size: 11px;
+  margin: 0;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.desc {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #3a3a3a;
+  line-height: 1.4;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* clamp description */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.user-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #5b5b5b;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.card-actions {
+  background: #ffffff;
+  padding: 10px 12px 12px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-delete {
+  min-height: 38px;
+  --border-radius: 12px;
+  --box-shadow: 0 10px 20px rgba(244, 67, 54, 0.18);
+  font-weight: 700;
+}
+
+.empty {
+  height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 80px;
+    opacity: 0.45;
+    margin-bottom: 10px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+}

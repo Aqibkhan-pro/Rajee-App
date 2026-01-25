@@ -4,6 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminPanelPage } from './admin-panel.page';
 import { ManageProductsComponent } from './manage-products/manage-products.component';
 import { ManageUsersComponent } from './manage-users/manage-users.component';
+import { ProductDeleteComponent } from './product-delete/product-delete.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'manage-users',
     component: ManageUsersComponent
+  },
+  {
+    path: 'delete-products',
+    component: ProductDeleteComponent
   }
 ];
 

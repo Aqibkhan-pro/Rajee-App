@@ -15,6 +15,7 @@ export interface Product {
   description: string;
   image?: string;
   user: User;
+  contactPhone?: string | any;
   createdAt?: number;
   images?: string[];
   ratings?: Rating[] | any;

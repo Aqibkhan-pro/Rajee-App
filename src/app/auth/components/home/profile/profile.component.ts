@@ -5,9 +5,8 @@ import { CommonService } from 'src/app/auth/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ToastType } from 'src/app/shared/enums/common.enum';
-
-// ✅ If you already initialized firebase in firebase-config, this will work.
 import { getAuth } from 'firebase/auth';
+import { UserService } from 'src/app/services/user.service';
 
 type StoredUser = {
   uid?: string;
@@ -27,38 +26,35 @@ type StoredUser = {
 })
 export class ProfileComponent implements OnInit, OnDestroy {
 
-  profileForm!: FormGroup;
+  // ✅ Make sure it's created immediately
+  profileForm: FormGroup;
+
   subScription: Subscription | null = null;
 
-  // ✅ Your database URL
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
-
-  // ✅ IMPORTANT: from your screenshot (your users are inside this node)
   USERS_ROOT = 'TpbTCEe9KxbYJa3BtWFbg4W2Nez1';
 
   constructor(
     private fb: FormBuilder,
     private commonService: CommonService,
     private storageService: StorageService,
-    private toastService: ToastService
-  ) {}
-
-  async ngOnInit() {
-    const userData = this.getStoredUser();
-
-    // ✅ Build form
+    private toastService: ToastService,
+    private userService: UserService
+  ) {
+    // ✅ Create form synchronously (no await before this)
     this.profileForm = this.fb.group({
-      fullName: [userData?.name || '', [Validators.required]],
-      email: [{ value: userData?.email || '', disabled: true }],
-      phoneNumber: [userData?.phone || userData?.phoneNumber || ''],
-      photoURL: [userData?.photoURL || ''],
+      fullName: ['', [Validators.required]],
+      email: [{ value: '', disabled: true }],
+      phoneNumber: [''],
+      photoURL: [''],
       language: [localStorage.getItem('selectedLanguage') || 'en']
     });
+  }
 
-    // ✅ Always load latest from Firebase
-    await this.loadProfileFromFirebase();
+  ngOnInit() {
+    // ✅ keep ngOnInit sync
+    this.initProfile();
 
-    // Subscribe to login success
     this.subScription = this.commonService.loginSuccess$.subscribe(async (isLoggedIn) => {
       if (isLoggedIn) {
         const newUser = this.getStoredUser();
@@ -73,7 +69,31 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ Get userData from storage (string or object)
+  private async initProfile() {
+    const userData: any = this.getStoredUser();
+
+    // ✅ safely call API only if uid exists
+    let pUser: any = null;
+    if (userData?.uid) {
+      try {
+        pUser = await this.userService.getUserById(userData.uid);
+      } catch (e) {
+        console.warn('getUserById failed', e);
+      }
+    }
+
+    // ✅ now patch form
+    this.profileForm.patchValue({
+      fullName: userData?.name || pUser?.name || '',
+      email: userData?.email || pUser?.email || '',
+      phoneNumber: userData?.phone || userData?.phoneNumber || pUser?.phone || '',
+      photoURL: userData?.photoURL || pUser?.photoURL || '',
+      language: localStorage.getItem('selectedLanguage') || 'en'
+    });
+
+    await this.loadProfileFromFirebase();
+  }
+
   private getStoredUser(): StoredUser {
     const raw = this.storageService.getItem('userData');
     if (!raw) return {};
@@ -83,20 +103,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return raw as StoredUser;
   }
 
-  // ✅ Get fresh idToken (your old one may be expired)
   private async getFreshIdToken(): Promise<string | null> {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return null;
-      return await user.getIdToken(true); // force refresh
+      return await user.getIdToken(true);
     } catch (e) {
       console.error('getFreshIdToken error', e);
       return null;
     }
   }
 
-  // ✅ Load user profile from RTDB
   async loadProfileFromFirebase() {
     try {
       const user = this.getStoredUser();
@@ -124,7 +142,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
           language: dbUser.language || this.profileForm.get('language')?.value
         });
 
-        // ✅ Keep local storage synced too
         this.storageService.setItem('userData', {
           ...user,
           name: dbUser.name ?? user.name,
@@ -139,7 +156,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ Save profile changes to Firebase + local
   async saveProfile() {
     if (this.profileForm.invalid) {
       this.toastService.showToast('Please enter name', ToastType.ERROR);
@@ -161,7 +177,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
       const val = this.profileForm.getRawValue();
 
-      // ✅ IMPORTANT: Use same keys in DB (name, phone)
       const payload = {
         name: val.fullName || '',
         phone: val.phoneNumber || '',
@@ -182,12 +197,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
       if (!res.ok) {
         const errText = await res.text();
-        console.error('Firebase update failed:', errText);
         this.toastService.showToast(errText, ToastType.ERROR);
         return;
       }
 
-      // ✅ Update local storage
       this.storageService.setItem('userData', {
         ...stored,
         name: payload.name,
@@ -196,8 +209,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       });
 
       localStorage.setItem('selectedLanguage', payload.language);
-
       this.toastService.showToast('Profile updated successfully!', ToastType.SUCCESS);
+
     } catch (err: any) {
       console.error('saveProfile error', err);
       this.toastService.showToast(err?.message || 'Update failed', ToastType.ERROR);
@@ -213,9 +226,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.subScription = null;
   }
 
-  logout() {
-    // implement as your app needs
-  }
-
-  changeProfilePicture(){}
+  logout() {}
+  changeProfilePicture() {}
 }

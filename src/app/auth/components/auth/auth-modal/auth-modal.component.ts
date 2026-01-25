@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { RAuthService } from 'src/app/services/r-auth.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { UserService } from 'src/app/services/user.service';
 import { ToastType } from 'src/app/shared/enums/common.enum';
 import { constants } from 'src/app/shared/utils/constants';
 
@@ -27,7 +28,8 @@ export class AuthModalComponent implements OnInit {
     private authService: RAuthService,
     private toastService: ToastService,
     private storageService: StorageService,
-    private modalCtrl : ModalController
+    private modalCtrl : ModalController,
+    private userService : UserService
   ) { }
 
   ngOnInit() {
@@ -56,43 +58,53 @@ export class AuthModalComponent implements OnInit {
   callDetailUserApi() {
     this.submitted = true;
 
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     this.isLoading = true;
 
-    const email = this.loginForm.value.email;
-    const password = this.loginForm.value.password;
+    const { email, password } = this.loginForm.value;
 
     this.authService.loginWithEmail(email, password)
-      .then(async res => {
-        this.isLoading = false;
-        this.toastService.showToast('Login successful...', ToastType.SUCCESS);
-        console.log('Firebase login success:', res);
+      .then(async (res) => {
+        try {
+          // ✅ Wait for token
+          const idToken = await res.user?.getIdToken();
 
-        // Get the idToken
-        const idToken = await res.user?.getIdToken();
+          // ✅ Wait for user (and require it)
+          if (!res?.user?.uid) throw new Error('UID missing');
 
-        // Save user data + token to local storage
-        const userData = {
-          uid: res.user?.uid,
-          email: res.user?.email,
-          name: res.user?.displayName,
-          photoURL: res.user?.photoURL,
-          emailVerified: res.user?.emailVerified,
-          loginTime: new Date().toISOString(),
-          idToken: idToken // ✅ Save the token
-        };
+          const pUser = await this.userService.getUserById(res.user.uid);
 
-        this.storageService.setItem('userData', userData);
-        this.storageService.setItem('isLoggedIn', true);
-        this.storageService.setItem(constants.Started, true);
+          // ✅ If API returns empty, stop
+          if (!pUser) throw new Error('User profile not found');
 
-        // Navigate to main page
-        this.modalCtrl.dismiss(null, 'success');
+          // ✅ Only now continue
+          const userData = {
+            uid: res.user.uid,
+            email: res.user.email,
+            name: pUser?.name || res.user.displayName,
+            photoURL: res.user.photoURL,
+            emailVerified: res.user.emailVerified,
+            loginTime: new Date().toISOString(),
+            idToken,
+          };
+
+          this.storageService.setItem('userData', userData);
+          this.storageService.setItem('isLoggedIn', true);
+          this.storageService.setItem(constants.Started, true);
+
+          this.toastService.showToast('Login successful...', ToastType.SUCCESS);
+          this.modalCtrl.dismiss(null, 'success');
+        } catch (err: any) {
+          // ✅ If getUserById fails, DO NOT proceed
+          console.error('Login ok, but getUserById/token failed:', err);
+          this.toastService.showToast(err?.message || 'Unable to load user profile', ToastType.ERROR);
+          return; // stops here
+        } finally {
+          this.isLoading = false;
+        }
       })
-      .catch(err => {
+      .catch((err) => {
         this.isLoading = false;
         console.error('Firebase login error:', err);
         this.toastService.showToast('Login error', ToastType.ERROR);

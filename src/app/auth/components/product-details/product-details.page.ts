@@ -31,23 +31,15 @@ export class ProductDetailsPage implements OnInit {
   // Modal states
   isActionSheetOpen = false;
   isRatingModalOpen = false;
-  isCommentsModalOpen = false;
   selectedRating = 0;
 
-  // Action buttons for action sheet
+  // ✅ Action buttons for action sheet (only rating)
   actionButtons = [
     {
       text: 'Add Rating',
       icon: 'star',
       handler: () => {
         this.openRatingModal();
-      }
-    },
-    {
-      text: 'Add Comment',
-      icon: 'chatbubble',
-      handler: () => {
-        this.openCommentsModal();
       }
     },
     {
@@ -63,7 +55,6 @@ export class ProductDetailsPage implements OnInit {
     private db: AngularFireDatabase,
     private commonService: CommonService,
     private modalCtrl: ModalController,
-
     private toastController: ToastController
   ) {
     const navigation = this.router.getCurrentNavigation();
@@ -72,16 +63,22 @@ export class ProductDetailsPage implements OnInit {
 
   async ngOnInit() {
     this.userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
     if (this.userData) {
       this.currentUserId = this.userData.uid;
       this.checkIfFollowing();
       this.checkIfFavorite();
+
       this.productUser = await this.getSingleUser(this.product.user.uid) as ProductUser;
       console.log('Product user:', this.productUser);
 
       this.calculateAverageRating();
       this.loadUserRating();
     }
+  }
+
+  trackByComment(index: number, item: any) {
+    return item?.createdAt || index;
   }
 
   async getSingleUser(userId: string): Promise<ProductUser | null> {
@@ -92,10 +89,12 @@ export class ProductDetailsPage implements OnInit {
 
       const url = `${this.FIREBASE_DB_URL}/users/${userId}.json?auth=${idToken}`;
       const res = await fetch(url);
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Failed to fetch user: ${errorText}`);
       }
+
       const user = await res.json();
       console.log('Single user:', user);
       return user;
@@ -206,10 +205,7 @@ export class ProductDetailsPage implements OnInit {
       const productId = this.product.createdAt;
       const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
 
-      const res = await fetch(url, {
-        method: 'DELETE'
-      });
-
+      const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to remove favorite');
 
       this.isFavorite = false;
@@ -234,6 +230,7 @@ export class ProductDetailsPage implements OnInit {
     try {
       const targetUserId = this.product.user.uid;
       if (this.currentUserId === targetUserId) return;
+
       const time = Date.now();
       const updates: any = {};
       updates[`following/${this.currentUserId}/${targetUserId}`] = { followedAt: time };
@@ -269,17 +266,19 @@ export class ProductDetailsPage implements OnInit {
     if (!userData?.uid) return;
 
     this.checkIfFollowing();
-    const owner =  await this.getSingleUser(this.product.user.uid) as ProductUser;
+
+    const owner = await this.getSingleUser(this.product.user.uid) as ProductUser;
     const currentUser = await this.getSingleUser(userData.uid) as ProductUser;
 
-    const currentUserName = currentUser.name || 'User';
-    const ownerName = owner.name || 'User';
+    const currentUserName = currentUser?.name || 'User';
+    const ownerName = owner?.name || 'User';
 
     const roomId = this.getRoomId(currentUser.uid, owner.uid, String(this.product.createdAt));
     const roomRef = this.db.database.ref(`/chatRooms/${roomId}`);
     const snapshot = await roomRef.get();
 
     let chatRoom: any;
+
     if (!snapshot.exists()) {
       chatRoom = {
         id: roomId,
@@ -301,11 +300,13 @@ export class ProductDetailsPage implements OnInit {
     this.navCtrl.navigateForward(['/chat'], { state: { chatRoom } });
   }
 
-  // ------------------- MODAL CONTROLS -------------------
+  // ------------------- ACTION SHEET -------------------
 
   openActionsMenu() {
     this.isActionSheetOpen = true;
   }
+
+  // ------------------- RATING MODAL -------------------
 
   openRatingModal() {
     this.isRatingModalOpen = true;
@@ -314,14 +315,6 @@ export class ProductDetailsPage implements OnInit {
   closeRatingModal() {
     this.isRatingModalOpen = false;
     this.selectedRating = 0;
-  }
-
-  openCommentsModal() {
-    this.isCommentsModalOpen = true;
-  }
-
-  closeCommentsModal() {
-    this.isCommentsModalOpen = false;
   }
 
   // ------------------- RATING FUNCTIONS -------------------
@@ -338,9 +331,7 @@ export class ProductDetailsPage implements OnInit {
   loadUserRating() {
     if (!this.product.ratings) return;
     const userRating = this.product.ratings.find((r: any) => r.userId === this.currentUserId);
-    if (userRating) {
-      this.selectedRating = userRating.value;
-    }
+    if (userRating) this.selectedRating = userRating.value;
   }
 
   selectRating(value: number) {
@@ -351,7 +342,6 @@ export class ProductDetailsPage implements OnInit {
     const texts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
     return texts[rating] || '';
   }
-
 
   async openLoginModal() {
     const modal = await this.modalCtrl.create({
@@ -364,18 +354,11 @@ export class ProductDetailsPage implements OnInit {
       presentingElement: await this.modalCtrl.getTop(),
     });
 
-    // Present the modal
     await modal.present();
-
-    // Wait for the modal to be dismissed
-    const { data, role } = await modal.onDidDismiss();
+    const { role } = await modal.onDidDismiss();
 
     if (role === 'success') {
       this.commonService.notifyLoginSuccess();
-    } else if (role === 'warning') {
-      // this.navCtrl.navigateForward(['auth/signup']);
-    } else if (role === 'close') {
-      console.log('Login modal closed');
     }
   }
 
@@ -396,7 +379,8 @@ export class ProductDetailsPage implements OnInit {
       const userName = this.userData?.name;
       const time = Date.now();
 
-      const existingRatingIndex = this.product.ratings?.findIndex((r: any) => r.userId === userId) ?? -1;
+      const existingRatingIndex =
+        this.product.ratings?.findIndex((r: any) => r.userId === userId) ?? -1;
 
       if (existingRatingIndex >= 0) {
         this.product.ratings[existingRatingIndex].value = this.selectedRating;
@@ -434,7 +418,7 @@ export class ProductDetailsPage implements OnInit {
     return (count / this.product.ratings.length) * 100;
   }
 
-  // ------------------- COMMENT FUNCTIONS -------------------
+  // ------------------- COMMENT FUNCTIONS (INLINE) -------------------
 
   async addComment() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -446,19 +430,19 @@ export class ProductDetailsPage implements OnInit {
       console.error('No auth data available');
       return;
     }
-    if (!this.newComment.trim()) return;
+
+    if (!this.newComment?.trim()) return;
 
     try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const comment: Comment = {
         userId: userData.uid,
         userName: userData.name || 'User',
-        text: this.newComment,
+        text: this.newComment.trim(),
         createdAt: Date.now()
       };
 
       this.product.comments = this.product.comments || [];
-      this.product.comments.unshift(comment); // Add to beginning
+      this.product.comments.unshift(comment);
 
       const updates: any = {};
       updates[`products/${this.product.createdAt}/comments`] = this.product.comments;
@@ -494,5 +478,4 @@ export class ProductDetailsPage implements OnInit {
     }
     window.location.href = `tel:${phone}`;
   }
-
 }

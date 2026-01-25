@@ -57,7 +57,7 @@
   "new": "New",
   "used": "Used",
   "good": "Good",
-
+  "otp_spam_note": "If you don’t see the email, please check your Spam/Junk folder.",
   "enter_description": "Enter description",
   "select_condition": "Select condition",
 

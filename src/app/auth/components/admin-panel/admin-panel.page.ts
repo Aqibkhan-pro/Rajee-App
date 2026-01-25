@@ -43,6 +43,10 @@ export class AdminPanelPage implements OnInit {
     this.navCtrl.navigateForward(['/admin-panel/manage-products']);
   }
 
+  openRemoveProduct(){
+    this.navCtrl.navigateForward(['/admin-panel/delete-products']);
+  }
+
   // ----------------- ✅ COUNTS -----------------
 
   async loadCounts() {
