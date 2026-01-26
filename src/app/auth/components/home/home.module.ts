@@ -16,6 +16,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { SharedModule } from 'src/app/shared/shared-module';
 import { IsArabicPipe } from 'src/app/shared/is-arabic.pipe';
 import { PoliciesComponent } from './policies/policies.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   imports: [
@@ -37,7 +38,8 @@ import { PoliciesComponent } from './policies/policies.component';
     ChatComponent,
     ChatInboxComponent,
     ProfileComponent,
-    PoliciesComponent
+    PoliciesComponent,
+    AboutComponent
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
 })

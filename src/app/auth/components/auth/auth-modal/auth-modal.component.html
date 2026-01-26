@@ -50,27 +50,34 @@
           <p *ngIf="email?.errors?.email" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'email_invalid' | translate }}</p>
         </ion-text>
 
-        <!-- Password -->
-        <ion-list class="text-start">
-          <ion-item class="custom-input mt-8 input-item" lines="none">
-            <ion-icon
-              slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
-              src="assets/svg/lock.svg"
-              class="text-20">
-            </ion-icon>
-            <ion-input
-              type="password"  style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
-              placeholder="{{ 'password_placeholder' | translate }}"
-              formControlName="password"
-              [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
-            </ion-input>
-            <ion-icon
-              slot="{{ selectedLanguage=='en' ? 'end':'start' }}"
-              src="assets/svg/view.svg"
-              class="text-20">
-            </ion-icon>
-          </ion-item>
-        </ion-list>
+      <!-- Password -->
+<ion-list class="text-start">
+  <ion-item class="custom-input mt-8 input-item" lines="none">
+    <ion-icon
+      [slot]="selectedLanguage == 'en' ? 'start' : 'end'"
+      src="assets/svg/lock.svg"
+      class="text-20">
+    </ion-icon>
+
+    <ion-input
+      [type]="showPassword ? 'text' : 'password'"
+      style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
+      [placeholder]="'password_placeholder' | translate"
+      formControlName="password"
+      [style.text-align]="selectedLanguage == 'en' ? 'start' : 'end'">
+    </ion-input>
+
+    <!-- 👁 toggle -->
+    <ion-icon
+      [slot]="selectedLanguage == 'en' ? 'end' : 'start'"
+      [src]="showPassword ? 'assets/svg/hide.svg' : 'assets/svg/view.svg'"
+      class="text-20"
+      style="cursor: pointer;"
+      (click)="togglePassword()">
+    </ion-icon>
+  </ion-item>
+</ion-list>
+
 
         <ion-text color="danger" *ngIf="submitted && password?.errors">
           <p *ngIf="password?.errors?.required" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'password_required' | translate }}</p>

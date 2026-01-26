@@ -236,7 +236,7 @@ export class AddProductPage implements OnInit {
     this.applyDistricts(defaultProvince, true);
 
     // ✅ location on load
-    await this.getCurrentLocation();
+    // await this.getCurrentLocation();
   }
 
   refreshConditions() {
@@ -409,7 +409,7 @@ export class AddProductPage implements OnInit {
         provinceName,
         districtName,
 
-        location: this.productLocation || {},
+        // location: this.productLocation || {},
         createdAt: Date.now(),
       };
 
@@ -486,7 +486,7 @@ export class AddProductPage implements OnInit {
     modal.onDidDismiss().then(async (result) => {
       if (result?.data) {
         this.productLocation = result.data;
-        await this.getAddressFromCoordinatesOSM(this.productLocation.lat, this.productLocation.lng);
+        // await this.getAddressFromCoordinatesOSM(this.productLocation.lat, this.productLocation.lng);
       }
     });
 

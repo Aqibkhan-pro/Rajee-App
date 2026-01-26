@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MenuController, ModalController, NavController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -44,7 +44,8 @@ export class HomePage implements OnInit {
     private modalCtrl: ModalController,
     private translate: TranslateService,
     private commonService: CommonService,
-    private userService: UserService
+    private userService: UserService,
+    private cdr : ChangeDetectorRef
   ) { }
 
   async ngOnInit() {
@@ -71,6 +72,21 @@ export class HomePage implements OnInit {
       return {};
     }
   }
+
+  isMenuOpen = false;
+
+async onMenuOpened() {
+  this.isMenuOpen = true;
+  await this.refreshUserFromUserService();
+  this.cdr.detectChanges();
+  console.log('Menu OPEN ✅');
+}
+
+onMenuClosed() {
+  this.isMenuOpen = false;
+  console.log('Menu CLOSED ✅');
+}
+
 
   private resetUserState() {
     this.userName = 'Guest';
@@ -119,6 +135,12 @@ export class HomePage implements OnInit {
       this.userName = user?.name || local?.name || 'User';
       this.userEmail = user?.email || local?.email || '';
 
+      let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+      userData.name = this.userName || '';
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+
       // ✅ optional sync localStorage
       localStorage.setItem(
         'userData',
@@ -156,7 +178,8 @@ export class HomePage implements OnInit {
 
     switch (item) {
       case 'profile':
-        // this.navCtrl.navigateForward(['/profile']);
+        this.navCtrl.navigateForward(['main/profile']);
+        this.selectTab('profile');
         break;
 
       case 'admin-panel':
@@ -174,7 +197,7 @@ export class HomePage implements OnInit {
         break;
 
       case 'about':
-        // this.navCtrl.navigateForward(['/about']);
+        this.navCtrl.navigateForward(['/about']);
         break;
 
       case 'help':

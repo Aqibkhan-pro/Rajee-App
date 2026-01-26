@@ -1,0 +1,480 @@
+<ion-header class="ion-no-border">
+  <ion-buttons>
+    <ion-back-button></ion-back-button>
+    </ion-buttons>
+  <ion-toolbar>
+    <ion-title>{{ lang === 'en' ? 'Safety Center' : 'مركز الأمان' }}</ion-title>
+
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="safety-page" [class.rtl]="lang === 'ar'">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">Rajee • Safety Center</div>
+
+    <h1 class="hero-title">
+      {{ lang === 'en' ? 'Safety Center' : 'مركز الأمان' }}
+    </h1>
+
+    <p class="hero-subtitle">
+      {{
+        lang === 'en'
+          ? 'Guidelines, reporting channels, and protection policies to keep the Rajee community safe.'
+          : 'إرشادات وقنوات الإبلاغ وسياسات الحماية للحفاظ على أمان مجتمع راجي.'
+      }}
+    </p>
+
+    <div class="hero-meta">
+      <span class="dot"></span>
+      <span>{{ lang === 'en' ? 'Last updated' : 'آخر تحديث' }}: <strong>—</strong></span>
+    </div>
+  </div>
+
+  <!-- QUICK NAV -->
+  <ion-card class="toc-card">
+    <ion-card-header>
+      <ion-card-title>{{ lang === 'en' ? 'Quick Navigation' : 'روابط سريعة' }}</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-list lines="none" class="toc-list">
+        <ion-item button detail="false" (click)="scrollTo('human')">
+          <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
+          <ion-label>{{ lang === 'en' ? 'Human Exploitation' : 'الاستغلال البشري' }}</ion-label>
+        </ion-item>
+
+        <ion-item button detail="false" (click)="scrollTo('harassment')">
+          <ion-icon name="hand-left-outline" slot="start"></ion-icon>
+          <ion-label>{{ lang === 'en' ? 'Harassment / Abuse' : 'التحرش أو الإساءة' }}</ion-label>
+        </ion-item>
+
+        <ion-item button detail="false" (click)="scrollTo('child')">
+          <ion-icon name="happy-outline" slot="start"></ion-icon>
+          <ion-label>{{ lang === 'en' ? 'Child Protection' : 'حماية الطفل' }}</ion-label>
+        </ion-item>
+
+        <ion-item button detail="false" (click)="scrollTo('women')">
+          <ion-icon name="woman-outline" slot="start"></ion-icon>
+          <ion-label>{{ lang === 'en' ? 'Protecting Girls & Women' : 'حماية الفتيات والنساء' }}</ion-label>
+        </ion-item>
+
+        <ion-item button detail="false" (click)="scrollTo('fraud')">
+          <ion-icon name="receipt-outline" slot="start"></ion-icon>
+          <ion-label>{{ lang === 'en' ? 'Fraud Protection' : 'الحماية من الاحتيال' }}</ion-label>
+        </ion-item>
+      </ion-list>
+
+      <div class="toc-tip">
+        {{
+          lang === 'en'
+            ? 'Tip: Use the report option inside ads and messages.'
+            : 'نصيحة: استخدم خيار الإبلاغ داخل الإعلان والرسائل.'
+        }}
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- CONTENT -->
+  <ng-container *ngIf="lang === 'en'">
+    <!-- Human -->
+    <ion-card id="human" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🛡️</div>
+          <div>
+            <ion-card-title>Protection from Human Exploitation</ion-card-title>
+            <ion-card-subtitle>Human Trafficking, Organ Trafficking</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>
+          At Rajee, we work with the Human Rights Commission in the Kingdom of Saudi Arabia
+          (<a href="https://www.hrc.gov.sa" target="_blank" rel="noopener">hrc.gov.sa</a>)
+          to combat human trafficking, protect the rights of migrant workers, and provide necessary technical,
+          preventative, and awareness-raising resources, as well as assistance to victims of human trafficking.
+        </p>
+
+        <p>
+          We do not tolerate the exploitation of our platform for any purposes that violate local and international
+          human rights laws. The Kingdom of Saudi Arabia prohibits all forms of human trafficking, as defined in the
+          Palermo Protocol, in accordance with international and regional standards.
+        </p>
+
+        <div class="callout danger">
+          <div class="callout-title">Zero tolerance</div>
+          <p>
+            When we detect content that violates human rights laws, we may refer it to the relevant authorities and
+            suspend the offending user’s account.
+          </p>
+        </div>
+
+        <h3>How to Report Inappropriate Content</h3>
+        <ol>
+          <li>Report the published ad from within the ad page.</li>
+          <li>Report via <strong>"Contact Us"</strong>.</li>
+          <li>
+            Report and contact the Human Rights Commission via email at
+            <a href="mailto:Info@ncct.gov.sa">Info@ncct.gov.sa</a>.
+          </li>
+        </ol>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Harassment -->
+    <ion-card id="harassment" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🤝</div>
+          <div>
+            <ion-card-title>Protection from Harassment or Abuse</ion-card-title>
+            <ion-card-subtitle>Racism, Hate, Threats</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>
+          The laws of the Kingdom of Saudi Arabia mandate that all state institutions treat all people fairly,
+          regardless of their religion, race, gender, or nationality. At Rajee, we do not permit any user to engage in
+          discrimination, threats, abuse, harm, or bullying, whether in published content or through private messages.
+        </p>
+
+        <h3>If you experience any abuse</h3>
+        <ul>
+          <li>Submit a report via <strong>"Contact Us"</strong>.</li>
+          <li>File a complaint against the member with the security authorities.</li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Child -->
+    <ion-card id="child" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🧒</div>
+          <div>
+            <ion-card-title>Child Protection</ion-card-title>
+            <ion-card-subtitle>Guidance aligned with KSA Child Protection Law</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>
+          At Rajee, we work with relevant authorities to guide content publishers in adhering to the Child Protection
+          Law. The law considers harassment, exploitation, bullying, offensive language, and discrimination against
+          children violations of their rights.
+        </p>
+
+        <p>
+          The law also prohibits production, publication, distribution, or possession of any material directed at
+          children that glorifies behavior contrary to Islamic law, public order, or public morals.
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">Important</div>
+          <p>
+            Users must ensure advertisements are free from content that could harm children. If violating content is
+            detected, Rajee will take necessary action.
+          </p>
+        </div>
+
+        <h3>Report & contact authorities</h3>
+        <ul>
+          <li>
+            Ministry of Human Resources and Social Development:
+            <a href="https://hrsd.gov.sa" target="_blank" rel="noopener">hrsd.gov.sa</a>
+          </li>
+          <li>
+            Human Rights Commission:
+            <a href="https://www.hrc.gov.sa" target="_blank" rel="noopener">hrc.gov.sa</a>
+          </li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Women -->
+    <ion-card id="women" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">👩</div>
+          <div>
+            <ion-card-title>Protecting Girls and Women</ion-card-title>
+            <ion-card-subtitle>Safety steps and platform tools</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>
+          Girls and women have the right to feel safe using internet technologies for commerce, shopping, and
+          communication. Rajee provides technical services that help safeguard users, such as blocking members and
+          preventing them from sending private messages.
+        </p>
+
+        <h3>To protect yourself from harassment</h3>
+        <ol>
+          <li>Do not send any private or personal content via messages.</li>
+          <li>Do not share your phone number or contact others outside Rajee.</li>
+          <li>If you feel unsafe, block the member via the block icon in messages.</li>
+          <li>If you are being harassed, report the member.</li>
+          <li>Contact us via <strong>"Contact Us"</strong>.</li>
+          <li>File a complaint with security authorities if needed.</li>
+        </ol>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Fraud -->
+    <ion-card id="fraud" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🧾</div>
+          <div>
+            <ion-card-title>Fraud Protection</ion-card-title>
+            <ion-card-subtitle>How we reduce scams + how you can stay safe</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>
+          Rajee strives to create a safe and fraud-free environment by preventing link sharing in ads/replies/messages,
+          warning users against communicating outside the platform, and providing reporting tools across ads, chats,
+          and ratings.
+        </p>
+
+        <h3>Ways to Avoid Fraud</h3>
+        <ul>
+          <li>Search the other party’s number in the “Suspended Numbers” list on Rajee.</li>
+          <li>Do transactions face-to-face in a public, safe place.</li>
+          <li>Use “Rajee Escrow” if the transaction is not face-to-face.</li>
+          <li>Do not advertise a product you do not own.</li>
+          <li>Do not market job/commission offers that could be scams.</li>
+          <li>Never open links sent outside Rajee.</li>
+          <li>Do not share personal data.</li>
+          <li>Never share verification codes or passwords.</li>
+        </ul>
+
+        <h3>Ways to Report Fraud</h3>
+        <ol>
+          <li>Report via <strong>"Contact Us"</strong>.</li>
+          <li>Go to the nearest police station and file a complaint.</li>
+        </ol>
+
+        <div class="action-row">
+          <ion-button expand="block" href="mailto:Info@ncct.gov.sa">
+            Email: Info@ncct.gov.sa
+          </ion-button>
+
+          <ion-button expand="block" fill="outline" href="https://www.hrc.gov.sa" target="_blank">
+            Human Rights Commission
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <!-- Arabic Content -->
+  <ng-container *ngIf="lang === 'ar'">
+    <!-- Same sections but Arabic -->
+    <ion-card id="human" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🛡️</div>
+          <div>
+            <ion-card-title>الحماية من الاستغلال البشري</ion-card-title>
+            <ion-card-subtitle>الاتجار بالبشر، الاتجار بالأعضاء</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          في راجي، نعمل مع هيئة حقوق الإنسان في المملكة العربية السعودية
+          (<a href="https://www.hrc.gov.sa" target="_blank" rel="noopener">hrc.gov.sa</a>)
+          لمكافحة الاتجار بالبشر، وحماية حقوق العمالة الوافدة، وتوفير الموارد التقنية والوقائية والتوعوية اللازمة،
+          بالإضافة إلى تقديم المساعدة لضحايا الاتجار بالبشر.
+        </p>
+
+        <p>
+          لا نتسامح مع استخدام منصتنا لأي أغراض تنتهك قوانين حقوق الإنسان المحلية والدولية. تحظر المملكة العربية
+          السعودية جميع أشكال الاتجار بالبشر كما هو مُعرّف في بروتوكول باليرمو، وفقاً للمعايير الدولية والإقليمية.
+        </p>
+
+        <div class="callout danger">
+          <div class="callout-title">عدم تسامح</div>
+          <p>
+            عندما نكتشف محتوى ينتهك قوانين حقوق الإنسان، لا نتردد في إحالة المحتوى للجهات المعنية وتعليق حساب المستخدم المخالف.
+          </p>
+        </div>
+
+        <h3>كيفية الإبلاغ عن محتوى غير لائق</h3>
+        <ol>
+          <li>الإبلاغ عن الإعلان المنشور من داخل صفحة الإعلان.</li>
+          <li>الإبلاغ عبر <strong>"اتصل بنا"</strong>.</li>
+          <li>
+            الإبلاغ والتواصل عبر البريد الإلكتروني:
+            <a href="mailto:Info@ncct.gov.sa">Info@ncct.gov.sa</a>
+          </li>
+        </ol>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card id="harassment" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🤝</div>
+          <div>
+            <ion-card-title>الحماية من التحرش أو الإساءة</ion-card-title>
+            <ion-card-subtitle>العنصرية، الكراهية، والتهديدات</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          توجب قوانين المملكة العربية السعودية على جميع مؤسسات الدولة معاملة الناس بعدل، بغض النظر عن دينهم أو عرقهم أو جنسهم
+          أو جنسيتهم. في منصة راجي، لا نسمح بأي تمييز أو تهديد أو إساءة أو تنمر، سواء في المحتوى المنشور أو عبر الرسائل الخاصة.
+        </p>
+
+        <h3>إذا تعرضت لأي إساءة</h3>
+        <ul>
+          <li>تقديم بلاغ عبر <strong>"اتصل بنا"</strong>.</li>
+          <li>تقديم شكوى ضد العضو لدى السلطات الأمنية.</li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card id="child" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🧒</div>
+          <div>
+            <ion-card-title>حماية الطفل</ion-card-title>
+            <ion-card-subtitle>التزام بقانون حماية الطفل في المملكة</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          نعمل مع الجهات المختصة لتوجيه ناشري المحتوى للالتزام بقانون حماية الطفل، والذي يعتبر التحرش أو الاستغلال أو التنمر
+          أو استخدام كلمات مسيئة أو التمييز ضد الأطفال انتهاكاً لحقوقهم.
+        </p>
+
+        <p>
+          كما يحظر القانون إنتاج أو نشر أو عرض أو تداول أو حيازة أي عمل موجه للأطفال يزين لهم سلوكاً منافياً للشريعة الإسلامية
+          أو النظام العام أو الآداب العامة.
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">تنبيه</div>
+          <p>
+            يجب التأكد من خلو الإعلانات من أي محتوى قد يضر بالأطفال. عند اكتشاف أي محتوى مخالف، ستتخذ راجي الإجراءات اللازمة.
+          </p>
+        </div>
+
+        <h3>الجهات المختصة</h3>
+        <ul>
+          <li>
+            وزارة الموارد البشرية والتنمية الاجتماعية:
+            <a href="https://hrsd.gov.sa" target="_blank" rel="noopener">hrsd.gov.sa</a>
+          </li>
+          <li>
+            هيئة حقوق الإنسان:
+            <a href="https://www.hrc.gov.sa" target="_blank" rel="noopener">hrc.gov.sa</a>
+          </li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card id="women" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">👩</div>
+          <div>
+            <ion-card-title>حماية الفتيات والنساء</ion-card-title>
+            <ion-card-subtitle>خطوات السلامة + أدوات المنصة</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          للنساء والفتيات الحق في الشعور بالأمان أثناء استخدام تقنيات الإنترنت لأغراض التجارة والتسوق والتواصل. نوفر خدمات تقنية
+          تحمي المستخدم، مثل حظر العضو ومنعه من التواصل عبر الرسائل الخاصة.
+        </p>
+
+        <h3>لحماية نفسك من التحرش</h3>
+        <ol>
+          <li>لا ترسل أي محتوى خاص أو شخصي عبر الرسائل الخاصة أو العامة.</li>
+          <li>لا تعطِ رقم هاتفك للآخرين ولا تتواصل معهم خارج منصة راجي.</li>
+          <li>إذا شعرت بعدم الأمان تجاه شخص ما، قم بحظره عبر أيقونة الحظر.</li>
+          <li>إذا كنت تتعرض للتحرش، قم بالإبلاغ عن العضو.</li>
+          <li>اتصل بنا عبر <strong>"اتصل بنا"</strong>.</li>
+          <li>قدم شكوى لدى السلطات الأمنية عند الحاجة.</li>
+        </ol>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card id="fraud" class="section-card">
+      <ion-card-header>
+        <div class="section-head">
+          <div class="sec-icon">🧾</div>
+          <div>
+            <ion-card-title>الحماية من الاحتيال</ion-card-title>
+            <ion-card-subtitle>كيف نحمي المستخدمين + كيف تتجنب الاحتيال</ion-card-subtitle>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          نسعى لخلق بيئة آمنة وخالية من الاحتيال من خلال منع إرسال الروابط داخل الإعلانات/الردود/الرسائل، وتحذير المستخدمين من
+          التواصل خارج المنصة، وتوفير أدوات الإبلاغ داخل الإعلان والرسائل وتقييم العضو و"اتصل بنا".
+        </p>
+
+        <h3>طرق تجنب الاحتيال</h3>
+        <ul>
+          <li>ابحث عن رقم الطرف الآخر في قائمة "الأرقام المعلقة" على منصة راجي.</li>
+          <li>إتمام المعاملات وجهًا لوجه في مكان عام وآمن.</li>
+          <li>استخدام خدمة "الضمان في راجي" عند عدم إمكانية البيع وجهًا لوجه.</li>
+          <li>لا تعلن عن سلعة لا تملكها.</li>
+          <li>لا تسوق لوعود وظائف/عمولات مشبوهة.</li>
+          <li>لا تفتح روابط خارج منصة راجي.</li>
+          <li>لا تقدم بياناتك الشخصية.</li>
+          <li>لا تشارك رموز التحقق أو كلمات المرور.</li>
+        </ul>
+
+        <h3>طرق الإبلاغ عن الاحتيال</h3>
+        <ol>
+          <li>الإبلاغ عبر <strong>"اتصل بنا"</strong>.</li>
+          <li>التوجه لأقرب مركز شرطة وتقديم شكوى.</li>
+        </ol>
+
+        <div class="action-row">
+          <ion-button expand="block" href="mailto:Info@ncct.gov.sa">
+            Info@ncct.gov.sa
+          </ion-button>
+
+          <ion-button expand="block" fill="outline" href="https://www.hrc.gov.sa" target="_blank">
+            هيئة حقوق الإنسان
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <!-- Footer -->
+  <ion-card class="footer-card">
+    <ion-card-content>
+      <h2 class="footer-title">{{ lang === 'en' ? 'Need help now?' : 'تحتاج مساعدة الآن؟' }}</h2>
+      <p class="muted">
+        {{
+          lang === 'en'
+            ? 'Use the report option in the ad/message, or contact us through the app. If you are in immediate danger, contact local authorities.'
+            : 'استخدم خيار الإبلاغ داخل الإعلان/الرسائل أو تواصل معنا عبر التطبيق. إذا كنت في خطر مباشر، تواصل مع الجهات الأمنية فورًا.'
+        }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

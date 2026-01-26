@@ -1,0 +1,162 @@
+.safety-page {
+  --padding-top: 12px;
+  --padding-bottom: 28px;
+
+  padding: 0 12px 28px;
+
+  .hero {
+    margin: 12px 0 14px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(14, 165, 233, 0.12));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    .hero-badge {
+      display: inline-block;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      font-weight: 700;
+    }
+
+    .hero-title {
+      margin: 10px 0 6px;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .hero-subtitle {
+      margin: 0;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+
+    .hero-meta {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      opacity: 0.7;
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--ion-color-success);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+      }
+    }
+  }
+
+  .toc-card {
+    border-radius: 18px;
+
+    ion-item {
+      --border-radius: 14px;
+      margin-bottom: 6px;
+    }
+
+    .toc-tip {
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+  }
+
+  .section-card {
+    border-radius: 18px;
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .sec-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.18);
+        font-size: 20px;
+      }
+    }
+
+    h3 {
+      margin: 14px 0 8px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    p,
+    li {
+      line-height: 1.7;
+    }
+
+    a {
+      font-weight: 800;
+      text-decoration: none;
+    }
+  }
+
+  .callout {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(14, 165, 233, 0.18);
+
+    .callout-title {
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    &.danger {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.18);
+    }
+  }
+
+  .action-row {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .footer-card {
+    border-radius: 18px;
+
+    .footer-title {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+  }
+
+  .muted {
+    opacity: 0.75;
+  }
+}
+
+/* RTL */
+.rtl {
+  direction: rtl;
+
+  .hero-meta {
+    flex-direction: row-reverse;
+  }
+
+  .section-head {
+    flex-direction: row-reverse;
+  }
+
+  ion-item ion-icon[slot='start'] {
+    margin-left: 10px;
+    margin-right: 0;
+  }
+}

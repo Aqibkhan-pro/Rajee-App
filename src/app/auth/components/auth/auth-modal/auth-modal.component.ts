@@ -73,16 +73,16 @@ export class AuthModalComponent implements OnInit {
           // ✅ Wait for user (and require it)
           if (!res?.user?.uid) throw new Error('UID missing');
 
-          const pUser = await this.userService.getUserById(res.user.uid);
+          // const pUser = await this.userService.getUserById(res.user.uid);
 
-          // ✅ If API returns empty, stop
-          if (!pUser) throw new Error('User profile not found');
+          // // ✅ If API returns empty, stop
+          // if (!pUser) throw new Error('User profile not found');
 
           // ✅ Only now continue
           const userData = {
             uid: res.user.uid,
             email: res.user.email,
-            name: pUser?.name || res.user.displayName,
+            name: res.user.displayName,
             photoURL: res.user.photoURL,
             emailVerified: res.user.emailVerified,
             loginTime: new Date().toISOString(),
@@ -116,8 +116,12 @@ export class AuthModalComponent implements OnInit {
     this.modalCtrl.dismiss(null, 'close');
   }
 
-  showPassword: boolean = false;
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
+
+
+showPassword = false;
+
+togglePassword() {
+  this.showPassword = !this.showPassword;
+}
+
 }

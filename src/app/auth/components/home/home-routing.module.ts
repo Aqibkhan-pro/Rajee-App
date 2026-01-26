@@ -7,6 +7,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProfileComponent } from './profile/profile.component';
 import { AuthGuard } from '../../services/auth.guard';
 import { PoliciesComponent } from './policies/policies.component';
+import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
       {
         path: 'home',
         component: DashboardComponent
+      },  {
+        path: 'about',
+        component: AboutComponent,
+        canActivate: [AuthGuard],
       },
       {
         path: 'favorites',

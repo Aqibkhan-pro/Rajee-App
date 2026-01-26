@@ -385,9 +385,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+    private getLocalUserData(): any {
+    try {
+      return JSON.parse(localStorage.getItem('userData') || '{}');
+    } catch {
+      return {};
+    }
+  }
+
   async addStory() {
     try {
-      if (this.currentUserId === 'guest') {
+      const userData = this.getLocalUserData();
+      const uid = userData?.uid;
+      const token = userData?.idToken;
+
+      if (!uid || !token) {
         this.showToast('Please login to post story', 'danger');
         return;
       }

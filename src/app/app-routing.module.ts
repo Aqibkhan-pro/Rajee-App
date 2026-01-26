@@ -3,6 +3,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { APP_ROUTES } from './shared/utils/app-routes';
 import { ChatComponent } from './auth/components/home/chat/chat.component';
 import { PoliciesComponent } from './auth/components/home/policies/policies.component';
+import { AboutComponent } from './auth/components/home/about/about.component';
 
 const routes: Routes = [
   {
@@ -24,7 +25,10 @@ const routes: Routes = [
   }, {
     path:'policies',
     component:PoliciesComponent
-  }, {
+  },  {
+    path:'about',
+    component:AboutComponent
+  },{
     path: 'product-details',
     loadChildren: () => import('./auth/components/product-details/product-details.module').then( m => m.ProductDetailsPageModule)
   },  {
