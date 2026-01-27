@@ -127,26 +127,26 @@ export class ProductDetailsPage implements OnInit {
 
   // ------------------- FAVORITE FUNCTIONS -------------------
 
-  async checkIfFavorite(): Promise<void> {
-    try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const idToken = userData?.idToken;
-      if (!idToken) throw new Error('User token not found');
+  // async checkIfFavorite(): Promise<void> {
+  //   try {
+  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  //     const idToken = userData?.idToken;
+  //     if (!idToken) throw new Error('User token not found');
 
-      const productId = this.product?.createdAt;
-      if (!productId || !this.currentUserId) return;
+  //     const productId = this.product?.createdAt;
+  //     if (!productId || !this.currentUserId) return;
 
-      const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to check favorite status');
+  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
+  //     const res = await fetch(url);
+  //     if (!res.ok) throw new Error('Failed to check favorite status');
 
-      const data = await res.json();
-      this.isFavorite = data !== null;
-      console.log('Favorite status:', this.isFavorite);
-    } catch (error) {
-      console.error('Error checking if favorite:', error);
-    }
-  }
+  //     const data = await res.json();
+  //     this.isFavorite = data !== null;
+  //     console.log('Favorite status:', this.isFavorite);
+  //   } catch (error) {
+  //     console.error('Error checking if favorite:', error);
+  //   }
+  // }
 
   async toggleFavorite() {
     if (this.isFavorite) {
@@ -156,65 +156,65 @@ export class ProductDetailsPage implements OnInit {
     }
   }
 
-  async addFavorite() {
-    try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const idToken = userData?.idToken;
-      if (!idToken) throw new Error('User token not found');
+  // async addFavorite() {
+  //   try {
+  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  //     const idToken = userData?.idToken;
+  //     if (!idToken) throw new Error('User token not found');
 
-      const productId = this.product.createdAt;
-      const time = Date.now();
+  //     const productId = this.product.createdAt;
+  //     const time = Date.now();
 
-      const favoriteData = {
-        productId: productId,
-        userId: this.currentUserId,
-        addedAt: time,
-        product: {
-          title: this.product.title,
-          description: this.product.description,
-          price: this.product.price,
-          image: this.product.image,
-          createdAt: this.product.createdAt,
-          user: this.product.user
-        }
-      };
+  //     const favoriteData = {
+  //       productId: productId,
+  //       userId: this.currentUserId,
+  //       addedAt: time,
+  //       product: {
+  //         title: this.product.title,
+  //         description: this.product.description,
+  //         price: this.product.price,
+  //         image: this.product.image,
+  //         createdAt: this.product.createdAt,
+  //         user: this.product.user
+  //       }
+  //     };
 
-      const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(favoriteData)
-      });
+  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
+  //     const res = await fetch(url, {
+  //       method: 'PUT',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(favoriteData)
+  //     });
 
-      if (!res.ok) throw new Error('Failed to add favorite');
+  //     if (!res.ok) throw new Error('Failed to add favorite');
 
-      this.isFavorite = true;
-      await this.presentToast('Added to favorites', 'success');
-    } catch (error) {
-      console.error('Error adding favorite:', error);
-      await this.presentToast('Failed to add favorite', 'danger');
-    }
-  }
+  //     this.isFavorite = true;
+  //     await this.presentToast('Added to favorites', 'success');
+  //   } catch (error) {
+  //     console.error('Error adding favorite:', error);
+  //     await this.presentToast('Failed to add favorite', 'danger');
+  //   }
+  // }
 
-  async removeFavorite() {
-    try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const idToken = userData?.idToken;
-      if (!idToken) throw new Error('User token not found');
+  // async removeFavorite() {
+  //   try {
+  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  //     const idToken = userData?.idToken;
+  //     if (!idToken) throw new Error('User token not found');
 
-      const productId = this.product.createdAt;
-      const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
+  //     const productId = this.product.createdAt;
+  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
 
-      const res = await fetch(url, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to remove favorite');
+  //     const res = await fetch(url, { method: 'DELETE' });
+  //     if (!res.ok) throw new Error('Failed to remove favorite');
 
-      this.isFavorite = false;
-      await this.presentToast('Removed from favorites', 'success');
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-      await this.presentToast('Failed to remove favorite', 'danger');
-    }
-  }
+  //     this.isFavorite = false;
+  //     await this.presentToast('Removed from favorites', 'success');
+  //   } catch (error) {
+  //     console.error('Error removing favorite:', error);
+  //     await this.presentToast('Failed to remove favorite', 'danger');
+  //   }
+  // }
 
   async presentToast(message: string, color: string) {
     const toast = await this.toastController.create({
@@ -478,4 +478,95 @@ export class ProductDetailsPage implements OnInit {
     }
     window.location.href = `tel:${phone}`;
   }
+
+  private getProductId(): string {
+    return String(this.product?.createdAt); // createdAt ko id use kar rahe ho
+  }
+
+  async addFavorite() {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData?.uid) {
+        await this.openLoginModal();
+        return;
+      }
+
+      const uid = this.currentUserId;
+      const productId = this.getProductId();
+      const time = Date.now();
+
+      // ✅ Sirf Product save (as per your interface)
+      const productToSave: Product = {
+        title: this.product.title,
+        price: this.product.price,
+        section: this.product.section,
+        condition: this.product.condition,
+        description: this.product.description,
+        image: this.product.image ||'',
+        user: this.product.user,
+        provinceName: this.product.provinceName,
+        contactPhone: this.product.contactPhone,
+        createdAt: this.product.createdAt,
+        images: this.product.images || [],
+        ratings: this.product.ratings || [],
+        comments: this.product.comments || [],
+      };
+
+      const updates: any = {};
+      updates[`/userFavorites/${uid}/${productId}`] = this.product;
+
+      // ✅ optional: product ke andar bhi track (kis user ne favorite kiya)
+      updates[`/productFavorites/${productId}/${uid}`] = true;
+
+      await this.db.database.ref().update(updates);
+
+      this.isFavorite = true;
+      await this.presentToast('Added to favorites', 'success');
+    } catch (error) {
+      console.error('addFavorite error:', error);
+      await this.presentToast('Failed to add favorite', 'danger');
+    }
+  }
+
+  async removeFavorite() {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData?.uid) {
+        await this.openLoginModal();
+        return;
+      }
+
+      const uid = this.currentUserId;
+      const productId = this.getProductId();
+
+      const updates: any = {};
+      updates[`/userFavorites/${uid}/${productId}`] = null;
+      updates[`/productFavorites/${productId}/${uid}`] = null; // optional
+
+      await this.db.database.ref().update(updates);
+
+      this.isFavorite = false;
+      await this.presentToast('Removed from favorites', 'success');
+    } catch (error) {
+      console.error('removeFavorite error:', error);
+      await this.presentToast('Failed to remove favorite', 'danger');
+    }
+  }
+
+  async checkIfFavorite(): Promise<void> {
+    try {
+      if (!this.currentUserId || !this.product?.createdAt) {
+        this.isFavorite = false;
+        return;
+      }
+
+      const productId = this.getProductId();
+      const ref = this.db.database.ref(`/userFavorites/${this.currentUserId}/${productId}`);
+      const snap = await ref.get();
+      this.isFavorite = snap.exists();
+    } catch (e) {
+      console.error('checkIfFavorite error:', e);
+    }
+  }
+
 }

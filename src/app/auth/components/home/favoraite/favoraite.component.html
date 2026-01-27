@@ -20,50 +20,55 @@
   <div class="card-container">
     <ion-card *ngFor="let item of filteredItems" mode="ios">
       <ion-item class="card-item" lines="none" (click)="onCardClick(item)">
-        <img [src]="item.product?.image" [alt]="item.product?.title" class="card-image" />
 
-        <ion-list class="card-details">
-          <div class="card-title">{{ item.product?.title | titlecase }}</div>
+        <img [src]="(item?.images?.[0] || item?.image || 'assets/images/img/usr.png')" [alt]="item?.title"
+          class="card-image" />
 
-          <div class="card-info">
-            <!-- Price -->
-            <span class="card-info-item-price">
+        <div class="card-details">
+
+          <div class="card-title" [attr.dir]="(item.title | isArabic) ? 'rtl' : 'ltr'"
+            [style.text-align]="(item.title | isArabic) ? 'right' : 'left'">
+            {{ item.title }}
+          </div>
+
+          <div class="card-row">
+            <div class="price-pill">
               <ion-icon name="pricetag-outline"></ion-icon>
-              <span>{{ item.product?.price }}</span>
-            </span>
+              <span style="margin-top: 6px;">{{ item.price }}</span>
+            </div>
 
-            <!-- Time -->
-            <span class="card-info-item">
+            <div class="meta">
               <ion-icon name="time-outline"></ion-icon>
-              <span>{{ item.addedAt | date: 'dd MMM yy' }}</span>
-            </span>
+              <span style="margin-top: 4px;">{{ item.time | date :'dd MMM yy' }}</span>
+            </div>
+          </div>
 
-            <!-- Location -->
-            <span class="card-info-item" style="justify-content:right">
+          <div class="card-row">
+            <div class="meta">
               <ion-icon name="location-outline"></ion-icon>
-              <span>24.56, 45.65</span>
-            </span>
+              <span *ngIf="item?.provinceName">
+                {{ selectedLanguage === 'en' ? item.provinceName?.en : item.provinceName?.ar }}
+              </span>
+
+              <span *ngIf="!item?.provinceName">N/A</span>
+
+            </div>
+
+            <div class="user">
+              <span class="initial-circle">{{ item.user?.name?.charAt(0) }}</span>
+              <span class="user-name" style="color:var(--text-black)">{{ item.user?.name }}</span>
+            </div>
           </div>
 
-          <div class="card-info">
-            <!-- User Initial -->
-            <span class="card-info-item user-initial" style="justify-content: left;">
-              <span class="initial-circle">{{ item.product?.user?.name?.charAt(0) }}</span>
-              <span>{{ item.product?.user?.name }}</span>
-            </span>
+          <!-- <div class="card-row" *ngIf="item?.comments?.length > 0">
+            <div class="meta comments">
+              <ion-icon name="chatbubbles"></ion-icon>
+              <span>{{ item?.comments?.length }}</span>
+            </div>
+          </div> -->
 
-            <!-- Remove from favorites -->
-            <span class="card-info-item" style="justify-content:right">
-              <ion-button
-                fill="clear"
-                size="small"
-                (click)="removeFavorite(item, $event)"
-                color="danger">
-                <ion-icon slot="icon-only" name="heart"></ion-icon>
-              </ion-button>
-            </span>
-          </div>
-        </ion-list>
+        </div>
+
       </ion-item>
     </ion-card>
 

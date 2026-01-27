@@ -15,6 +15,7 @@ export interface Product {
   description: string;
   image?: string;
   user: User;
+  provinceName?: string | any;
   contactPhone?: string | any;
   createdAt?: number;
   images?: string[];

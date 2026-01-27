@@ -84,8 +84,8 @@ ion-content {
 .stories-scroll {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
-  overflow-x: hidden;
+  /* flex-wrap: wrap; */
+  overflow-x: scroll;
   padding-bottom: 8px;
 
   &::-webkit-scrollbar {

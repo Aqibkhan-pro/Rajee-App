@@ -91,7 +91,7 @@ export class FavoraiteComponent implements OnInit {
       const idToken = userData?.idToken;
       if (!idToken) throw new Error('User token not found');
 
-      const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}.json?auth=${idToken}`;
+      const url = `${this.FIREBASE_DB_URL}/userFavorites/${this.currentUserId}.json?auth=${idToken}`;
 
       const res = await fetch(url);
       if (!res.ok) {
@@ -165,7 +165,7 @@ export class FavoraiteComponent implements OnInit {
       if (!idToken) throw new Error('User token not found');
 
       const productId = item.productId;
-      const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
+      const url = `${this.FIREBASE_DB_URL}/userFavorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
 
       const res = await fetch(url, {
         method: 'DELETE'
@@ -198,7 +198,7 @@ export class FavoraiteComponent implements OnInit {
     // Navigate to product details with the product data
     const navigationExtras: NavigationExtras = {
       state: {
-        product: item.product
+        product: item
       }
     };
 

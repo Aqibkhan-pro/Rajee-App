@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button style="color: var(--secondary-color) !important;"></ion-back-button>
+      <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
     </ion-buttons>
 
     <ion-title>{{ 'detail' | translate }}</ion-title>
@@ -45,7 +45,12 @@
       <!-- Location -->
       <span class="card-info-item" style="justify-content:right">
         <ion-icon name="location-outline"></ion-icon>
-        <span>24.56, 45.65</span>
+        <span *ngIf="product?.provinceName">
+          {{ selectedLanguage === 'en' ? product?.provinceName?.en : product?.provinceName?.ar }}
+        </span>
+
+        <span *ngIf="!product?.provinceName">N/A</span>
+
       </span>
     </div>
 
@@ -74,7 +79,14 @@
 
   <!-- Image + Actions -->
   <ion-list style="padding: 16px;">
-    <img [src]="product?.image || product?.images[0]" alt="Product Image" class="card-image" />
+    <ng-container *ngIf="product?.images?.length > 0; else single">
+    <ion-item *ngFor="let img of product?.images" style="--inner-padding-end: 0px; --padding-start:0px ; margin-bottom: 5px;">
+      <img [src]="img" alt="Product Images" class="card-image" />
+    </ion-item>
+  </ng-container>
+    <ng-template #single>
+      <img [src]="product?.image " alt="Product Image" class="card-image" />
+    </ng-template>
 
     <ion-button
       mode="ios"
