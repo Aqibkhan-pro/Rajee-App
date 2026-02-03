@@ -1,0 +1,282 @@
+/* ============================================= */
+/* 🎨 Category Selector Bottom Sheet - Haraj Style */
+/* ============================================= */
+
+// ✅ Animation for expand/collapse
+@keyframes expandCollapse {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 1000px;
+    opacity: 1;
+  }
+}
+
+/* ============================================= */
+/* Header */
+/* ============================================= */
+.sheet-header {
+  ion-toolbar {
+    --background: #ffffff;
+    --border-width: 0;
+    --padding-top: 8px;
+    --padding-bottom: 0;
+    --min-height: 50px;
+  }
+
+  .close-btn {
+    --color: #333333;
+    font-size: 24px;
+  }
+}
+
+.search-container {
+  padding: 0 16px 12px;
+  background: #ffffff;
+}
+
+.category-search {
+  --background: #f5f5f5;
+  --border-radius: 12px;
+  --box-shadow: none;
+  --placeholder-color: #999999;
+  --placeholder-font-weight: 400;
+  --color: #333333;
+  --icon-color: #666666;
+
+  padding: 0;
+  height: 44px;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================= */
+/* Content */
+/* ============================================= */
+.sheet-content {
+  --background: #f9f9f9;
+}
+
+.sections-header {
+  background: #f9f9f9;
+  padding: 16px 16px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sections-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #666666;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================= */
+/* Category List */
+/* ============================================= */
+.category-list {
+  background: #ffffff;
+  border-radius: 12px;
+  margin: 8px 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.category-item-wrapper {
+  position: relative;
+}
+
+/* Main category row */
+.category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: background-color 0.2s ease;
+
+  &:active {
+    background-color: #f5f5f5;
+  }
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.category-radio {
+  --color: #0a84ff;
+  --color-checked: #0a84ff;
+  margin: 0;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+.category-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.expand-icon {
+  font-size: 20px;
+  color: #999999;
+  transition: transform 0.3s ease;
+}
+
+/* ============================================= */
+/* Subcategory List (Collapsible) */
+/* ============================================= */
+.subcategory-list {
+  background: #f9f9f9;
+  border-top: 1px solid #eeeeee;
+  overflow: hidden;
+  animation: expandCollapse 0.3s ease-out;
+}
+
+.subcategory-row {
+  padding: 14px 16px 14px 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border-left: 3px solid transparent;
+
+  &:active {
+    background-color: #f0f0f0;
+  }
+
+  &.selected {
+    background-color: #e8f4ff;
+    border-left-color: #0a84ff;
+
+    .subcategory-name {
+      color: #0a84ff;
+      font-weight: 600;
+    }
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #eeeeee;
+  }
+}
+
+.subcategory-name {
+  font-size: 15px;
+  font-weight: 400;
+  color: #333333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: color 0.2s ease;
+}
+
+/* ============================================= */
+/* Divider */
+/* ============================================= */
+.divider-line {
+  height: 1px;
+  background: #eeeeee;
+  margin: 0 16px;
+
+  &:last-child {
+    display: none;
+  }
+}
+
+/* ============================================= */
+/* Empty State */
+/* ============================================= */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: #cccccc;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 16px;
+  color: #999999;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================= */
+/* Footer with Select Button */
+/* ============================================= */
+.sheet-footer {
+  background: #ffffff;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.select-btn {
+  --background: #0a84ff;
+  --background-hover: #0077ed;
+  --background-activated: #006edb;
+  --color: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: none;
+
+  height: 50px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+
+  &:disabled {
+    --background: #e0e0e0;
+    --color: #999999;
+    opacity: 1;
+  }
+}
+
+/* ============================================= */
+/* RTL Support for Arabic */
+/* ============================================= */
+[dir='rtl'] {
+  .category-info {
+    flex-direction: row-reverse;
+  }
+
+  .subcategory-row {
+    padding: 14px 50px 14px 16px;
+    border-left: none;
+    border-right: 3px solid transparent;
+
+    &.selected {
+      border-left: none;
+      border-right-color: #0a84ff;
+    }
+  }
+
+  .expand-icon {
+    transform: scaleX(-1);
+  }
+}
+
+/* ============================================= */
+/* Smooth Transitions */
+/* ============================================= */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

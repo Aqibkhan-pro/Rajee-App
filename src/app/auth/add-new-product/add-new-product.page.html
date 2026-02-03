@@ -1,0 +1,179 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" class="back" (click)="prevStep()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>Offer Posting</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear" class="back" (click)="prevStep()">
+        Cancel
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class=" page-content">
+
+  <div class="steps-wrap" [@stepAnim]="step">
+
+    <!-- STEP 1 -->
+    <div class="step-panel" *ngIf="step === 0">
+      <ion-card class="step-card">
+        <ion-item style="margin-top: 12px; --padding-start:0px" lines="none">
+
+          <div class="images-row">
+            <div class="pick-tile" (click)="pickMultipleImages()">
+              <ion-icon name="camera-outline"></ion-icon>
+              <div class="pick-text">
+                {{ 'add_image' | translate }}<br />({{ pickedImages.length }}/{{ MAX_IMAGES }})
+              </div>
+            </div>
+
+            <div class="picked-x" *ngIf="pickedImages.length">
+              <div *ngFor="let img of pickedImages; let i = index" class="picked-card">
+                <img [src]="img.dataUrl" class="picked-image" />
+                <button type="button" class="remove-chip" (click)="removePickedImage(i)">
+                  <ion-icon name="close"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+
+        <!-- Province / Location -->
+        <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
+          <div class="select_location clickable" (click)="openLocationModal()">
+            <div class="sub_select_location">
+              <p class="location">{{ 'location' | translate }}</p>
+
+              <div class="location-row">
+                <p class="location_filled">
+                  {{ locationDisplayText }}
+                </p>
+                <ion-icon class="chev" name="chevron-forward-outline"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+
+
+        <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
+          <!-- Subject -->
+          <div class="select_location" style="margin-top: 1px;">
+            <div class="sub_select_location">
+              <p class="location">{{ 'offer_subject' | translate }}</p>
+              <ion-input [placeholder]="'offer_subject' | translate" class="change_subject"></ion-input>
+            </div>
+          </div>
+        </ion-item>
+
+        <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
+          <!-- Province -->
+         <!--  <div class="select_location" style="margin-top: 1px;">
+            <div class="sub_select_location">
+              <p class="location">{{ 'section' | translate }}</p>
+              <ion-breadcrumbs class="my-breadcrumbs">
+                <ion-breadcrumb href="#home">Home</ion-breadcrumb>
+                <ion-breadcrumb href="#electronics">Electronics</ion-breadcrumb>
+                <ion-breadcrumb href="#cameras">Cameras</ion-breadcrumb>
+                <ion-breadcrumb href="#film">Film</ion-breadcrumb>
+              </ion-breadcrumbs>
+            </div>
+          </div> -->
+          <div class="select_location clickable" (click)="openCategoryModal()">
+            <div class="sub_select_location">
+              <p class="location">{{ 'section' | translate }}</p>
+
+              <div class="location-row">
+                <p class="location_filled">{{ categoryDisplayText }}</p>
+                <ion-icon class="chev" name="chevron-forward-outline"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+
+        <div class="step-actions">
+          <ion-button expand="block" (click)="nextStep()" class="next_button">Next</ion-button>
+        </div>
+      </ion-card>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-panel" *ngIf="step === 1">
+      <ion-card class="step-card">
+        <ion-card-header>
+          <ion-card-title>Step 2</ion-card-title>
+          <ion-card-subtitle>Category & Details</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content class="step-body">
+          <ion-item>
+            <ion-label position="stacked">Category</ion-label>
+            <ion-input [(ngModel)]="model.category" placeholder="e.g. Mobiles"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Description</ion-label>
+            <ion-textarea [(ngModel)]="model.description" placeholder="Write something..." autoGrow="true">
+            </ion-textarea>
+          </ion-item>
+        </ion-card-content>
+
+        <div class="step-actions">
+          <ion-button expand="block" (click)="nextStep()">Next</ion-button>
+        </div>
+      </ion-card>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-panel" *ngIf="step === 2">
+      <ion-card class="step-card">
+        <ion-card-header>
+          <ion-card-title>Step 3</ion-card-title>
+          <ion-card-subtitle>Review</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content class="step-body">
+          <ion-list>
+            <ion-item>
+              <ion-label>
+                <h3>Name</h3>
+                <p>{{ model.name || '-' }}</p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>
+                <h3>Price</h3>
+                <p>{{ model.price ?? '-' }}</p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>
+                <h3>Category</h3>
+                <p>{{ model.category || '-' }}</p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>
+                <h3>Description</h3>
+                <p>{{ model.description || '-' }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+
+        <div class="step-actions">
+          <ion-button expand="block" (click)="save()">Save</ion-button>
+        </div>
+      </ion-card>
+    </div>
+
+  </div>
+</ion-content>

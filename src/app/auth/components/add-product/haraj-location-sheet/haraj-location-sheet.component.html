@@ -1,0 +1,33 @@
+<ion-content class="sheet-content">
+  <div class="sheet-head">
+    <div class="sheet-title">
+      <ion-button fill="clear" size="small" (click)="back()" *ngIf="step === 2">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+      <span>{{ title }}</span>
+    </div>
+
+    <ion-button fill="clear" (click)="close()">
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+  </div>
+
+  <ion-searchbar [(ngModel)]="search" placeholder="search messages"></ion-searchbar>
+
+  <ion-radio-group>
+    <ion-item
+      button
+      detail="false"
+      lines="full"
+      *ngFor="let item of items"
+      (click)="step === 1 ? selectProvince(item.key) : selectDistrict(item.key)"
+    >
+      <ion-radio slot="start" [checked]="isChecked(item.key)"></ion-radio>
+      <ion-label class="item-label">{{ labelOf(item) }}</ion-label>
+    </ion-item>
+  </ion-radio-group>
+
+  <div class="sheet-footer">
+    <ion-button expand="block" (click)="confirm()">Select</ion-button>
+  </div>
+</ion-content>

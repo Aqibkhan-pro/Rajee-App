@@ -6,12 +6,12 @@ const config: CapacitorConfig = {
   appName: 'رجيع',
   webDir: 'www',
 
-  plugins: {
-    Keyboard: {
-      resize: KeyboardResize.Ionic,
-      resizeOnFullScreen: true
-    }
-  },
+  // plugins: {
+  //   Keyboard: {
+  //     resize: KeyboardResize.Native,
+  //     resizeOnFullScreen: true
+  //   }
+  // },
 
 };
 

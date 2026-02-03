@@ -14,6 +14,7 @@ import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 import { environment } from 'src/environments/environment';
 import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 // ✅ New factory for v7+
 export function HttpLoaderFactory(http: HttpClient) {
@@ -31,6 +32,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AngularFireAuthModule, // ✅ important
     AngularFireDatabaseModule,
     AngularFireFunctionsModule,
+    BrowserAnimationsModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

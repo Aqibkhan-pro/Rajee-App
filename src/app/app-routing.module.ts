@@ -37,7 +37,7 @@ const routes: Routes = [
   },
   {
     path: 'add-product',
-    loadChildren: () => import('./auth/components/add-product/add-product.module').then( m => m.AddProductPageModule)
+    loadChildren: () => import('./auth/add-new-product/add-new-product.module').then( m => m.AddNewProductPageModule)
   },
 ];
 

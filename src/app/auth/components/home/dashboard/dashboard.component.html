@@ -10,11 +10,11 @@
     </ion-title>
 
     <ion-buttons [slot]="selectedLanguage!=='en' ? 'start': 'end'">
-      <ion-button fill="clear" (click)="toggleLayout()" style="color: var(--secondary-color)">
+      <ion-button fill="clear" (click)="toggleLayout()" style="color: var(--secondary-color); --background: var(--primary-color);">
         <ion-icon [name]="isGrid ? 'list' : 'grid'" style="color: var(--button-color) !important"></ion-icon>
       </ion-button>
 
-      <ion-button fill="clear" style="color: var(--secondary-color)">
+      <ion-button fill="clear" style="color: var(--secondary-color); --background: var(--primary-color);">
         <ion-icon name="heart" style="color: var(--button-color) !important"></ion-icon>
       </ion-button>
     </ion-buttons>

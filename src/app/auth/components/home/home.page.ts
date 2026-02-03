@@ -10,6 +10,7 @@ import { CommonService } from '../../services/common.service';
 import { UserService } from 'src/app/services/user.service';
 import { constants } from 'src/app/shared/utils/constants';
 import { AuthService } from '../../services/auth.service';
+import { Keyboard } from '@capacitor/keyboard';
 type User = {
   uid: string;
   name?: string;
@@ -251,29 +252,49 @@ onMenuClosed() {
 
   // ==============================
   // Login Modal
-  // ==============================
-  async openLoginModal() {
-    const modal = await this.modalCtrl.create({
-      component: AuthModalComponent,
-      cssClass: 'login-bottom-sheet-modal',
-      breakpoints: [0, 0.85],
-      initialBreakpoint: 0.85,
-      mode: 'ios',
-      backdropDismiss: false,
-      presentingElement: await this.modalCtrl.getTop(),
-    });
+  // ==============================import { Keyboard } from '@capacitor/keyboard';
 
-    await modal.present();
-    const { role } = await modal.onDidDismiss();
+async openLoginModal() {
+  const modal = await this.modalCtrl.create({
+    component: AuthModalComponent,
+    cssClass: 'login-bottom-sheet-modal',
 
-    if (role === 'success') {
-      // ✅ after login refresh user (admin too)
-      await this.refreshUserFromUserService();
-      this.commonService.notifyLoginSuccess();
-    } else if (role === 'close') {
-      console.log('Login modal closed');
-    }
+    // ✅ include 1 so we can open fully
+    breakpoints: [0, 0.9, 1],
+    initialBreakpoint: 0.9,
+
+    mode: 'ios',
+    backdropDismiss: false,
+
+    // presentingElement is mainly for card modals; sheet modal doesn't need it
+    // presentingElement: await this.modalCtrl.getTop(),
+  });
+
+  await modal.present();
+
+  // ✅ when keyboard opens -> open sheet fully
+  const kbShow = await Keyboard.addListener('keyboardWillShow', async () => {
+    await modal.setCurrentBreakpoint(1);
+  });
+
+  // ✅ when keyboard closes -> go back to your normal size
+  const kbHide = await Keyboard.addListener('keyboardWillHide', async () => {
+    await modal.setCurrentBreakpoint(0.9);
+  });
+
+  const { role } = await modal.onDidDismiss();
+
+  await kbShow.remove();
+  await kbHide.remove();
+
+  if (role === 'success') {
+    await this.refreshUserFromUserService();
+    this.commonService.notifyLoginSuccess();
+  } else if (role === 'close') {
+    console.log('Login modal closed');
   }
+}
+
 
   // ==============================
   // Tabs

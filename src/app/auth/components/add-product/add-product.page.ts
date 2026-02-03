@@ -1,7 +1,7 @@
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
+  IonContent,
   LoadingController,
   ModalController,
   NavController,
@@ -9,20 +9,22 @@ import {
 } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 
+import { Camera } from '@capacitor/camera';
+
 import { storage } from 'src/environments/firebase-config';
 import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
-import { Camera } from '@capacitor/camera';
 
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 
 import { UserService } from 'src/app/services/user.service';
 import { MapComponentComponent } from './map-component/map-component.component';
 import { District, Province, SAUDI_PROVINCES } from 'src/app/shared/saudi-provinces';
+import { HarajCategorySheetComponent } from './haraj-category-sheet/haraj-category-sheet.component';
 
 
 interface PickedImage {
-  dataUrl: string;  // data:image/...;base64,...
-  mimeType: string; // image/jpeg etc
+  dataUrl: string;
+  mimeType: string;
   fileName?: string;
 }
 
@@ -34,13 +36,16 @@ interface PickedImage {
   standalone: false,
 })
 export class AddProductPage implements OnInit {
-  form: FormGroup;
+  @ViewChild(IonContent, { static: false }) content?: IonContent;
 
+  currentStep = 1;
+  readonly TOTAL_STEPS = 3;
+
+  form: FormGroup;
   selectedLanguage: string = 'en';
 
-  // ✅ One picker + max 3 images
   pickedImages: PickedImage[] = [];
-  readonly MAX_IMAGES = 3;
+  readonly MAX_IMAGES = 10;
 
   productLocation: { lat: number; lng: number } | any = null;
 
@@ -49,14 +54,15 @@ export class AddProductPage implements OnInit {
   category: any[] = [];
   subCategoryOptions: Array<{ key: string; ar: string; en: string }> = [];
 
-  // ✅ City/Province + District
   provinces: Province[] = SAUDI_PROVINCES;
   districtOptions: District[] = [];
 
-  // ✅ Conditions shown in UI (translated)
   conditions: string[] = [];
 
-  // ✅ Sub Categories Map
+  // ✅ Display names for selected category/subcategory
+  selectedCategoryDisplay = '';
+  selectedSubCategoryDisplay = '';
+
   subCategoriesMap: Record<string, Array<{ key: string; ar: string; en: string }>> = {
     cars: [
       { key: 'parts', ar: 'قطع غيار وملحقات', en: 'Parts & Accessories' },
@@ -66,7 +72,6 @@ export class AddProductPage implements OnInit {
       { key: 'damaged', ar: 'سيارات مصدومه', en: 'Damaged Cars' },
       { key: 'transfer', ar: 'سيارات للتنازل', en: 'Transfer Cars' },
     ],
-
     electronics: [
       { key: 'mobiles', ar: 'جوالات', en: 'Mobiles' },
       { key: 'tablets', ar: 'تابلت', en: 'Tablets' },
@@ -81,7 +86,6 @@ export class AddProductPage implements OnInit {
       { key: 'networking', ar: 'شبكات وراوترات', en: 'Networking & Routers' },
       { key: 'printers', ar: 'طابعات وملحقاتها', en: 'Printers & Accessories' },
     ],
-
     furniture: [
       { key: 'majlis', ar: 'مجالس ومفروشات', en: 'Majlis & Upholstery' },
       { key: 'tables', ar: 'طاولات وكراسي', en: 'Tables & Chairs' },
@@ -94,7 +98,6 @@ export class AddProductPage implements OnInit {
       { key: 'kitchen', ar: 'مطابخ', en: 'Kitchens' },
       { key: 'carpets', ar: 'سجاد وستائر', en: 'Carpets & Curtains' },
     ],
-
     personal_items: [
       { key: 'watches', ar: 'ساعات', en: 'Watches' },
       { key: 'perfumes', ar: 'عطور', en: 'Perfumes' },
@@ -108,7 +111,6 @@ export class AddProductPage implements OnInit {
       { key: 'beauty', ar: 'صحة وجمال', en: 'Health & Beauty' },
       { key: 'jewelry', ar: 'ذهب ومجوهرات', en: 'Gold & Jewelry' },
     ],
-
     services: [
       { key: 'construction', ar: 'بناء ومقاولات', en: 'Construction & Contracting' },
       { key: 'ac', ar: 'تكييف وتبريد', en: 'AC & Cooling' },
@@ -120,7 +122,6 @@ export class AddProductPage implements OnInit {
       { key: 'rentals', ar: 'تاجير', en: 'Rentals' },
       { key: 'other_services', ar: 'خدمات أخرى', en: 'Other Services' },
     ],
-
     jobs: [
       { key: 'admin', ar: 'إدارية وسكرتارية', en: 'Admin & Secretary' },
       { key: 'sales', ar: 'تسويق ومبيعات', en: 'Sales & Marketing' },
@@ -140,7 +141,6 @@ export class AddProductPage implements OnInit {
       { key: 'trades', ar: 'مهن وحرف', en: 'Trades' },
       { key: 'remote', ar: 'عمل من المنزل', en: 'Work From Home' },
     ],
-
     games: [
       { key: 'console_games', ar: 'ألعاب بلايستيشن/إكس بوكس', en: 'Console Games' },
       { key: 'consoles', ar: 'أجهزة ألعاب', en: 'Gaming Consoles' },
@@ -149,7 +149,6 @@ export class AddProductPage implements OnInit {
       { key: 'tickets', ar: 'تذاكر', en: 'Tickets' },
       { key: 'other_ent', ar: 'ترفيه أخرى', en: 'Other Entertainment' },
     ],
-
     others: [{ key: 'misc', ar: 'متنوع', en: 'Miscellaneous' }],
   };
 
@@ -163,7 +162,6 @@ export class AddProductPage implements OnInit {
     private geolocation: Geolocation,
     private modalCtrl: ModalController
   ) {
-    // ✅ Your categories
     this.category = [
       { key: 'cars', ar: 'رجيع السيارات', en: 'Cars & Vehicles' },
       { key: 'electronics', ar: 'رجيع الأجهزة', en: 'Electronics & Devices' },
@@ -175,18 +173,13 @@ export class AddProductPage implements OnInit {
       { key: 'others', ar: 'قسم غير مصنف', en: 'Uncategorized / Other' },
     ];
 
-    // ✅ translated conditions
     this.refreshConditions();
 
-    // ✅ DEFAULT: first option selected
     const defaultSectionKey = this.category?.[0]?.key || '';
     const defaultCondition = this.conditions?.[0] || '';
-
-    // ✅ Province/District defaults
     const defaultProvinceKey = this.provinces?.[0]?.key || '';
     const defaultDistrictKey = this.provinces?.[0]?.districts?.[0]?.key || '';
 
-    // ✅ Phone validation (flexible): 7-15 digits, optional +
     const phoneRegex = /^\+?[0-9]{7,15}$/;
 
     this.form = this.fb.group({
@@ -199,7 +192,6 @@ export class AddProductPage implements OnInit {
       condition: [defaultCondition, Validators.required],
       description: ['', Validators.required],
 
-      // ✅ NEW City/District + Phone
       province: [defaultProvinceKey, Validators.required],
       district: [defaultDistrictKey, Validators.required],
       contactPhone: ['', [Validators.required, Validators.pattern(phoneRegex)]],
@@ -213,30 +205,110 @@ export class AddProductPage implements OnInit {
     const savedLang = localStorage.getItem('lang');
     if (savedLang) this.selectedLanguage = savedLang;
 
-    // refresh translated strings
     this.refreshConditions();
     this.setDefaultConditionIfEmpty();
 
-    // ✅ section change -> load subcats and auto-select first
     this.form.get('section')?.valueChanges.subscribe((sectionKey: string) => {
       this.applySubCategories(sectionKey, true);
     });
 
-    // ✅ init default subcats
     const defaultSection = this.form.get('section')?.value;
     this.applySubCategories(defaultSection, true);
 
-    // ✅ province change -> load districts and auto-select first
     this.form.get('province')?.valueChanges.subscribe((provinceKey: string) => {
       this.applyDistricts(provinceKey, true);
     });
 
-    // ✅ init default districts
     const defaultProvince = this.form.get('province')?.value;
     this.applyDistricts(defaultProvince, true);
+  }
 
-    // ✅ location on load
-    // await this.getCurrentLocation();
+  // ✅ NEW: Open category selector bottom sheet
+  async openCategorySelector() {
+    const modal = await this.modalCtrl.create({
+      component: HarajCategorySheetComponent,
+      breakpoints: [0, 0.5, 0.75, 1],
+      initialBreakpoint: 0.75,
+      cssClass: 'category-selector-modal',
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result?.data?.category && result?.data?.subCategory) {
+        // Update form values
+        this.form.patchValue({
+          section: result.data.category,
+          subCategory: result.data.subCategory,
+        });
+
+        // Update display names
+        this.updateCategoryDisplayNames(result.data.category, result.data.subCategory);
+      }
+    });
+
+    await modal.present();
+  }
+
+  // ✅ Helper to update display names
+  private updateCategoryDisplayNames(categoryKey: string, subCategoryKey: string) {
+    const cat = this.category.find((c) => c.key === categoryKey);
+    const subCats = this.subCategoriesMap[categoryKey] || [];
+    const subCat = subCats.find((sc) => sc.key === subCategoryKey);
+
+    if (cat) {
+      this.selectedCategoryDisplay = this.selectedLanguage === 'en' ? cat.en : cat.ar;
+    }
+
+    if (subCat) {
+      this.selectedSubCategoryDisplay = this.selectedLanguage === 'en' ? subCat.en : subCat.ar;
+    }
+  }
+
+  private getStepControls(step: number): string[] {
+    if (step === 1) return ['title', 'section', 'subCategory'];
+    if (step === 2) return ['province', 'district', 'condition', 'description'];
+    return ['contactPhone', 'price'];
+  }
+
+  private markStepTouched(step: number) {
+    const names = this.getStepControls(step);
+    for (const n of names) {
+      this.form.get(n)?.markAsTouched();
+      this.form.get(n)?.updateValueAndValidity();
+    }
+  }
+
+  private isStepValid(step: number): boolean {
+    if (step === 1) {
+      const baseValid = this.getStepControls(1).every((n) => this.form.get(n)?.valid);
+      return baseValid && this.pickedImages.length > 0;
+    }
+
+    return this.getStepControls(step).every((n) => this.form.get(n)?.valid);
+  }
+
+  async nextStep() {
+    if (!this.isStepValid(this.currentStep)) {
+      this.markStepTouched(this.currentStep);
+
+      if (this.currentStep === 1 && !this.pickedImages.length) {
+        this.showToast(this.translate.instant('please_pick_product_image'), 'danger');
+      } else {
+        this.showToast(this.translate.instant('please_fill_required_fields'), 'danger');
+      }
+      return;
+    }
+
+    if (this.currentStep < this.TOTAL_STEPS) {
+      this.currentStep++;
+      await this.content?.scrollToTop(250);
+    }
+  }
+
+  async prevStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      await this.content?.scrollToTop(250);
+    }
   }
 
   refreshConditions() {
@@ -269,7 +341,7 @@ export class AddProductPage implements OnInit {
   }
 
   private applyDistricts(provinceKey: string, autoSelectFirst: boolean) {
-    const province = this.provinces.find(p => p.key === provinceKey);
+    const province = this.provinces.find((p) => p.key === provinceKey);
     this.districtOptions = province?.districts || [];
 
     const dCtrl = this.form.get('district');
@@ -295,15 +367,15 @@ export class AddProductPage implements OnInit {
       }
 
       const result = await Camera.pickImages({
-        quality: 70,
-        limit: remainingSlots, // ✅ Android 13+ / iOS (else ignored)
+        quality: 20,
+        limit: remainingSlots,
       });
 
       const photos = (result?.photos || []).slice(0, remainingSlots);
       if (!photos.length) return;
 
       const dataUrls = await Promise.all(
-        photos.map(p => this.webPathToDataUrl(p.webPath))
+        photos.map((p) => this.webPathToDataUrl(p.webPath))
       );
 
       this.pickedImages = [
@@ -315,7 +387,6 @@ export class AddProductPage implements OnInit {
     }
   }
 
-  // ✅ Convert webPath -> dataUrl
   private async webPathToDataUrl(webPath?: string): Promise<string> {
     if (!webPath) return '';
     const res = await fetch(webPath);
@@ -337,17 +408,22 @@ export class AddProductPage implements OnInit {
   }
 
   private getProvinceName(key: string) {
-    const p = this.provinces.find(x => x.key === key);
+    const p = this.provinces.find((x) => x.key === key);
     return { en: p?.en || '', ar: p?.ar || '' };
   }
 
   private getDistrictName(provinceKey: string, districtKey: string) {
-    const p = this.provinces.find(x => x.key === provinceKey);
-    const d = p?.districts?.find(x => x.key === districtKey);
+    const p = this.provinces.find((x) => x.key === provinceKey);
+    const d = p?.districts?.find((x) => x.key === districtKey);
     return { en: d?.en || '', ar: d?.ar || '' };
   }
 
   async handleSubmit() {
+    if (this.currentStep !== this.TOTAL_STEPS) {
+      await this.nextStep();
+      return;
+    }
+
     if (this.form.invalid) {
       this.showToast(this.translate.instant('please_fill_required_fields'), 'danger');
       return;
@@ -364,7 +440,6 @@ export class AddProductPage implements OnInit {
     await loading.present();
 
     try {
-      // 1) upload images
       const imageUrls: string[] = [];
 
       for (const img of this.pickedImages) {
@@ -378,14 +453,12 @@ export class AddProductPage implements OnInit {
 
       this.form.patchValue({ images: imageUrls });
 
-      // 2) auth
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const idToken = userData?.idToken;
       if (!idToken) throw new Error('User not authenticated');
 
       const pUser: any = await this.userService.getUserById(userData.uid);
 
-      // ✅ manual phone from input (priority)
       const manualPhone = (this.form.value.contactPhone || '').trim();
 
       const provinceKey = this.form.value.province;
@@ -394,9 +467,8 @@ export class AddProductPage implements OnInit {
       const provinceName = this.getProvinceName(provinceKey);
       const districtName = this.getDistrictName(provinceKey, districtKey);
 
-      // 3) final product
       const productData = {
-        ...this.form.value, // includes section/subCategory/condition/province/district/contactPhone
+        ...this.form.value,
         user: {
           uid: userData.uid,
           name: userData.name,
@@ -404,28 +476,23 @@ export class AddProductPage implements OnInit {
           phone: manualPhone || pUser?.phone || '',
           photoURL: userData.photoURL,
         },
-
-        // ✅ save readable names too
         provinceName,
         districtName,
-
-        // location: this.productLocation || {},
         createdAt: Date.now(),
       };
 
-      // 4) save
       const productId = Date.now().toString();
       await this.saveProductToDatabase(productData, productId, idToken);
 
       this.showToast(this.translate.instant('product_posted_success'), 'success');
 
-      // reset
       this.form.reset();
       this.pickedImages = [];
       this.subCategoryOptions = [];
       this.districtOptions = [];
 
-      // set defaults again after reset
+      this.currentStep = 1;
+
       const defaultSectionKey = this.category?.[0]?.key || '';
       const defaultProvinceKey = this.provinces?.[0]?.key || '';
       const defaultDistrictKey = this.provinces?.[0]?.districts?.[0]?.key || '';
@@ -486,7 +553,6 @@ export class AddProductPage implements OnInit {
     modal.onDidDismiss().then(async (result) => {
       if (result?.data) {
         this.productLocation = result.data;
-        // await this.getAddressFromCoordinatesOSM(this.productLocation.lat, this.productLocation.lng);
       }
     });
 

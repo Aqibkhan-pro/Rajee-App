@@ -10,6 +10,8 @@ import { AddProductPage } from './add-product.page';
 import { TranslateModule } from '@ngx-translate/core';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { MapComponentComponent } from './map-component/map-component.component';
+import { HarajCategorySheetComponent } from './haraj-category-sheet/haraj-category-sheet.component';
+import { HarajLocationSheetComponent } from './haraj-location-sheet/haraj-location-sheet.component';
 
 @NgModule({
   imports: [
@@ -22,6 +24,6 @@ import { MapComponentComponent } from './map-component/map-component.component';
   ],providers: [
     Geolocation
   ],
-  declarations: [AddProductPage, MapComponentComponent]
+  declarations: [AddProductPage, MapComponentComponent ,  HarajCategorySheetComponent, HarajLocationSheetComponent]
 })
 export class AddProductPageModule {}

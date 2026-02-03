@@ -1,0 +1,94 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" class="back" (click)="back()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>
+      {{ step === 0 ? 'Select Province' : 'Select District' }}
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear" class="close" (click)="close()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="page-content" [fullscreen]="true">
+  <div class="steps-wrap" [@stepAnim]="step">
+
+    <!-- STEP 1: Provinces -->
+    <div class="step-panel" *ngIf="step === 0">
+      <ion-card class="step-card">
+
+        <div class="top">
+          <ion-searchbar
+            [(ngModel)]="searchProvince"
+            placeholder="Search province..."
+            mode="ios"
+            class="search">
+          </ion-searchbar>
+        </div>
+
+        <ion-list class="list">
+          <ion-item
+            button
+            detail="false"
+            class="row"
+            *ngFor="let p of filteredProvinces"
+            (click)="chooseProvince(p)">
+
+            <ion-label>
+              <div class="title">{{ labelProvince(p) }}</div>
+              <div class="sub">{{ p.key }}</div>
+            </ion-label>
+
+            <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
+          </ion-item>
+        </ion-list>
+
+      </ion-card>
+    </div>
+
+    <!-- STEP 2: Districts -->
+    <div class="step-panel" *ngIf="step === 1">
+      <ion-card class="step-card">
+
+        <div class="top">
+          <div class="pill" *ngIf="selectedProvince">
+            {{ labelProvince(selectedProvince) }}
+          </div>
+
+          <ion-searchbar
+            [(ngModel)]="searchDistrict"
+            placeholder="Search district..."
+            mode="ios"
+            class="search">
+          </ion-searchbar>
+        </div>
+
+        <ion-list class="list">
+          <ion-item
+            button
+            detail="false"
+            class="row"
+            *ngFor="let d of filteredDistricts"
+            (click)="selectDistrictAndClose(d)">
+
+            <ion-label>
+              <div class="title">{{ labelDistrict(d) }}</div>
+              <div class="sub">{{ d.key }}</div>
+            </ion-label>
+
+            <!-- ✅ no radio/check icon -->
+            <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
+          </ion-item>
+        </ion-list>
+
+      </ion-card>
+    </div>
+
+  </div>
+</ion-content>

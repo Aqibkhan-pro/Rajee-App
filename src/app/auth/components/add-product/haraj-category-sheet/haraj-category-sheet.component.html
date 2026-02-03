@@ -1,0 +1,94 @@
+<ion-header class="sheet-header">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" class="close-btn">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- ✅ Search bar -->
+  <div class="search-container">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearchChange($event)"
+      [placeholder]="'search_messages' | translate"
+      class="category-search"
+      mode="ios"
+    ></ion-searchbar>
+  </div>
+</ion-header>
+
+<ion-content class="sheet-content">
+  <!-- ✅ Sections header (always visible) -->
+  <div class="sections-header">
+    <h2 class="sections-title">{{ 'Sections' | translate }}</h2>
+  </div>
+
+  <!-- ✅ Category list with expandable subcategories -->
+  <div class="category-list">
+    <div
+      *ngFor="let category of filteredCategories"
+      class="category-item-wrapper"
+    >
+      <!-- ✅ Main category row (clickable to expand) -->
+      <div
+        class="category-row"
+        (click)="toggleSection(category.key)"
+      >
+        <div class="category-info">
+          <ion-radio
+            [value]="category.key"
+            [checked]="selectedCategory === category.key"
+            class="category-radio"
+          ></ion-radio>
+          <span class="category-name">{{ getCategoryName(category) }}</span>
+        </div>
+
+        <!-- ✅ Expand/collapse chevron (only if has subcategories) -->
+        <ion-icon
+          *ngIf="subCategoriesMap[category.key]?.length > 0"
+          [name]="isSectionExpanded(category.key) ? 'chevron-up' : 'chevron-down'"
+          class="expand-icon"
+        ></ion-icon>
+      </div>
+
+      <!-- ✅ Subcategories (collapsible) -->
+      <div
+        *ngIf="isSectionExpanded(category.key) && subCategoriesMap[category.key]?.length > 0"
+        class="subcategory-list"
+        [@expandCollapse]
+      >
+        <div
+          *ngFor="let subCat of getFilteredSubCategories(category.key)"
+          class="subcategory-row"
+          (click)="selectSubCategory(category.key, subCat.key)"
+          [class.selected]="selectedCategory === category.key && selectedSubCategory === subCat.key"
+        >
+          <span class="subcategory-name">{{ getSubCategoryName(subCat) }}</span>
+        </div>
+      </div>
+
+      <!-- ✅ Divider line -->
+      <div class="divider-line"></div>
+    </div>
+  </div>
+
+  <!-- ✅ Empty state when search has no results -->
+  <div *ngIf="filteredCategories.length === 0" class="empty-state">
+    <ion-icon name="search-outline" class="empty-icon"></ion-icon>
+    <p class="empty-text">{{ 'no_results_found' | translate }}</p>
+  </div>
+</ion-content>
+
+<!-- ✅ Sticky footer with Select button -->
+<ion-footer class="sheet-footer">
+  <ion-button
+    expand="block"
+    class="select-btn"
+    (click)="confirmSelection()"
+    [disabled]="!selectedCategory || !selectedSubCategory"
+  >
+    {{ 'Select' | translate }}
+  </ion-button>
+</ion-footer>
