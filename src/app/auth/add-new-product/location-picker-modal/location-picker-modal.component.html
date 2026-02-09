@@ -34,20 +34,23 @@
 
         <ion-list class="list">
           <ion-item
-            button
-            detail="false"
-            class="row"
+            detail="false" class="row"
             *ngFor="let p of filteredProvinces"
-            (click)="chooseProvince(p)">
+            (click)="chooseProvince(p)"
+          >
+            <ion-checkbox
+              slot="start"
+              mode="ios"
+              color="primary"
+              [checked]="selectedProvince?.key === p.key"
+            ></ion-checkbox>
 
-            <ion-label>
+            <ion-label class="ion-text-wrap" style="color: var(--text-black)">
               <div class="title">{{ labelProvince(p) }}</div>
-              <div class="sub">{{ p.key }}</div>
             </ion-label>
-
-            <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
           </ion-item>
         </ion-list>
+
 
       </ion-card>
     </div>
@@ -71,19 +74,20 @@
 
         <ion-list class="list">
           <ion-item
-            button
             detail="false"
             class="row"
             *ngFor="let d of filteredDistricts"
             (click)="selectDistrictAndClose(d)">
-
+            <ion-checkbox
+            slot="start"
+            mode="ios"
+            color="primary"
+            [checked]="selectedProvince?.key === d.key"
+          ></ion-checkbox>
             <ion-label>
               <div class="title">{{ labelDistrict(d) }}</div>
-              <div class="sub">{{ d.key }}</div>
             </ion-label>
 
-            <!-- ✅ no radio/check icon -->
-            <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
           </ion-item>
         </ion-list>
 

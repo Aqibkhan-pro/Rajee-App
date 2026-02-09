@@ -1,8 +1,8 @@
 :root {
-  --ion-color-primary: #0573c1;
+  --ion-color-primary: #035e9f;
   --secondary-color: #ffffff;
-  --primary-color: #0573c1;
-  --background-color: #0573c1;
+  --primary-color: #035e9f;
+  --background-color: #035e9f;
   --text-color: #ffffff;
   --btn-text-color: #4ABCFD;
   --logo-color: #ffffff;
@@ -27,10 +27,10 @@
 }
 
 .light {
-  --ion-color-primary: #0093ff;
+  --ion-color-primary: #035e9f;
   --secondary-color: #ffffff;
-  --primary-color: #0093ff;
-  --background-color: #0093ff;
+  --primary-color: #035e9f;
+  --background-color: #035e9f;
   --text-color: #ffffff;
   --btn-text-color: #4ABCFD;
   --logo-color: #ffffff;
@@ -39,6 +39,7 @@
   --theme-text-color: #ffffff;
   --button-color: #ffffff;
   --secondary-color-2: #fafafa;
+  --secondary-color-3: #e4e4e4;
   --card-border-color: #cfd3d2;
   --sub-title-color: #e2e2e2;
   --background-progress: #c8c8c8;
@@ -50,9 +51,9 @@
 }
 
 .dark {
-  --ion-color-primary: #0573c1;
-  --primary-color: #0573c1;
-  --background-color: #0573c1;
+  --ion-color-primary: #035e9f;
+  --primary-color: #035e9f;
+  --background-color: #035e9f;
   --text-color: #ffffff;
   --btn-text-color: #4ABCFD;
   --logo-color: #ffffff;
@@ -68,6 +69,7 @@
   --button-color: #ffffff;
   --secondary-color: #1e1e1e;
   --secondary-color-2: #282828;
+  --secondary-color-3: #282828;
   --text-black:#fafafa;
   --card-title:#00ba7e;
 }

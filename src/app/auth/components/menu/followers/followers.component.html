@@ -1,0 +1,118 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Followers</ion-title>
+  </ion-toolbar>
+
+  <ion-toolbar class="seg-toolbar">
+    <ion-segment [value]="selectedTab" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="followers">
+        <ion-label>Followers</ion-label>
+        <ion-badge color="primary">{{ followers?.length || 0 }}</ion-badge>
+      </ion-segment-button>
+
+      <ion-segment-button value="following">
+        <ion-label>Following</ion-label>
+        <ion-badge color="primary">{{ following?.length || 0 }}</ion-badge>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="page">
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Not logged in -->
+  <div class="empty" *ngIf="!currentUserId">
+    <ion-icon name="lock-closed-outline"></ion-icon>
+    <h3>Please login</h3>
+    <p>Login to see your followers and following list.</p>
+  </div>
+
+  <!-- FOLLOWERS -->
+  <ng-container *ngIf="currentUserId && selectedTab === 'followers'">
+
+    <ng-container *ngIf="loadingFollowers; else followersList">
+      <div class="skeleton-card" *ngFor="let x of [1,2,3,4]">
+        <div class="sk-avatar"></div>
+        <div class="sk-lines">
+          <div class="sk-line w60"></div>
+          <div class="sk-line w40"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #followersList>
+      <div class="empty" *ngIf="!followers?.length">
+        <ion-icon name="people-outline"></ion-icon>
+        <h3>No followers yet</h3>
+        <p>When someone follows you, they will appear here.</p>
+      </div>
+
+      <ion-list class="list" *ngIf="followers?.length">
+        <ion-item class="user-card" lines="none" *ngFor="let u of followers">
+          <ion-avatar slot="start" class="avatar">
+            <div class="avatar-circle">{{ getInitial(u.name) }}</div>
+          </ion-avatar>
+
+          <ion-label class="info">
+            <h2>{{ u.name }}</h2>
+            <p *ngIf="u.email">{{ u.email }}</p>
+            <p *ngIf="u.phone">{{ u.phone }}</p>
+          </ion-label>
+
+          <div slot="end" class="meta">
+            <div class="time">{{ formatTime(u.followedAt) }}</div>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ng-template>
+
+  </ng-container>
+
+  <!-- FOLLOWING -->
+  <ng-container *ngIf="currentUserId && selectedTab === 'following'">
+
+    <ng-container *ngIf="loadingFollowing; else followingList">
+      <div class="skeleton-card" *ngFor="let x of [1,2,3,4]">
+        <div class="sk-avatar"></div>
+        <div class="sk-lines">
+          <div class="sk-line w60"></div>
+          <div class="sk-line w40"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #followingList>
+      <div class="empty" *ngIf="!following?.length">
+        <ion-icon name="person-add-outline"></ion-icon>
+        <h3>Not following anyone</h3>
+        <p>When you follow someone, they will appear here.</p>
+      </div>
+
+      <ion-list class="list" *ngIf="following?.length">
+        <ion-item class="user-card" lines="none" *ngFor="let u of following">
+          <ion-avatar slot="start" class="avatar">
+            <div class="avatar-circle">{{ getInitial(u.name) }}</div>
+          </ion-avatar>
+
+          <ion-label class="info">
+            <h2>{{ u.name }}</h2>
+            <p *ngIf="u.email">{{ u.email }}</p>
+            <p *ngIf="u.phone">{{ u.phone }}</p>
+          </ion-label>
+
+          <div slot="end" class="meta">
+            <div class="time">{{ formatTime(u.followedAt) }}</div>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ng-template>
+
+  </ng-container>
+
+</ion-content>

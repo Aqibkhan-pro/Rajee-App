@@ -76,7 +76,7 @@ ion-label {
   .login-text {
     text-align: center;
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-black);
     cursor: pointer;
     transition: opacity 0.3s ease;
 
@@ -104,9 +104,10 @@ ion-item,
 ion-list,
 ion-header,
 ion-toolbar {
-  --background: var(--primary-color);
-  background: var(--primary-color);
+  --background: var(--secondary-color) !important;
+  background: var(--secondary-color) !important;
 }
+
 
 // Input Item Styles
 .input-item {
@@ -174,7 +175,8 @@ ion-button {
 
 // Custom Input Styles
 .custom-input {
-  --background: var(--secondary-color) !important;
+  --background: var(--secondary-color-3) !important;
+  background: var(--secondary-color-3) !important;
   --color: #000000 !important;
   --placeholder-color: #999;
   --placeholder-opacity: 0.8;
@@ -339,7 +341,7 @@ ion-button {
 
 .text-14 { font-size: 14px; }
 .text-16 { font-size: 16px; }
-.text-20 { font-size: 20px; }
+.text-20 { font-size: 20px; margin-right: 8px; }
 
 .text-center { text-align: center; }
 .text-start { text-align: start; }
@@ -475,4 +477,14 @@ ion-list {
   color: #ffffff;
 }
 
+.text-14{
+  color: var(--text-black);
+  font-weight: bold;
+}
 
+
+ion-button{
+  --background: var(--primary-color);
+  color: #fff;
+
+}

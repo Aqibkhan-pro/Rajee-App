@@ -4,6 +4,7 @@ import { APP_ROUTES } from './shared/utils/app-routes';
 import { ChatComponent } from './auth/components/home/chat/chat.component';
 import { PoliciesComponent } from './auth/components/home/policies/policies.component';
 import { AboutComponent } from './auth/components/home/about/about.component';
+import { FollowersComponent } from './auth/components/menu/followers/followers.component';
 
 const routes: Routes = [
   {
@@ -26,10 +27,13 @@ const routes: Routes = [
     path:'policies',
     component:PoliciesComponent
   },  {
+    path:'follow',
+    component:FollowersComponent
+  }, {
     path:'about',
     component:AboutComponent
   },{
-    path: 'product-details',
+    path: 'product-details/:id',
     loadChildren: () => import('./auth/components/product-details/product-details.module').then( m => m.ProductDetailsPageModule)
   },  {
     path: 'admin-panel',

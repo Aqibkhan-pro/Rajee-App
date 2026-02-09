@@ -16,20 +16,31 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class=" page-content">
-
+<ion-content [fullscreen]="true" class="page-content">
   <div class="steps-wrap" [@stepAnim]="step">
 
+    <!-- ===================== -->
     <!-- STEP 1 -->
+    <!-- ===================== -->
     <div class="step-panel" *ngIf="step === 0">
       <ion-card class="step-card">
-        <ion-item style="margin-top: 12px; --padding-start:0px" lines="none">
+        <!-- Hidden file input for images -->
+        <input
+          #imgInput
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          (change)="onFilesPicked($event)"
+        />
 
+        <ion-item style="margin-top: 12px; --padding-start:0px" lines="none">
           <div class="images-row">
-            <div class="pick-tile" (click)="pickMultipleImages()">
+            <div class="pick-tile" (click)="pickMultipleImages(imgInput)">
               <ion-icon name="camera-outline"></ion-icon>
               <div class="pick-text">
-                {{ 'add_image' | translate }}<br />({{ pickedImages.length }}/{{ MAX_IMAGES }})
+                {{ 'add_image' | translate }}<br />
+                ({{ pickedImages.length }}/{{ MAX_IMAGES }})
               </div>
             </div>
 
@@ -47,7 +58,7 @@
         <!-- Province / Location -->
         <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
           <div class="select_location clickable" (click)="openLocationModal()">
-            <div class="sub_select_location">
+            <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
               <p class="location">{{ 'location' | translate }}</p>
 
               <div class="location-row">
@@ -60,117 +71,271 @@
           </div>
         </ion-item>
 
-
+        <!-- Subject -->
         <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
-          <!-- Subject -->
           <div class="select_location" style="margin-top: 1px;">
-            <div class="sub_select_location">
+            <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
               <p class="location">{{ 'offer_subject' | translate }}</p>
-              <ion-input [placeholder]="'offer_subject' | translate" class="change_subject"></ion-input>
+              <ion-input
+                [(ngModel)]="model.subject"
+                [placeholder]="'offer_subject' | translate"
+                class="change_subject"
+              ></ion-input>
             </div>
           </div>
         </ion-item>
 
+        <!-- Section -->
         <ion-item style="--inner-padding-end: 0px; --padding-start:0px" lines="none">
-          <!-- Province -->
-         <!--  <div class="select_location" style="margin-top: 1px;">
-            <div class="sub_select_location">
-              <p class="location">{{ 'section' | translate }}</p>
-              <ion-breadcrumbs class="my-breadcrumbs">
-                <ion-breadcrumb href="#home">Home</ion-breadcrumb>
-                <ion-breadcrumb href="#electronics">Electronics</ion-breadcrumb>
-                <ion-breadcrumb href="#cameras">Cameras</ion-breadcrumb>
-                <ion-breadcrumb href="#film">Film</ion-breadcrumb>
-              </ion-breadcrumbs>
-            </div>
-          </div> -->
-          <div class="select_location clickable" (click)="openCategoryModal()">
-            <div class="sub_select_location">
+          <div class="select_location" style="margin-top: 1px;">
+            <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
               <p class="location">{{ 'section' | translate }}</p>
 
               <div class="location-row">
-                <p class="location_filled">{{ categoryDisplayText }}</p>
-                <ion-icon class="chev" name="chevron-forward-outline"></ion-icon>
+                <!-- ✅ Click on text/row to open modal -->
+                <p class="location_filled clickable" (click)="openCategoryModal()">
+                  {{ carDisplayText }}
+                </p>
+
+                <!-- ✅ Click on icon to reset and re-pick -->
+                <ion-icon
+                  class="chev clickable"
+                  name="create-outline"
+                  (click)="$event.stopPropagation(); onEditCategory()"
+                ></ion-icon>
               </div>
             </div>
           </div>
         </ion-item>
 
         <div class="step-actions">
-          <ion-button expand="block" (click)="nextStep()" class="next_button">Next</ion-button>
+          <ion-button expand="block" mode="ios" (click)="nextStep()" class="next_button">
+            Next
+          </ion-button>
         </div>
       </ion-card>
     </div>
 
+    <!-- ===================== -->
     <!-- STEP 2 -->
-    <div class="step-panel" *ngIf="step === 1">
-      <ion-card class="step-card">
-        <ion-card-header>
-          <ion-card-title>Step 2</ion-card-title>
-          <ion-card-subtitle>Category & Details</ion-card-subtitle>
-        </ion-card-header>
+    <!-- ===================== -->
+    <div class="step-panel"  *ngIf="step === 1 && isCarsSelected()">
+      <ion-card class="step-card p-10" style="padding-bottom: 100px; overflow-y: auto;">
 
-        <ion-card-content class="step-body">
-          <ion-item>
-            <ion-label position="stacked">Category</ion-label>
-            <ion-input [(ngModel)]="model.category" placeholder="e.g. Mobiles"></ion-input>
-          </ion-item>
+        <ion-label class="title_sell">Sell or Waiver</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-segment [(ngModel)]="model.dealType" mode="ios">
+            <ion-segment-button value="sell" style="--border-radius: 12px 0px 0px 12px;">
+              <ion-label>Sell</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="waiver" style="--border-radius: 0px 12px 12px 0px;">
+              <ion-label>Waiver</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
 
-          <ion-item>
-            <ion-label position="stacked">Description</ion-label>
-            <ion-textarea [(ngModel)]="model.description" placeholder="Write something..." autoGrow="true">
-            </ion-textarea>
-          </ion-item>
-        </ion-card-content>
+        <ion-label class="title_sell mt10">Car Condition</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-segment [(ngModel)]="model.condition" mode="ios">
+            <ion-segment-button value="new" style="--border-radius: 12px 0px 0px 12px;">
+              <ion-label>New</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="used" style="--border-radius: 0px 0px 0px 0px;">
+              <ion-label>Used</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="damaged" style="--border-radius: 0px 12px 12px 0px;">
+              <ion-label>Damaged</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <ion-label class="title_sell mt10">Gear Type</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-segment [(ngModel)]="model.gearType" mode="ios">
+            <ion-segment-button value="manual" style="--border-radius: 12px 0px 0px 12px;">
+              <ion-label>Manual</ion-label>
+            </ion-segment-button>
+
+            <ion-segment-button value="automatic" style="--border-radius: 0px 12px 12px 0px;">
+              <ion-label>Automatic</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <ion-label class="title_sell mt10">Fuel Type</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-segment [(ngModel)]="model.fuelType" mode="ios">
+            <ion-segment-button value="gasoline" style="--border-radius: 12px 0px 0px 12px;">
+              <ion-label>Gasoline</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="diesel" style="--border-radius: 0px 0px 0px 0px;">
+              <ion-label>Diesel</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="hybrid" style="--border-radius: 0px 12px 12px 0px;">
+              <ion-label>Hybrid</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <ion-label class="title_sell mt10">Mileage ({{ model.mileage }} km)</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-range
+            [(ngModel)]="model.mileage"
+            [min]="0"
+            [max]="100"
+            [step]="1"
+            [pin]="true"
+            (ionChange)="onMileageChange($event)"
+          ></ion-range>
+        </ion-item>
+
+
+        <ion-label class="title_sell mt10">Is 4WD</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-segment [(ngModel)]="model.is4wd" mode="ios">
+            <ion-segment-button value="yes" style="--border-radius: 12px 0px 0px 12px;">
+              <ion-label>Yes</ion-label>
+            </ion-segment-button>
+
+            <ion-segment-button value="no" style="--border-radius: 0px 12px 12px 0px;">
+              <ion-label>No</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <ion-label class="title_sell mt10">Car Class</ion-label>
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-chip
+            *ngFor="let c of carClassOptions"
+            (click)="toggleCarClass(c)"
+            [outline]="!isCarClassSelected(c)"
+          >
+            {{ c }}
+          </ion-chip>
+        </ion-item>
 
         <div class="step-actions">
-          <ion-button expand="block" (click)="nextStep()">Next</ion-button>
+          <ion-button expand="block" mode="ios" (click)="nextStep()" class="next_button">
+            Next
+          </ion-button>
         </div>
       </ion-card>
     </div>
 
+    <!-- ===================== -->
     <!-- STEP 3 -->
+    <!-- ===================== -->
     <div class="step-panel" *ngIf="step === 2">
-      <ion-card class="step-card">
-        <ion-card-header>
-          <ion-card-title>Step 3</ion-card-title>
-          <ion-card-subtitle>Review</ion-card-subtitle>
-        </ion-card-header>
+      <ion-card class="step-card p-10" style="padding-bottom: 100px; overflow-y: auto;">
 
-        <ion-card-content class="step-body">
-          <ion-list>
-            <ion-item>
-              <ion-label>
-                <h3>Name</h3>
-                <p>{{ model.name || '-' }}</p>
-              </ion-label>
-            </ion-item>
+        <ion-label class="title_sell">Review Details</ion-label>
 
-            <ion-item>
-              <ion-label>
-                <h3>Price</h3>
-                <p>{{ model.price ?? '-' }}</p>
-              </ion-label>
-            </ion-item>
+        <!-- ✅ Readonly Preview: Location -->
+        <div class="select_location readonly-box">
+          <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+            <p class="location">{{ 'location' | translate }}</p>
+            <div class="location-row">
+              <p class="location_filled">{{ locationDisplayText }}</p>
+            </div>
+          </div>
+        </div>
 
-            <ion-item>
-              <ion-label>
-                <h3>Category</h3>
-                <p>{{ model.category || '-' }}</p>
-              </ion-label>
-            </ion-item>
+        <!-- ✅ Readonly Preview: Offer Subject -->
+        <div class="select_location readonly-box">
+          <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+            <p class="location">{{ 'offer_subject' | translate }}</p>
+            <div class="location-row">
+              <p class="location_filled">
+                {{ model.subject?.trim() ? model.subject : '-' }}
+              </p>
+            </div>
+          </div>
+        </div>
 
-            <ion-item>
-              <ion-label>
-                <h3>Description</h3>
-                <p>{{ model.description || '-' }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
+        <!-- ✅ Readonly Preview: Section -->
+        <div class="select_location readonly-box">
+          <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+            <p class="location">{{ 'section' | translate }}</p>
+            <div class="location-row">
+              <p class="location_filled">{{ carDisplayText }}</p>
+            </div>
+          </div>
+        </div>
+
+
+           <!-- ✅ Readonly Preview: Section -->
+           <div class="select_location readonly-box">
+            <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+              <p class="location">{{ 'enter_description' | translate }}</p>
+              <div class="location-row">
+                <ion-textarea
+                [(ngModel)]="model.extraInfo"
+                autoGrow="true"
+                [placeholder]="'description_label' | translate "
+                style="min-height: 140px;"
+              ></ion-textarea>
+              </div>
+            </div>
+          </div>
+
+
+       <!-- ✅ Price -->
+       <ion-item lines="full" class="sell_or_waiver" style="margin-top: 20px;">
+        <ion-text style="color: var(--text-black);">Price</ion-text>
+
+        <ion-input
+          class="price"
+          fill="outline"
+          type="number"
+          inputmode="numeric"
+          [(ngModel)]="model.price"
+          placeholder="xxxxxxx"
+          [disabled]="disablePrice"
+        >
+          <ion-icon slot="end" name="cash"></ion-icon>
+        </ion-input>
+
+        <ion-toggle
+          slot="end"
+          mode="ios"
+          [checked]="disablePrice"
+          (ionChange)="onPriceToggle($event)"
+          style="--track-background:#C7C7C7"
+        ></ion-toggle>
+      </ion-item>
+
+
+<!-- ✅ Phone -->
+<ion-item lines="full" class="sell_or_waiver">
+  <ion-text style="color: var(--text-black);">Phone</ion-text>
+
+  <ion-input
+    class="price"
+    fill="outline"
+    type="tel"
+    inputmode="tel"
+    [(ngModel)]="model.phone"
+    placeholder="xx xxx-xxxxxxx"
+    [disabled]="disablePhone"
+  >
+  <ion-icon slot="end" name="call"></ion-icon>
+</ion-input>
+
+  <ion-toggle
+    slot="end"
+    mode="ios"
+    [checked]="disablePhone"
+    (ionChange)="onPhoneToggle($event)"
+    style="--track-background:#C7C7C7"
+  ></ion-toggle>
+</ion-item>
+
+
 
         <div class="step-actions">
-          <ion-button expand="block" (click)="save()">Save</ion-button>
+          <ion-button expand="block" mode="ios" (click)="save()" class="next_button">
+            Save
+          </ion-button>
         </div>
       </ion-card>
     </div>

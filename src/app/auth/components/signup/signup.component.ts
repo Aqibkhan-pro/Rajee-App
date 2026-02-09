@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { NavController, ToastController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { UserService } from 'src/app/services/user.service';
 
 /* ================= OTP Validator ================= */
 function otpRequiredLength(length: number) {
@@ -62,6 +63,7 @@ export class SignupComponent implements OnInit, OnDestroy {
     private afAuth: AngularFireAuth,
     private db: AngularFireDatabase,
     private ngZone: NgZone,
+    private userService : UserService,
     private translate: TranslateService,
   ) {}
 
@@ -330,7 +332,10 @@ export class SignupComponent implements OnInit, OnDestroy {
 
   goToLogin() {
     this.ngZone.run(() => {
-      this.navCtrl.navigateBack('auth/login');
+      this.navCtrl.navigateBack('/main');
     });
+    setTimeout(() =>{
+      this.userService.setOpenSubject = 'login';
+  }, 800);
   }
 }

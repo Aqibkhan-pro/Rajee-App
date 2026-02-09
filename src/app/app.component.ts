@@ -5,37 +5,56 @@ import { AuthService } from './auth/services/auth.service';
 import { constants } from './shared/utils/constants';
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, onIdTokenChanged, User } from 'firebase/auth';
 import { environment } from '../environments/environment';
 import { UserService } from './services/user.service';
+import { Router } from '@angular/router';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class AppComponent {
-
   constructor(
     private authService: AuthService,
     private translate: TranslateService,
     private toastCtrl: ToastController,
-    private userService : UserService
+    private userService: UserService,
+    private router: Router
   ) {
     this.initThemeAndLanguage();
-    this.initializeApp();
+    this.initializeFirebaseAndKeepTokenFresh();
+    this.listenDeepLinks();
   }
 
-  /**
-   * Initialize theme and language on app start
-   */
+    listenDeepLinks() {
+      App.addListener('appUrlOpen', (data: any) => {
+        const url: string = data?.url || '';
+
+        // Examples:
+        // https://yourdomain.com/product/170...
+        // myapp://product/170...
+
+        const match = url.match(/\/product\/([^\/\?]+)/);
+        if (match && match[1]) {
+          const id = match[1];
+          this.router.navigateByUrl(`/product/${id}`);
+        }
+      });
+    }
+
+  // =========================
+  // THEME + LANGUAGE
+  // =========================
   private initThemeAndLanguage() {
-    /* THEME */
+    // THEME
     const theme = localStorage.getItem(constants.Theme) || '';
     if (theme) this.authService.changeTheme(theme);
 
-    /* LANGUAGE */
+    // LANGUAGE
     let lang = localStorage.getItem('lang');
     if (!lang) {
       lang = 'ar';
@@ -55,14 +74,15 @@ export class AppComponent {
   private setLanguage(lang: string) {
     this.translate.use(lang);
     document.documentElement.lang = lang;
+    // document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }
 
-  /**
-   * Initialize Firebase and listen for auth state changes
-   */
-  private async initializeApp() {
+  // =========================
+  // FIREBASE + TOKEN REFRESH
+  // =========================
+  private initializeFirebaseAndKeepTokenFresh() {
     try {
-      // Initialize Firebase if not already initialized
+      // Init firebase once
       if (!getApps().length) {
         initializeApp(environment.firebase);
         console.log('✅ Firebase initialized');
@@ -70,49 +90,61 @@ export class AppComponent {
 
       const auth = getAuth();
 
-      // Listen for auth state changes
-      onAuthStateChanged(auth, async (user: User | null) => {
-        if (user) {
-          try {
-            // Refresh token
-            const idToken = await user.getIdToken(true);
-            const pUser = await this.userService.getUserById(user.uid);
+      // ✅ IMPORTANT:
+      // onIdTokenChanged fires on app start AND whenever Firebase refreshes the token
+      onIdTokenChanged(auth, async (user: User | null) => {
+        if (!user) {
+          console.log('No user logged in');
+          // optional: clear token so REST calls won't use old token
+          const old = JSON.parse(localStorage.getItem('userData') || '{}');
+          old.idToken = '';
+          localStorage.setItem('userData', JSON.stringify(old));
+          return;
+        }
 
-            // ✅ If API returns empty, stop
-            if (!pUser) throw new Error('User profile not found');
+        try {
+          // ✅ get latest token (Firebase refreshes automatically)
+          const idToken = await user.getIdToken();
 
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            userData.idToken = idToken;
-            userData.uid = user.uid;
-            userData.email = user.email;
-            userData.name = pUser?.name ||  user.displayName || '';
-            userData.photoURL = user.photoURL || '';
+          // ✅ save fresh token for your REST calls (Realtime DB .json?auth=)
+          const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+          userData.idToken = idToken;
+          userData.uid = user.uid;
+          userData.email = user.email || '';
+          userData.photoURL = user.photoURL || '';
+
+          localStorage.setItem('userData', JSON.stringify(userData));
+
+          // ✅ load profile from your realtime DB (uses token from localStorage in your service)
+          const pUser = await this.userService.getUserById(user.uid);
+
+          // If you store users under /users/{uid}, make sure that exists
+          if (pUser) {
+            userData.name = pUser?.name || user.displayName || '';
             localStorage.setItem('userData', JSON.stringify(userData));
-
-            console.log('✅ Token refreshed on app start for user:', user.uid);
-
-          } catch (err) {
-            console.error('Error refreshing token on app start:', err);
-            const toast = await this.toastCtrl.create({
-              message: 'Failed to refresh session, please login again',
-              duration: 3000,
-              color: 'danger'
-            });
-            toast.present();
           }
-        } else {
-          console.log('No user logged in at app start');
+
+          console.log('✅ Token updated in localStorage for:', user.uid);
+        } catch (err) {
+          console.error('Token refresh failed:', err);
+
+          const toast = await this.toastCtrl.create({
+            message: 'Session expired, please login again',
+            duration: 3000,
+            color: 'danger',
+          });
+          toast.present();
         }
       });
-
     } catch (err) {
       console.error('Firebase initialization failed:', err);
-      const toast = await this.toastCtrl.create({
-        message: 'Firebase initialization failed',
-        duration: 3000,
-        color: 'danger'
-      });
-      toast.present();
+      this.toastCtrl
+        .create({
+          message: 'Firebase initialization failed',
+          duration: 3000,
+          color: 'danger',
+        })
+        .then((t) => t.present());
     }
   }
 }

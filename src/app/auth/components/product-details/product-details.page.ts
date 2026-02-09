@@ -1,12 +1,17 @@
 import { UserData } from './../../../services/chat.service';
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController, NavController, ToastController } from '@ionic/angular';
 import { Product, ProductUser, Rating, Comment } from 'src/app/shared/common.interface';
 import { InboxService } from '../home/chat-inbox/service/inbox.service';
 import { AuthModalComponent } from '../auth/auth-modal/auth-modal.component';
 import { CommonService } from '../../services/common.service';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+
+import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-details',
@@ -20,6 +25,7 @@ export class ProductDetailsPage implements OnInit {
   currentUserId!: string;
   isFollowing = false;
   isFavorite = false;
+
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
   productUser: ProductUser | null = null;
 
@@ -38,9 +44,7 @@ export class ProductDetailsPage implements OnInit {
     {
       text: 'Add Rating',
       icon: 'star',
-      handler: () => {
-        this.openRatingModal();
-      }
+      handler: () => this.openRatingModal()
     },
     {
       text: 'Cancel',
@@ -51,29 +55,78 @@ export class ProductDetailsPage implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,           // ✅ ADD
     private navCtrl: NavController,
     private db: AngularFireDatabase,
     private commonService: CommonService,
     private modalCtrl: ModalController,
     private toastController: ToastController
   ) {
+    // ✅ If came from inside app via state
     const navigation = this.router.getCurrentNavigation();
-    this.product = navigation?.extras?.state?.['product'];
+    const p = navigation?.extras?.state?.['product'];
+    if (p) this.product = p;
   }
 
   async ngOnInit() {
+    // ✅ 1) Resolve product first (state OR route id)
+    await this.resolveProductFromStateOrRoute();
+
+    // ✅ 2) After product loaded, then run your existing init logic
+    await this.initAfterProductLoaded();
+  }
+
+  // ✅ NEW: state OR /product-details/:id se product load
+  private async resolveProductFromStateOrRoute(): Promise<void> {
+    try {
+      // If already available from state
+      if (this.product) return;
+
+      const id = this.route.snapshot.paramMap.get('id'); // /product-details/:id
+      if (!id) {
+        this.router.navigateByUrl('/home');
+        return;
+      }
+
+      // Load product from Realtime DB
+      const p = await firstValueFrom(
+        this.db.object<Product>(`products/${id}`).valueChanges().pipe(take(1))
+      );
+
+      if (!p) {
+        this.router.navigateByUrl('/home');
+        return;
+      }
+
+      // createdAt ko id treat kar rahe ho
+      this.product = { ...p, createdAt: Number(id) } as any;
+    } catch (e) {
+      console.error('resolveProductFromStateOrRoute error:', e);
+      this.router.navigateByUrl('/home');
+    }
+  }
+
+  // ✅ NEW: aapka ngOnInit wala code yahan shift
+  private async initAfterProductLoaded() {
     this.userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
-    if (this.userData) {
-      this.currentUserId = this.userData.uid;
-      this.checkIfFollowing();
-      this.checkIfFavorite();
+    // Even if not logged-in, page should show product
+    this.currentUserId = this.userData?.uid || '';
 
+    // Rating summary safe
+    this.calculateAverageRating();
+    this.loadUserRating();
+
+    // User profile of product owner (if you want even without login, you can skip)
+    if (this.product?.user?.uid) {
       this.productUser = await this.getSingleUser(this.product.user.uid) as ProductUser;
       console.log('Product user:', this.productUser);
+    }
 
-      this.calculateAverageRating();
-      this.loadUserRating();
+    // Follow/Favorite only if logged in
+    if (this.currentUserId) {
+      await this.checkIfFollowing();
+      await this.checkIfFavorite();
     }
   }
 
@@ -81,11 +134,14 @@ export class ProductDetailsPage implements OnInit {
     return item?.createdAt || index;
   }
 
+  // ------------------- USER FETCH -------------------
   async getSingleUser(userId: string): Promise<ProductUser | null> {
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const idToken = userData?.idToken;
-      if (!idToken) throw new Error('User token not found');
+
+      // ✅ If token missing, avoid hard error
+      if (!idToken) return null;
 
       const url = `${this.FIREBASE_DB_URL}/users/${userId}.json?auth=${idToken}`;
       const res = await fetch(url);
@@ -95,9 +151,7 @@ export class ProductDetailsPage implements OnInit {
         throw new Error(`Failed to fetch user: ${errorText}`);
       }
 
-      const user = await res.json();
-      console.log('Single user:', user);
-      return user;
+      return await res.json();
     } catch (error) {
       console.error('Get single user error:', error);
       return null;
@@ -108,7 +162,7 @@ export class ProductDetailsPage implements OnInit {
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const idToken = userData?.idToken;
-      if (!idToken) throw new Error('User token not found');
+      if (!idToken) return;
 
       const targetUserId = this.product?.user?.uid;
       if (!targetUserId || !this.currentUserId) return;
@@ -119,109 +173,23 @@ export class ProductDetailsPage implements OnInit {
 
       const data = await res.json();
       this.isFollowing = data !== null;
-      console.log('Follow status:', this.isFollowing);
     } catch (error) {
       console.error('Error checking if following:', error);
     }
   }
 
-  // ------------------- FAVORITE FUNCTIONS -------------------
-
-  // async checkIfFavorite(): Promise<void> {
-  //   try {
-  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  //     const idToken = userData?.idToken;
-  //     if (!idToken) throw new Error('User token not found');
-
-  //     const productId = this.product?.createdAt;
-  //     if (!productId || !this.currentUserId) return;
-
-  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
-  //     const res = await fetch(url);
-  //     if (!res.ok) throw new Error('Failed to check favorite status');
-
-  //     const data = await res.json();
-  //     this.isFavorite = data !== null;
-  //     console.log('Favorite status:', this.isFavorite);
-  //   } catch (error) {
-  //     console.error('Error checking if favorite:', error);
-  //   }
-  // }
-
+  // ------------------- FAVORITE -------------------
   async toggleFavorite() {
-    if (this.isFavorite) {
-      await this.removeFavorite();
-    } else {
-      await this.addFavorite();
-    }
+    if (this.isFavorite) await this.removeFavorite();
+    else await this.addFavorite();
   }
-
-  // async addFavorite() {
-  //   try {
-  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  //     const idToken = userData?.idToken;
-  //     if (!idToken) throw new Error('User token not found');
-
-  //     const productId = this.product.createdAt;
-  //     const time = Date.now();
-
-  //     const favoriteData = {
-  //       productId: productId,
-  //       userId: this.currentUserId,
-  //       addedAt: time,
-  //       product: {
-  //         title: this.product.title,
-  //         description: this.product.description,
-  //         price: this.product.price,
-  //         image: this.product.image,
-  //         createdAt: this.product.createdAt,
-  //         user: this.product.user
-  //       }
-  //     };
-
-  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
-  //     const res = await fetch(url, {
-  //       method: 'PUT',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(favoriteData)
-  //     });
-
-  //     if (!res.ok) throw new Error('Failed to add favorite');
-
-  //     this.isFavorite = true;
-  //     await this.presentToast('Added to favorites', 'success');
-  //   } catch (error) {
-  //     console.error('Error adding favorite:', error);
-  //     await this.presentToast('Failed to add favorite', 'danger');
-  //   }
-  // }
-
-  // async removeFavorite() {
-  //   try {
-  //     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  //     const idToken = userData?.idToken;
-  //     if (!idToken) throw new Error('User token not found');
-
-  //     const productId = this.product.createdAt;
-  //     const url = `${this.FIREBASE_DB_URL}/favorites/${this.currentUserId}/${productId}.json?auth=${idToken}`;
-
-  //     const res = await fetch(url, { method: 'DELETE' });
-  //     if (!res.ok) throw new Error('Failed to remove favorite');
-
-  //     this.isFavorite = false;
-  //     await this.presentToast('Removed from favorites', 'success');
-  //   } catch (error) {
-  //     console.error('Error removing favorite:', error);
-  //     await this.presentToast('Failed to remove favorite', 'danger');
-  //   }
-  // }
 
   async presentToast(message: string, color: string) {
     const toast = await this.toastController.create({
-      message: message,
+      message,
       duration: 2000,
       position: 'bottom',
-      color: color
+      color
     });
     toast.present();
   }
@@ -229,7 +197,7 @@ export class ProductDetailsPage implements OnInit {
   followUser() {
     try {
       const targetUserId = this.product.user.uid;
-      if (this.currentUserId === targetUserId) return;
+      if (!this.currentUserId || this.currentUserId === targetUserId) return;
 
       const time = Date.now();
       const updates: any = {};
@@ -246,6 +214,8 @@ export class ProductDetailsPage implements OnInit {
   unfollowUser() {
     try {
       const targetUserId = this.product.user.uid;
+      if (!this.currentUserId) return;
+
       const updates: any = {};
       updates[`following/${this.currentUserId}/${targetUserId}`] = null;
       updates[`followers/${targetUserId}/${this.currentUserId}`] = null;
@@ -257,6 +227,7 @@ export class ProductDetailsPage implements OnInit {
     }
   }
 
+  // ------------------- CHAT -------------------
   getRoomId(user1: string, user2: string, productId: string) {
     return [user1, user2].sort().join('_') + '_' + productId;
   }
@@ -265,7 +236,7 @@ export class ProductDetailsPage implements OnInit {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     if (!userData?.uid) return;
 
-    this.checkIfFollowing();
+    await this.checkIfFollowing();
 
     const owner = await this.getSingleUser(this.product.user.uid) as ProductUser;
     const currentUser = await this.getSingleUser(userData.uid) as ProductUser;
@@ -300,27 +271,14 @@ export class ProductDetailsPage implements OnInit {
     this.navCtrl.navigateForward(['/chat'], { state: { chatRoom } });
   }
 
-  // ------------------- ACTION SHEET -------------------
+  // ------------------- ACTION SHEET / MODAL -------------------
+  openActionsMenu() { this.isActionSheetOpen = true; }
+  openRatingModal() { this.isRatingModalOpen = true; }
+  closeRatingModal() { this.isRatingModalOpen = false; this.selectedRating = 0; }
 
-  openActionsMenu() {
-    this.isActionSheetOpen = true;
-  }
-
-  // ------------------- RATING MODAL -------------------
-
-  openRatingModal() {
-    this.isRatingModalOpen = true;
-  }
-
-  closeRatingModal() {
-    this.isRatingModalOpen = false;
-    this.selectedRating = 0;
-  }
-
-  // ------------------- RATING FUNCTIONS -------------------
-
+  // ------------------- RATING -------------------
   calculateAverageRating() {
-    if (!this.product.ratings || this.product.ratings.length === 0) {
+    if (!this.product?.ratings || this.product.ratings.length === 0) {
       this.averageRating = 0;
       return;
     }
@@ -329,14 +287,12 @@ export class ProductDetailsPage implements OnInit {
   }
 
   loadUserRating() {
-    if (!this.product.ratings) return;
+    if (!this.product?.ratings || !this.currentUserId) return;
     const userRating = this.product.ratings.find((r: any) => r.userId === this.currentUserId);
     if (userRating) this.selectedRating = userRating.value;
   }
 
-  selectRating(value: number) {
-    this.selectedRating = value;
-  }
+  selectRating(value: number) { this.selectedRating = value; }
 
   getRatingText(rating: number): string {
     const texts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
@@ -357,9 +313,7 @@ export class ProductDetailsPage implements OnInit {
     await modal.present();
     const { role } = await modal.onDidDismiss();
 
-    if (role === 'success') {
-      this.commonService.notifyLoginSuccess();
-    }
+    if (role === 'success') this.commonService.notifyLoginSuccess();
   }
 
   async submitRating() {
@@ -368,8 +322,7 @@ export class ProductDetailsPage implements OnInit {
     const token = userData?.idToken;
 
     if (!uid || !token) {
-      this.openLoginModal();
-      console.error('No auth data available');
+      await this.openLoginModal();
       return;
     }
     if (this.selectedRating === 0) return;
@@ -387,12 +340,7 @@ export class ProductDetailsPage implements OnInit {
         this.product.ratings[existingRatingIndex].createdAt = time;
       } else {
         this.product.ratings = this.product.ratings || [];
-        this.product.ratings.push({
-          userId,
-          userName,
-          value: this.selectedRating,
-          createdAt: time
-        });
+        this.product.ratings.push({ userId, userName, value: this.selectedRating, createdAt: time });
       }
 
       this.calculateAverageRating();
@@ -408,26 +356,24 @@ export class ProductDetailsPage implements OnInit {
   }
 
   getRatingCount(stars: number): number {
-    if (!this.product.ratings) return 0;
+    if (!this.product?.ratings) return 0;
     return this.product.ratings.filter((r: any) => r.value === stars).length;
   }
 
   getRatingPercentage(stars: number): number {
-    if (!this.product.ratings || this.product.ratings.length === 0) return 0;
+    if (!this.product?.ratings || this.product.ratings.length === 0) return 0;
     const count = this.getRatingCount(stars);
     return (count / this.product.ratings.length) * 100;
   }
 
-  // ------------------- COMMENT FUNCTIONS (INLINE) -------------------
-
+  // ------------------- COMMENTS -------------------
   async addComment() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const uid = userData?.uid;
     const token = userData?.idToken;
 
     if (!uid || !token) {
-      this.openLoginModal();
-      console.error('No auth data available');
+      await this.openLoginModal();
       return;
     }
 
@@ -467,20 +413,16 @@ export class ProductDetailsPage implements OnInit {
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
 
-    const date = new Date(timestamp);
-    return date.toLocaleDateString();
+    return new Date(timestamp).toLocaleDateString();
   }
 
   async callUserData(phone: any) {
-    if (!phone) {
-      console.error('No phone number available');
-      return;
-    }
+    if (!phone) return;
     window.location.href = `tel:${phone}`;
   }
 
   private getProductId(): string {
-    return String(this.product?.createdAt); // createdAt ko id use kar rahe ho
+    return String(this.product?.createdAt);
   }
 
   async addFavorite() {
@@ -493,29 +435,9 @@ export class ProductDetailsPage implements OnInit {
 
       const uid = this.currentUserId;
       const productId = this.getProductId();
-      const time = Date.now();
-
-      // ✅ Sirf Product save (as per your interface)
-      const productToSave: Product = {
-        title: this.product.title,
-        price: this.product.price,
-        section: this.product.section,
-        condition: this.product.condition,
-        description: this.product.description,
-        image: this.product.image ||'',
-        user: this.product.user,
-        provinceName: this.product.provinceName,
-        contactPhone: this.product.contactPhone,
-        createdAt: this.product.createdAt,
-        images: this.product.images || [],
-        ratings: this.product.ratings || [],
-        comments: this.product.comments || [],
-      };
 
       const updates: any = {};
       updates[`/userFavorites/${uid}/${productId}`] = this.product;
-
-      // ✅ optional: product ke andar bhi track (kis user ne favorite kiya)
       updates[`/productFavorites/${productId}/${uid}`] = true;
 
       await this.db.database.ref().update(updates);
@@ -541,7 +463,7 @@ export class ProductDetailsPage implements OnInit {
 
       const updates: any = {};
       updates[`/userFavorites/${uid}/${productId}`] = null;
-      updates[`/productFavorites/${productId}/${uid}`] = null; // optional
+      updates[`/productFavorites/${productId}/${uid}`] = null;
 
       await this.db.database.ref().update(updates);
 
@@ -569,4 +491,33 @@ export class ProductDetailsPage implements OnInit {
     }
   }
 
+  // ✅ Share: link generate dynamically (localhost in dev, domain in prod)
+  async shareProduct() {
+    try {
+      if (!this.product?.createdAt) return;
+
+      const title = this.product?.title || 'Product';
+      const price = this.product?.price ? `Price: ${this.product.price}` : '';
+      const desc = this.product?.description || '';
+      const phone = this.product?.contactPhone ? `Contact: ${this.product.contactPhone}` : '';
+
+      // ✅ This will become:
+      // http://localhost:4200/product-details/177048...
+      // OR https://yourdomain.com/product-details/177048...
+      // const url = `${Capacitor.getPlatform() === 'ios' ? 'https://apps.apple.com/us/app/%D8%B1%D8%AC%D9%8A%D8%B9/id6756187788' : window.location.href}/product-details/${this.product.createdAt}`;
+      const url = `https://apps.apple.com/us/app/%D8%B1%D8%AC%D9%8A%D8%B9/id6756187788/product-details/${this.product.createdAt}`;
+
+      const text = [title, price, desc, phone, `Open: ${url}`].filter(Boolean).join('\n');
+
+      await Share.share({
+        title,
+        text,
+        url,
+        dialogTitle: 'Share Product',
+      });
+    } catch (error) {
+      console.error('shareProduct error:', error);
+      // await this.presentToast('Unable to share', 'danger');
+    }
+  }
 }

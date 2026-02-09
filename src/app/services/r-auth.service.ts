@@ -9,7 +9,13 @@ export class RAuthService {
 
   constructor(
     private afAuth: AngularFireAuth,
-    private storageService: StorageService) { }
+    private storageService: StorageService
+  ) {}
+
+  // ✅ Forgot Password / Reset Password
+  resetPassword(email: string) {
+    return this.afAuth.sendPasswordResetEmail(email);
+  }
 
   // Firebase email/password login
   loginWithEmail(email: string, password: string) {
@@ -29,13 +35,11 @@ export class RAuthService {
     return this.afAuth.createUserWithEmailAndPassword(email, password);
   }
 
-async getIdToken() {
-  const user = await this.afAuth.currentUser;
-  if (user) {
-    const idToken = await user.getIdToken(); // ✅ this is what Firebase needs
-    return idToken;
+  async getIdToken() {
+    const user = await this.afAuth.currentUser;
+    if (user) {
+      return await user.getIdToken();
+    }
+    return null;
   }
-  return null;
-}
-
 }

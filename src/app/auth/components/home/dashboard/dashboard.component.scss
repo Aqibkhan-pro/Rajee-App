@@ -30,6 +30,7 @@ ion-content {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  padding-bottom: 100px;
 }
 
 /* ✅ STORIES */
@@ -68,6 +69,7 @@ ion-content {
   transform: rotate(180deg);
 }
 
+
 /* ✅ Animated collapse */
 .stories-body {
   max-height: 320px;
@@ -83,7 +85,7 @@ ion-content {
 
 .stories-scroll {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   /* flex-wrap: wrap; */
   overflow-x: scroll;
   padding-bottom: 8px;
@@ -660,4 +662,33 @@ body.lang-ar .story-head {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+
+.top-search-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.top-search {
+  width: 100%;
+  --border-radius: 50px;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+ion-searchbar.top-search.custom-search {
+  --padding-start: 30px !important;
+  --padding-end: 12px !important;
+  --background: var(--secondary-color);
+  --color: var(--text-black);
+  --border-radius: 50px;
+  --box-shadow: none;
+}
+
+ion-searchbar.top-search.custom-search::part(input) {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
 }

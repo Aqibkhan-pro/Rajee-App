@@ -11,6 +11,7 @@ import { UserService } from 'src/app/services/user.service';
 import { constants } from 'src/app/shared/utils/constants';
 import { AuthService } from '../../services/auth.service';
 import { Keyboard } from '@capacitor/keyboard';
+import { Share } from '@capacitor/share';
 type User = {
   uid: string;
   name?: string;
@@ -58,6 +59,12 @@ export class HomePage implements OnInit {
     }
     const savedLang = localStorage.getItem('lang');
     if (savedLang) this.selectedLanguage = savedLang;
+
+    this.userService.getOpenSubject.subscribe((value) => {
+      if(value == 'login'){
+        this.openLoginModal();
+      }
+    })
 
     // ✅ load user + is_admin on app start
     await this.refreshUserFromUserService();
@@ -178,6 +185,9 @@ onMenuClosed() {
     this.menuCtrl.close('homeMenu');
 
     switch (item) {
+      case 'noti':
+        this.navCtrl.navigateForward(['main/noti']);
+        break;
       case 'profile':
         this.navCtrl.navigateForward(['main/profile']);
         this.selectTab('profile');
@@ -193,14 +203,17 @@ onMenuClosed() {
         this.navCtrl.navigateForward(['/policies']);
         break;
 
-      case 'settings':
-        // this.navCtrl.navigateForward(['/settings']);
+      case 'share':
+      this.shareProduct();
         break;
 
       case 'about':
         this.navCtrl.navigateForward(['/about']);
         break;
-
+        case 'favorites':
+          this.selectedTab= 'favorites';
+          this.navCtrl.navigateForward(['main/favorites']);
+          break;
       case 'help':
         // this.navCtrl.navigateForward(['/help']);
         break;
@@ -217,6 +230,27 @@ onMenuClosed() {
         // optional
         // this.navCtrl.navigateRoot(['/home']);
         break;
+    }
+  }
+
+    async shareProduct() {
+    try {
+
+      const title =  'Rajee';
+
+   const url = `https://apps.apple.com/us/app/%D8%B1%D8%AC%D9%8A%D8%B9/id6756187788/product-details`;
+
+      const text = [title,  `Open: ${url}`].filter(Boolean).join('\n');
+
+      await Share.share({
+        title,
+        text,
+        url,
+        dialogTitle: 'Share Product',
+      });
+    } catch (error) {
+      console.error('shareProduct error:', error);
+      // await this.presentToast('Unable to share', 'danger');
     }
   }
 
@@ -260,8 +294,8 @@ async openLoginModal() {
     cssClass: 'login-bottom-sheet-modal',
 
     // ✅ include 1 so we can open fully
-    breakpoints: [0, 0.9, 1],
-    initialBreakpoint: 0.9,
+    // breakpoints: [0, 0.5, 1],
+    initialBreakpoint: 0.6,
 
     mode: 'ios',
     backdropDismiss: false,

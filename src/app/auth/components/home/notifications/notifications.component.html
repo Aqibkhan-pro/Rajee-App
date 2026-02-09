@@ -1,0 +1,95 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Notifications</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+<div class="ntf-page">
+  <div class="ntf-card">
+    <!-- Header -->
+    <div class="ntf-head">
+      <div class="ntf-title">
+        <h2>Notifications</h2>
+        <span class="ntf-sub">
+          <span class="dot" [class.on]="unreadCount > 0"></span>
+          {{ unreadCount }} unread
+        </span>
+      </div>
+
+      <div class="ntf-actions">
+        <button class="btn ghost" type="button" (click)="markAllAsRead()" [disabled]="unreadCount === 0">
+          Mark all read
+        </button>
+        <button class="btn danger ghost" type="button" (click)="clearAll()" [disabled]="notifications.length === 0">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="ntf-filters">
+      <button class="chip" type="button" [class.active]="filter==='all'" (click)="setFilter('all')">
+        All <span class="count">{{ notifications.length }}</span>
+      </button>
+      <button class="chip" type="button" [class.active]="filter==='unread'" (click)="setFilter('unread')">
+        Unread <span class="count">{{ unreadCount }}</span>
+      </button>
+    </div>
+
+    <!-- List -->
+    <div class="ntf-list" *ngIf="filteredNotifications.length > 0; else emptyState">
+      <div
+        class="ntf-item"
+        *ngFor="let n of filteredNotifications; trackBy: trackById"
+        [class.unread]="!n.read"
+        [attr.data-type]="n.type"
+        (click)="markAsRead(n)"
+        role="button"
+        tabindex="0"
+      >
+        <div class="icon">
+          <span class="glyph" [ngSwitch]="n.type">
+            <span *ngSwitchCase="'success'">✓</span>
+            <span *ngSwitchCase="'info'">i</span>
+            <span *ngSwitchCase="'warning'">!</span>
+            <span *ngSwitchCase="'danger'">⛔</span>
+            <span *ngSwitchDefault>•</span>
+          </span>
+        </div>
+
+        <div class="content">
+          <div class="top">
+            <div class="text">
+              <div class="title">{{ n.title }}</div>
+              <div class="msg">{{ n.message }}</div>
+            </div>
+
+            <div class="meta">
+              <span class="time">{{ timeAgo(n.createdAt) }}</span>
+              <span class="badge" [class.read]="n.read">{{ n.read ? 'Read' : 'New' }}</span>
+            </div>
+          </div>
+
+          <div class="bottom">
+            <button class="mini" type="button" (click)="remove(n, $event)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="ntf-empty">
+        <div class="empty-emoji">🎉</div>
+        <div class="empty-title">All caught up</div>
+        <div class="empty-sub">No notifications to show.</div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+
+</ion-content>

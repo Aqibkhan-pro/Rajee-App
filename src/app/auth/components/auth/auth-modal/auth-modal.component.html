@@ -1,94 +1,78 @@
-<ion-header class="ion-no-border">
+<ion-header>
   <ion-toolbar>
-    <ion-title></ion-title>
+    <ion-title>Login/ New Account</ion-title>
+    <ion-button slot="end" fill="clear" (click)="dismiss()" style="--color: #045f9f; --background: transparent;">
+      Cancel
+    </ion-button>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content scrollY="false" [fullscreen]="true">
   <ion-list class="top-list">
-
-    <!-- Animation -->
-    <ion-item lines="none">
-      <div class="avatar-center">
-        <lottie-player
-          src="../../../../assets/anim/data.json"
-          background="transparent"
-          speed="1"
-          loop
-          autoplay
-          style="width: 80px; height: 80px;">
-        </lottie-player>
-      </div>
-    </ion-item>
-
     <!-- Login Form -->
     <form [formGroup]="loginForm" (ngSubmit)="callDetailUserApi()">
       <ion-list class="text-center mt-4">
-        <ion-label>
-          <h2 class="text-20">{{ 'welcome_back_let' | translate }}</h2>
-        </ion-label>
-
         <!-- Email -->
         <ion-list class="text-start mt-12">
-          <ion-item class="custom-input mt-8 input-item" lines="none">
-            <ion-icon
-              slot="{{ selectedLanguage=='en' ? 'start':'end' }}"
-              src="assets/svg/envelope.svg"
-              class="text-20">
+          <ion-label class="text-14  mt-8">
+            {{ 'username' | translate }}
+          </ion-label>
+          <ion-item class="custom-input input-item" lines="none">
+            <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" src="assets/svg/envelope.svg" class="text-20">
             </ion-icon>
-            <ion-input
-              type="email"  style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
-              placeholder="{{ 'email_placeholder' | translate }}"
-              formControlName="email"
+            <ion-input type="email"
+              style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
+              placeholder="{{ 'email_placeholder' | translate }}" formControlName="email"
               [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
             </ion-input>
           </ion-item>
         </ion-list>
 
         <ion-text color="danger" *ngIf="submitted && email?.errors">
-          <p *ngIf="email?.errors?.required" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'email_required' | translate }}</p>
-          <p *ngIf="email?.errors?.email" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'email_invalid' | translate }}</p>
+          <p *ngIf="email?.errors?.required" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{
+            'email_required' | translate }}</p>
+          <p *ngIf="email?.errors?.email" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'email_invalid'
+            | translate }}</p>
         </ion-text>
 
-      <!-- Password -->
-<ion-list class="text-start">
-  <ion-item class="custom-input mt-8 input-item" lines="none">
-    <ion-icon
-      [slot]="selectedLanguage == 'en' ? 'start' : 'end'"
-      src="assets/svg/lock.svg"
-      class="text-20">
-    </ion-icon>
+        <!-- Password -->
+        <ion-list class="text-start" style="margin-top: 10px;">
+          <ion-label class="text-14  mt-8">
+            {{ 'password' | translate }}
+          </ion-label>
+          <ion-item class="custom-input input-item" lines="none">
+            <ion-icon [slot]="selectedLanguage == 'en' ? 'start' : 'end'" src="assets/svg/lock.svg" class="text-20">
+            </ion-icon>
 
-    <ion-input
-      [type]="showPassword ? 'text' : 'password'"
-      style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
-      [placeholder]="'password_placeholder' | translate"
-      formControlName="password"
-      [style.text-align]="selectedLanguage == 'en' ? 'start' : 'end'">
-    </ion-input>
+            <ion-input [type]="showPassword ? 'text' : 'password'"
+              style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
+              [placeholder]="'password_placeholder' | translate" formControlName="password"
+              [style.text-align]="selectedLanguage == 'en' ? 'start' : 'end'">
+            </ion-input>
 
-    <!-- 👁 toggle -->
-    <ion-icon
-      [slot]="selectedLanguage == 'en' ? 'end' : 'start'"
-      [src]="showPassword ? 'assets/svg/hide.svg' : 'assets/svg/view.svg'"
-      class="text-20"
-      style="cursor: pointer;"
-      (click)="togglePassword()">
-    </ion-icon>
-  </ion-item>
-</ion-list>
+            <!-- 👁 toggle -->
+            <ion-icon [slot]="selectedLanguage == 'en' ? 'end' : 'start'"
+              [src]="showPassword ? 'assets/svg/hide.svg' : 'assets/svg/view.svg'" class="text-20"
+              style="cursor: pointer;" (click)="togglePassword()">
+            </ion-icon>
+          </ion-item>
+        </ion-list>
 
 
         <ion-text color="danger" *ngIf="submitted && password?.errors">
-          <p *ngIf="password?.errors?.required" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'password_required' | translate }}</p>
-          <p *ngIf="password?.errors?.minlength" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{ 'password_minlength' | translate }}</p>
+          <p *ngIf="password?.errors?.required" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{
+            'password_required' | translate }}</p>
+          <p *ngIf="password?.errors?.minlength" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">{{
+            'password_minlength' | translate }}</p>
         </ion-text>
 
         <!-- Forgot Password -->
         <ion-label>
-          <!-- <p class="forgot-text text-14 mt-12" [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
+          <p class="forgot-text text-14 mt-12" [style.text-align]="selectedLanguage !=='en' ? 'start':'end'"
+          (click)="forgotPassword()">
             <u>{{ 'forgot_password' | translate }}</u>
-          </p> -->
+          </p>
         </ion-label>
 
         <!-- Login Button -->
@@ -102,9 +86,10 @@
 
         <!-- Sign Up -->
         <ion-label>
-          <p class="create-text text-14 mt-12" [style.text-align]="selectedLanguage=='en' ? 'start':'end'" (click)="creatAccount()">
+          <p class="create-text text-14 mt-12" [style.text-align]="selectedLanguage=='en' ? 'start':'end'"
+            (click)="creatAccount()">
             {{ 'create_account' | translate }}
-            <u style="color: aqua; margin-left: 5px;">{{ 'sign_up' | translate }}</u>
+            <u style="color: var(--primary-color); margin-left: 5px;">{{ 'sign_up' | translate }}</u>
           </p>
         </ion-label>
       </ion-list>

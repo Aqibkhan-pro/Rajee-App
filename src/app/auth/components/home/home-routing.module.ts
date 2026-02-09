@@ -8,6 +8,8 @@ import { ProfileComponent } from './profile/profile.component';
 import { AuthGuard } from '../../services/auth.guard';
 import { PoliciesComponent } from './policies/policies.component';
 import { AboutComponent } from './about/about.component';
+import { NotificationsComponent } from './notifications/notifications.component';
+import { FollowersComponent } from '../menu/followers/followers.component';
 
 const routes: Routes = [
   {
@@ -21,6 +23,10 @@ const routes: Routes = [
         path: 'about',
         component: AboutComponent,
         canActivate: [AuthGuard],
+      }, {
+        path: 'follow',
+        component: FollowersComponent,
+        canActivate: [AuthGuard],
       },
       {
         path: 'favorites',
@@ -32,7 +38,11 @@ const routes: Routes = [
         component: ChatInboxComponent,
         canActivate: [AuthGuard],
       },
-
+      {
+        path: 'noti',
+        component: NotificationsComponent,
+        canActivate: [AuthGuard],
+      },
       {
         path: 'profile',
         component: ProfileComponent,

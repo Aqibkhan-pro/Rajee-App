@@ -1,12 +1,24 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
 import { NavigationExtras } from '@angular/router';
-import { IonSearchbar, NavController, ToastController } from '@ionic/angular';
+import { IonSearchbar, NavController, ToastController, ModalController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+
 import { Product } from 'src/app/shared/common.interface';
 
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+// ✅ IMPORTANT: alias ref to avoid conflict with realtime db ref
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+// ✅ Firebase Realtime Database
+import { getDatabase, ref as dbRef, onValue, query, orderByChild } from 'firebase/database';
+
 import { Subscription } from 'rxjs';
+import { AuthModalComponent } from '../../auth/auth-modal/auth-modal.component';
+import { UserService } from 'src/app/services/user.service';
+
+// ✅ Categories list
+import { ALL_AUCTION_CATEGORIES, CatItem } from 'src/app/shared/category-data';
 
 interface Category {
   key: string;
@@ -21,20 +33,44 @@ interface Story {
   userId: string;
   userName: string;
   userAvatar?: string;
-  image: string;       // Firebase Storage downloadURL
+  image: string;
   caption?: string;
   createdAt: number;
-  seen?: boolean;      // local only
+  seen?: boolean;
 }
+
+type SubOption = { key: string; en: string; ar: string };
+
+const SECTION_ICON_MAP: Record<string, string> = {
+  cars_section: 'car-outline',
+  device_section: 'phone-portrait-outline',
+  animals_birds_section: 'paw-outline',
+  furniture_section: 'bed-outline',
+  personal_accessories_section: 'bag-handle-outline',
+  services_section: 'construct-outline',
+  food_beverages_section: 'restaurant-outline',
+  game_entertainment_section: 'game-controller-outline',
+  hunting_tips_section: 'trail-sign-outline',
+  cultivation_gardens_section: 'leaf-outline',
+  programming_designs_section: 'code-slash-outline',
+  parties_events_section: 'balloon-outline',
+  library_arts_section: 'color-palette-outline',
+  travel_tourism_section: 'airplane-outline',
+  uncategorized_auction_section: 'ellipsis-horizontal-outline',
+  missing_section: 'help-circle-outline',
+  education_training_section: 'school-outline',
+  financing_loans_section: 'cash-outline',
+  anecdotes_traditions_section: 'chatbubbles-outline',
+  projects_investments_section: 'briefcase-outline',
+};
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-
   selectedLanguage: string = 'en';
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
 
@@ -44,14 +80,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentUserAvatar: string = '';
 
   // ✅ Products
-  items: Product[] = [];
-  filteredItems: Product[] = [];
+  items: any[] = [];
+  filteredItems: any[] = [];
   searchText: string = '';
-  selectedCategoryKey: string = 'all';
 
-  // ✅ SubCategory filter
+  // ✅ Section filter
+  selectedSectionKey: string = 'all';
+
+  // ✅ Sub filter
   selectedSubCategoryKey: string = 'all';
-  subCategoryOptions: Array<{ key: string; ar: string; en: string }> = [];
+  subCategoryOptions: SubOption[] = [];
 
   // ✅ UI
   isGrid: boolean = false;
@@ -61,37 +99,44 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isAddStoryOpen = false;
   isStoryViewerOpen = false;
   activeStory: Story | null = null;
-
-  // ✅ Stories collapse/expand
   storiesCollapsed = false;
 
   newStoryCaption: string = '';
   uploadingStory: boolean = false;
 
-  // picked image (gallery)
-  pickedStoryPreview: string = '';     // base64 preview for UI
-  pickedStoryBlob: Blob | null = null; // blob for upload
+  pickedStoryPreview: string = '';
+  pickedStoryBlob: Blob | null = null;
 
-  private storyRefreshTimer: any;
   private langSub?: Subscription;
+  private openLoginSub?: Subscription;
 
-  // template ref (you have #searchbar in HTML)
+  // ✅ Real-time unsubscribers
+  private productsUnsub?: () => void;
+  private storiesUnsub?: () => void;
+
+  // ✅ Time-ago refresh
+  nowTs: number = Date.now();
+  private nowTimer: any;
+
   @ViewChild('searchbar', { static: false }) searchbar!: IonSearchbar;
 
-  // ✅ Categories (added furniture because you have furniture sub categories)
+  // ✅ Chips from ALL_AUCTION_CATEGORIES (+ Cars + Devices)
   categories: Category[] = [
     { key: 'all', ar: 'الكل', en: 'All', icon: 'grid-outline', selected: true },
-    { key: 'cars', ar: 'رجيع السيارات', en: 'Cars & Vehicles', icon: 'car-outline', selected: false },
-    { key: 'electronics', ar: 'رجيع الأجهزة', en: 'Electronics & Devices', icon: 'phone-portrait-outline', selected: false },
-    { key: 'furniture', ar: 'رجيع الأثاث', en: 'Furniture', icon: 'bed-outline', selected: false },
-    { key: 'personal_items', ar: 'مستلزمات شخصية', en: 'Personal Items & Accessories', icon: 'bag-handle-outline', selected: false },
-    { key: 'services', ar: 'خدمات', en: 'Services', icon: 'construct-outline', selected: false },
-    { key: 'jobs', ar: 'وظائف', en: 'Jobs', icon: 'briefcase-outline', selected: false },
-    { key: 'games', ar: 'ألعاب وترفيه', en: 'Games & Entertainment', icon: 'game-controller-outline', selected: false },
-    { key: 'others', ar: 'قسم غير مصنف', en: 'Uncategorized / Other', icon: 'ellipsis-horizontal-outline', selected: false }
+
+    { key: 'cars_section', en: 'Cars', ar: 'السيارات', icon: SECTION_ICON_MAP['cars_section'], selected: false },
+    { key: 'device_section', en: 'Devices', ar: 'الأجهزة', icon: SECTION_ICON_MAP['device_section'], selected: false },
+
+    ...ALL_AUCTION_CATEGORIES.map((s) => ({
+      key: s.key,
+      en: s.en,
+      ar: s.ar,
+      icon: SECTION_ICON_MAP[s.key] || 'apps-outline',
+      selected: false,
+    })),
   ];
 
-  // ✅ Sub Categories Map (YOUR FULL LIST)
+  // ✅ Optional legacy subCategories fallback
   subCategoriesMap: Record<string, Array<{ key: string; ar: string; en: string }>> = {
     cars: [
       { key: 'parts', ar: 'قطع غيار وملحقات', en: 'Parts & Accessories' },
@@ -101,127 +146,74 @@ export class DashboardComponent implements OnInit, OnDestroy {
       { key: 'damaged', ar: 'سيارات مصدومه', en: 'Damaged Cars' },
       { key: 'transfer', ar: 'سيارات للتنازل', en: 'Transfer Cars' },
     ],
-
     electronics: [
       { key: 'mobiles', ar: 'جوالات', en: 'Mobiles' },
       { key: 'tablets', ar: 'تابلت', en: 'Tablets' },
       { key: 'computers', ar: 'كمبيوتر', en: 'Computers' },
       { key: 'egames', ar: 'العاب إلكترونية', en: 'Electronic Games' },
       { key: 'tv_audio', ar: 'تلفزيونات وصوتيات', en: 'TV & Audio' },
-      { key: 'cameras', ar: 'كاميرات', en: 'Cameras' },
-      { key: 'accounts', ar: 'حسابات واشتراكات', en: 'Accounts & Subscriptions' },
-      { key: 'numbers', ar: 'أرقام مميزة', en: 'Special Numbers' },
-      { key: 'appliances', ar: 'أجهزة منزلية ومطبخ', en: 'Home & Kitchen Appliances' },
-      { key: 'generators', ar: 'مولدات ومحركات', en: 'Generators & Motors' },
-      { key: 'networking', ar: 'شبكات وراوترات', en: 'Networking & Routers' },
-      { key: 'printers', ar: 'طابعات وملحقاتها', en: 'Printers & Accessories' },
     ],
-
     furniture: [
       { key: 'majlis', ar: 'مجالس ومفروشات', en: 'Majlis & Upholstery' },
       { key: 'tables', ar: 'طاولات وكراسي', en: 'Tables & Chairs' },
-      { key: 'beds', ar: 'أسرة ومراتب', en: 'Beds & Mattresses' },
-      { key: 'wardrobes', ar: 'خزائن ودواليب', en: 'Wardrobes & Cabinets' },
-      { key: 'office', ar: 'أثاث مكتبي', en: 'Office Furniture' },
-      { key: 'outdoor', ar: 'أثاث خارجي', en: 'Outdoor Furniture' },
-      { key: 'home_tools', ar: 'أدوات منزلية', en: 'Home Tools & Items' },
-      { key: 'decor', ar: 'تحف وديكور', en: 'Decor & Antiques' },
-      { key: 'kitchen', ar: 'مطابخ', en: 'Kitchens' },
-      { key: 'carpets', ar: 'سجاد وستائر', en: 'Carpets & Curtains' },
     ],
-
-    personal_items: [
-      { key: 'watches', ar: 'ساعات', en: 'Watches' },
-      { key: 'perfumes', ar: 'عطور', en: 'Perfumes' },
-      { key: 'sports', ar: 'مستلزمات رياضية', en: 'Sports Items' },
-      { key: 'glasses', ar: 'نظارات', en: 'Glasses' },
-      { key: 'men', ar: 'ملابس رجالية', en: 'Men Clothing' },
-      { key: 'women', ar: 'ملابس نسائية', en: 'Women Clothing' },
-      { key: 'kids', ar: 'ملابس واحتياجات اطفال', en: 'Kids Items' },
-      { key: 'gifts', ar: 'هدايا', en: 'Gifts' },
-      { key: 'bags', ar: 'شنط سفر', en: 'Travel Bags' },
-      { key: 'beauty', ar: 'صحة وجمال', en: 'Health & Beauty' },
-      { key: 'jewelry', ar: 'ذهب ومجوهرات', en: 'Gold & Jewelry' },
-    ],
-
     services: [
       { key: 'construction', ar: 'بناء ومقاولات', en: 'Construction & Contracting' },
       { key: 'ac', ar: 'تكييف وتبريد', en: 'AC & Cooling' },
-      { key: 'car_services', ar: 'خدمات سيارات', en: 'Car Services' },
-      { key: 'moving', ar: 'نقل عفش', en: 'Moving Furniture' },
-      { key: 'water_pumps', ar: 'مضخات ومياه', en: 'Water & Pumps' },
-      { key: 'shipping', ar: 'شحن وتوصيل', en: 'Delivery & Shipping' },
-      { key: 'cleaning', ar: 'نظافة', en: 'Cleaning' },
-      { key: 'rentals', ar: 'تاجير', en: 'Rentals' },
-      { key: 'other_services', ar: 'خدمات أخرى', en: 'Other Services' },
     ],
-
-    jobs: [
-      { key: 'admin', ar: 'إدارية وسكرتارية', en: 'Admin & Secretary' },
-      { key: 'sales', ar: 'تسويق ومبيعات', en: 'Sales & Marketing' },
-      { key: 'media', ar: 'إعلام', en: 'Media' },
-      { key: 'tech', ar: 'تقنية واتصالات', en: 'Tech & Telecom' },
-      { key: 'accounting', ar: 'محاسبة ومالية', en: 'Accounting & Finance' },
-      { key: 'engineering', ar: 'هندسة', en: 'Engineering' },
-      { key: 'customer_service', ar: 'خدمة عملاء', en: 'Customer Service' },
-      { key: 'security', ar: 'حراسة وأمن', en: 'Security & Guard' },
-      { key: 'teaching', ar: 'تعليم وتدريس', en: 'Education & Teaching' },
-      { key: 'hospitality', ar: 'سياحة وفندقة', en: 'Tourism & Hospitality' },
-      { key: 'drivers', ar: 'سائقين وتوصيل', en: 'Drivers & Delivery' },
-      { key: 'design', ar: 'تصميم', en: 'Design' },
-      { key: 'industry', ar: 'صناعة وحرف', en: 'Industry & Crafts' },
-      { key: 'medical', ar: 'طب وتمريض', en: 'Medical & Nursing' },
-      { key: 'hr_training', ar: 'تدريب وموارد بشرية', en: 'Training & HR' },
-      { key: 'trades', ar: 'مهن وحرف', en: 'Trades' },
-      { key: 'remote', ar: 'عمل من المنزل', en: 'Work From Home' },
-    ],
-
-    games: [
-      { key: 'console_games', ar: 'ألعاب بلايستيشن/إكس بوكس', en: 'Console Games' },
-      { key: 'consoles', ar: 'أجهزة ألعاب', en: 'Gaming Consoles' },
-      { key: 'controllers', ar: 'يد تحكم وملحقات', en: 'Controllers & Accessories' },
-      { key: 'toys', ar: 'ألعاب أطفال', en: 'Kids Toys' },
-      { key: 'tickets', ar: 'تذاكر', en: 'Tickets' },
-      { key: 'other_ent', ar: 'ترفيه أخرى', en: 'Other Entertainment' },
-    ],
-
     others: [{ key: 'misc', ar: 'متنوع', en: 'Miscellaneous' }],
   };
 
   constructor(
     private navCtrl: NavController,
     private translate: TranslateService,
-    private toastController: ToastController
+    private userService: UserService,
+    private toastController: ToastController,
+    private modalCtrl: ModalController,
+    private ngZone: NgZone
   ) {}
 
-  ngOnInit() {
-    // ✅ Language
-    this.langSub = this.translate.onLangChange.subscribe(() => {
-      this.selectedLanguage = this.translate.currentLang;
-    });
-
+  async ngOnInit() {
+    // ✅ saved lang
     const savedLang = localStorage.getItem('lang');
     if (savedLang) this.selectedLanguage = savedLang;
 
-    // ✅ Current user from localStorage
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    // ✅ Language updates
+    this.langSub = this.translate.onLangChange.subscribe(() => {
+      this.selectedLanguage = this.translate.currentLang;
+      this.refreshSubCategoryOptionsFromData();
+      this.applyFilters();
+    });
+
+    // ✅ Open login modal event
+    // this.openLoginSub = this.userService.getOpenSubject.subscribe((value) => {
+    //   if (value === 'login') this.openLoginModal();
+    // });
+
+    // ✅ Current user
+    const userData = this.getLocalUserData();
     this.currentUserId = userData?.uid || userData?.userId || 'guest';
     this.currentUserName = userData?.name || userData?.full_name || 'You';
-    this.currentUserAvatar = userData?.avatar || userData?.profile || '';
+    this.currentUserAvatar = userData?.photoURL || userData?.avatar || userData?.profile || '';
 
-    // ✅ Load initial data
-    this.loadItems();
-    this.loadStoriesFromFirebase();
+    // ✅ realtime
+    this.startProductsRealtime();
+    this.startStoriesRealtime();
 
-    // ✅ Auto refresh stories
-    this.storyRefreshTimer = setInterval(() => {
-      this.loadStoriesFromFirebase();
-    }, 15000);
+    // ✅ refresh time-ago every 30s
+    this.nowTimer = setInterval(() => {
+      this.ngZone.run(() => (this.nowTs = Date.now()));
+    }, 30000);
   }
 
   ngOnDestroy() {
-    if (this.storyRefreshTimer) clearInterval(this.storyRefreshTimer);
+    if (this.productsUnsub) this.productsUnsub();
+    if (this.storiesUnsub) this.storiesUnsub();
+
+    if (this.nowTimer) clearInterval(this.nowTimer);
+
     if (this.langSub) this.langSub.unsubscribe();
+    if (this.openLoginSub) this.openLoginSub.unsubscribe();
   }
 
   // -------------------- ✅ UI --------------------
@@ -237,20 +229,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // -------------------- ✅ FILTERS --------------------
 
   onCategorySelect(category: Category) {
-    this.categories.forEach(c => (c.selected = false));
+    this.categories.forEach((c) => (c.selected = false));
     category.selected = true;
 
-    this.selectedCategoryKey = category.key;
+    this.selectedSectionKey = category.key;
+    this.selectedSubCategoryKey = 'all';
 
-    // ✅ SubCategory only for real categories
-    if (this.selectedCategoryKey === 'all') {
-      this.subCategoryOptions = [];
-      this.selectedSubCategoryKey = 'all';
-    } else {
-      this.subCategoryOptions = this.subCategoriesMap[this.selectedCategoryKey] || [];
-      this.selectedSubCategoryKey = 'all';
-    }
-
+    this.refreshSubCategoryOptionsFromData();
     this.applyFilters();
   }
 
@@ -266,18 +251,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   applyFilters() {
+    const sectionKey = (this.selectedSectionKey || 'all').toLowerCase();
+    const subKey = (this.selectedSubCategoryKey || 'all').toLowerCase();
+
     this.filteredItems = this.items.filter((item: any) => {
-      const itemSection = (item.section || '').toLowerCase();
-      const itemSub = (item.subCategory || item.sub_category || '').toLowerCase();
+      const itemSectionKey = String(item?.sectionKey || '').toLowerCase();
+      const itemSubKey = String(this.getItemSubKey(item) || '').toLowerCase();
 
-      const matchesCategory =
-        this.selectedCategoryKey === 'all' ||
-        itemSection === this.selectedCategoryKey.toLowerCase();
-
-      const matchesSubCategory =
-        this.selectedCategoryKey === 'all' ||
-        this.selectedSubCategoryKey === 'all' ||
-        itemSub === this.selectedSubCategoryKey.toLowerCase();
+      const matchesSection = sectionKey === 'all' || itemSectionKey === sectionKey;
+      const matchesSub = sectionKey === 'all' || subKey === 'all' || itemSubKey === subKey;
 
       const matchesSearch =
         !this.searchText ||
@@ -285,65 +267,243 @@ export class DashboardComponent implements OnInit, OnDestroy {
         (item.description || '').toLowerCase().includes(this.searchText) ||
         (item.user?.name || '').toLowerCase().includes(this.searchText);
 
-      return matchesCategory && matchesSubCategory && matchesSearch;
+      return matchesSection && matchesSub && matchesSearch;
     });
   }
 
   // -------------------- ✅ PRODUCTS --------------------
 
   onCardClick(product: Product) {
+    console.log("Product:--", product);
     const navigationExtras: NavigationExtras = { state: { product } };
-    this.navCtrl.navigateForward(['/product-details'], navigationExtras);
+    this.navCtrl.navigateForward([`/product-details/${product.id}`], navigationExtras);
   }
 
-  private getIdTokenFromStorage(): string | null {
-    try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      return userData?.idToken || null;
-    } catch {
-      return null;
-    }
+  // ✅ realtime products: newest on top
+  startProductsRealtime() {
+    const db = getDatabase();
+    const productsRef = dbRef(db, 'approvedProducts');
+    const q = query(productsRef, orderByChild('createdAt'));
+
+    this.productsUnsub = onValue(
+      q,
+      (snapshot) => {
+        const data = snapshot.val() || {};
+        const products = Object.keys(data).map((id) => ({ id, ...data[id] }));
+
+        const mapped = products.map((p: any) => this.mapApprovedProductToItem(p));
+
+        // ✅ newest first
+        mapped.sort((a: any, b: any) => Number(b.time || 0) - Number(a.time || 0));
+
+        this.ngZone.run(() => {
+          this.items = mapped;
+          this.refreshSubCategoryOptionsFromData();
+          this.applyFilters();
+        });
+      },
+      (error) => {
+        console.error('Realtime products error:', error);
+        this.showToast('Realtime products error', 'danger');
+      }
+    );
   }
 
-  private buildDbUrl(path: string): string {
-    const token = this.getIdTokenFromStorage();
-    const base = `${this.FIREBASE_DB_URL}/${path}.json`;
-    return token ? `${base}?auth=${encodeURIComponent(token)}` : base;
+  private normalizeToSectionKey(raw: any): string {
+    const k = String(raw || '').trim().toLowerCase();
+    if (!k) return 'uncategorized_auction_section';
+    if (k.endsWith('_section')) return k;
+
+    const map: Record<string, string> = {
+      cars: 'cars_section',
+      electronics: 'device_section',
+      devices: 'device_section',
+      furniture: 'furniture_section',
+      personal_items: 'personal_accessories_section',
+      services: 'services_section',
+      games: 'game_entertainment_section',
+      others: 'uncategorized_auction_section',
+      uncategorized: 'uncategorized_auction_section',
+      jobs: 'services_section',
+
+      animals: 'animals_birds_section',
+      birds: 'animals_birds_section',
+      food: 'food_beverages_section',
+      beverages: 'food_beverages_section',
+      hunting: 'hunting_tips_section',
+      cultivation: 'cultivation_gardens_section',
+      gardens: 'cultivation_gardens_section',
+      programming: 'programming_designs_section',
+      designs: 'programming_designs_section',
+      parties: 'parties_events_section',
+      events: 'parties_events_section',
+      library: 'library_arts_section',
+      arts: 'library_arts_section',
+      travel: 'travel_tourism_section',
+      tourism: 'travel_tourism_section',
+      education: 'education_training_section',
+      training: 'education_training_section',
+      financing: 'financing_loans_section',
+      loans: 'financing_loans_section',
+      anecdotes: 'anecdotes_traditions_section',
+      traditions: 'anecdotes_traditions_section',
+      projects: 'projects_investments_section',
+      investments: 'projects_investments_section',
+      missing: 'missing_section',
+    };
+
+    return map[k] || 'uncategorized_auction_section';
   }
 
-  async fetchProducts(): Promise<any[]> {
-    try {
-      const url = this.buildDbUrl('approvedProducts');
-      const res = await fetch(url);
+  private mapApprovedProductToItem(p: any): any {
+    const sectionKey = this.normalizeToSectionKey(
+      p?.selection?.section?.key || p?.sectionKey || p?.section
+    );
 
-      if (!res.ok) throw new Error(await res.text());
+    const title = (p?.title || p?.subject || '').toString();
+    const description = (p?.description || p?.extraInfo || '').toString();
 
-      const data = await res.json();
-      if (!data) return [];
+    // ✅ IMPORTANT: make sure each item has numeric timestamp
+    const createdAt = Number(p?.createdAt || p?.time || Date.now());
 
-      return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    } catch (err: any) {
-      console.error('Fetch products error:', err);
-      this.showToast(err?.message || 'Error fetching products', 'danger');
-      return [];
-    }
-  }
+    const provinceName = p?.provinceName || p?.location?.provinceName || null;
+    const districtName = p?.districtName || p?.location?.districtName || null;
 
-  async loadItems() {
-    const products = await this.fetchProducts();
+    const images = Array.isArray(p?.images) ? p.images : [];
+    const image = p?.image || '';
+    const user = p?.user || { name: p?.userName || 'User' };
 
-    this.items = (products || []).map((p: any) => ({
+    return {
       ...p,
-      isFavorite: false,
-      time: p.createdAt || Date.now()
-    }));
+      title,
+      description,
+      time: createdAt,
+      provinceName,
+      districtName,
+      images,
+      image,
+      user,
+      sectionKey,
+    };
+  }
 
-    this.applyFilters();
+  private getItemSubKey(item: any): string {
+    return (
+      item?.subCategory ||
+      item?.sub_category ||
+      item?.selection?.model?.key ||
+      item?.selection?.brand?.key ||
+      ''
+    );
+  }
+
+  private sectionKeyToLegacyGroup(sectionKey: string): string {
+    const k = (sectionKey || '').toLowerCase();
+    if (k === 'cars_section') return 'cars';
+    if (k === 'device_section') return 'electronics';
+    if (k === 'furniture_section') return 'furniture';
+    if (k === 'services_section') return 'services';
+    if (k === 'uncategorized_auction_section') return 'others';
+    return '';
+  }
+
+  private refreshSubCategoryOptionsFromData() {
+    if (this.selectedSectionKey === 'all') {
+      this.subCategoryOptions = [];
+      return;
+    }
+
+    const sec = this.selectedSectionKey.toLowerCase();
+    const list = this.items.filter((x: any) => (x.sectionKey || '').toLowerCase() === sec);
+
+    const map = new Map<string, SubOption>();
+
+    const legacy = this.sectionKeyToLegacyGroup(sec);
+    const legacyList = legacy ? this.subCategoriesMap[legacy] || [] : [];
+
+    // legacy
+    for (const sc of legacyList) map.set(sc.key, { key: sc.key, en: sc.en, ar: sc.ar });
+
+    // from data
+    for (const item of list) {
+      const key = this.getItemSubKey(item);
+      if (!key) continue;
+
+      const foundLegacy = legacyList.find((s) => s.key === key);
+      if (foundLegacy) {
+        map.set(key, { key, en: foundLegacy.en, ar: foundLegacy.ar });
+        continue;
+      }
+
+      if (item?.selection?.model?.key === key) {
+        map.set(key, {
+          key,
+          en: item.selection.model.en || key,
+          ar: item.selection.model.ar || key,
+        });
+        continue;
+      }
+
+      if (item?.selection?.brand?.key === key) {
+        map.set(key, {
+          key,
+          en: item.selection.brand.en || key,
+          ar: item.selection.brand.ar || key,
+        });
+        continue;
+      }
+
+      map.set(key, { key, en: key, ar: key });
+    }
+
+    this.subCategoryOptions = Array.from(map.values());
+    const lang = this.selectedLanguage === 'ar' ? 'ar' : 'en';
+    this.subCategoryOptions.sort((a, b) => (a[lang] || '').localeCompare(b[lang] || ''));
   }
 
   // -------------------- ✅ STORIES --------------------
 
-  openAddStoryModal() {
+  startStoriesRealtime() {
+    const db = getDatabase();
+    const storiesRef = dbRef(db, 'stories');
+    const q = query(storiesRef, orderByChild('createdAt'));
+
+    this.storiesUnsub = onValue(
+      q,
+      (snapshot) => {
+        const data = snapshot.val() || {};
+        const seenMap = new Map(this.stories.map((s) => [s.id, !!s.seen]));
+
+        const arr: Story[] = Object.keys(data).map((id) => ({
+          id,
+          ...data[id],
+          seen: seenMap.get(id) ?? false,
+        }));
+
+        const last24h = Date.now() - 24 * 60 * 60 * 1000;
+        const filtered = arr.filter((s) => (s.createdAt || 0) >= last24h);
+        filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        this.ngZone.run(() => {
+          this.stories = filtered;
+        });
+      },
+      (error) => {
+        console.error('Realtime stories error:', error);
+        this.showToast('Realtime stories error', 'danger');
+      }
+    );
+  }
+
+  async openAddStoryModal() {
+    const userData = this.getLocalUserData();
+    const uid = userData?.uid;
+    const token = userData?.idToken;
+
+    if (!uid || !token) {
+      this.userService.setOpenSubject = 'login';
+      return;
+    }
     this.isAddStoryOpen = true;
   }
 
@@ -357,9 +517,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   openStoryViewer(story: Story) {
     this.activeStory = story;
     this.isStoryViewerOpen = true;
-
-    // mark as seen (local)
-    this.stories = this.stories.map(s => (s.id === story.id ? { ...s, seen: true } : s));
+    this.stories = this.stories.map((s) => (s.id === story.id ? { ...s, seen: true } : s));
   }
 
   closeStoryViewer() {
@@ -385,21 +543,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-    private getLocalUserData(): any {
-    try {
-      return JSON.parse(localStorage.getItem('userData') || '{}');
-    } catch {
-      return {};
-    }
-  }
-
   async addStory() {
     try {
       const userData = this.getLocalUserData();
       const uid = userData?.uid;
-      const token = userData?.idToken;
 
-      if (!uid || !token) {
+      if (!uid) {
         this.showToast('Please login to post story', 'danger');
         return;
       }
@@ -416,10 +565,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.uploadingStory = true;
 
-      // 1) upload to Firebase Storage
       const downloadURL = await this.uploadStoryImageToStorage(this.pickedStoryBlob);
 
-      // 2) save to RTDB
       const payload = {
         userId: this.currentUserId,
         userName: this.currentUserName,
@@ -434,7 +581,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.showToast(this.selectedLanguage === 'en' ? 'Story posted!' : 'تم نشر القصة!', 'success');
       this.closeAddStoryModal();
-      await this.loadStoriesFromFirebase();
+      // ✅ realtime will update automatically
     } catch (err: any) {
       console.error(err);
       this.showToast(err?.message || 'Upload failed', 'danger');
@@ -446,21 +593,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private async uploadStoryImageToStorage(blob: Blob): Promise<string> {
     const storage = getStorage();
     const filePath = `stories/${this.currentUserId}/${Date.now()}.jpg`;
-    const storageRef = ref(storage, filePath);
+    const refObj = storageRef(storage, filePath);
 
-    await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
-    return await getDownloadURL(storageRef);
+    await uploadBytes(refObj, blob, { contentType: 'image/jpeg' });
+    return await getDownloadURL(refObj);
   }
 
   async saveStoryToFirebase(payload: any): Promise<boolean> {
     try {
-      const url = this.buildDbUrl('stories');
+      const url = `${this.FIREBASE_DB_URL}/stories.json`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error(await res.text());
       return true;
     } catch (err: any) {
@@ -470,42 +616,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  async loadStoriesFromFirebase() {
-    this.stories = await this.fetchStoriesFromFirebase();
+  // -------------------- ✅ TIME AGO --------------------
+
+  getTimeAgo(ts: any): string {
+    const t = Number(ts || 0);
+    const isAr = this.selectedLanguage === 'ar';
+
+    if (!t) return isAr ? 'غير معروف' : 'Unknown';
+
+    const diffMs = Math.max(0, this.nowTs - t);
+    const sec = Math.floor(diffMs / 1000);
+
+    if (sec < 10) return isAr ? 'الآن' : 'Just now';
+    if (sec < 60) return isAr ? `قبل ${sec} ثانية` : `${sec} sec ago`;
+
+    const min = Math.floor(sec / 60);
+    if (min < 60) return isAr ? `قبل ${min} دقيقة` : `${min} min ago`;
+
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return isAr ? `قبل ${hr} ساعة` : `${hr} hr ago`;
+
+    const day = Math.floor(hr / 24);
+    if (day === 1) return isAr ? 'أمس' : 'Yesterday';
+    if (day < 7) return isAr ? `قبل ${day} أيام` : `${day} days ago`;
+
+    // old posts show date
+    const d = new Date(t);
+    return isAr
+      ? d.toLocaleDateString('ar', { year: 'numeric', month: 'short', day: '2-digit' })
+      : d.toLocaleDateString('en', { year: 'numeric', month: 'short', day: '2-digit' });
   }
 
-  async fetchStoriesFromFirebase(): Promise<Story[]> {
-    try {
-      const url = this.buildDbUrl('stories');
-      const res = await fetch(url);
+  // -------------------- ✅ AUTH MODAL --------------------
 
-      if (!res.ok) throw new Error(await res.text());
-
-      const data = await res.json();
-      if (!data) return [];
-
-      const arr: Story[] = Object.keys(data).map(key => ({
-        id: key,
-        ...data[key],
-        seen: false
-      }));
-
-      // only last 24h
-      const last24h = Date.now() - 24 * 60 * 60 * 1000;
-      const filtered = arr.filter(s => (s.createdAt || 0) >= last24h);
-
-      // newest first
-      filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-      return filtered;
-    } catch (err: any) {
-      console.error('Fetch stories error:', err);
-      this.showToast(err?.message || 'Error fetching stories', 'danger');
-      return [];
-    }
+  async openLoginModal() {
+    const modal = await this.modalCtrl.create({
+      component: AuthModalComponent,
+      cssClass: 'auth-modal',
+      mode: 'ios',
+      backdropDismiss: true,
+    });
+    await modal.present();
   }
 
   // -------------------- ✅ Helpers --------------------
+
+  private getLocalUserData(): any {
+    try {
+      return JSON.parse(localStorage.getItem('userData') || '{}');
+    } catch {
+      return {};
+    }
+  }
 
   async showToast(message: string, color: string = 'danger') {
     const toast = await this.toastController.create({
@@ -533,8 +695,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const slice = byteCharacters.slice(offset, offset + 512);
       const byteNumbers = new Array(slice.length);
       for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
-      const byteArray = new Uint8Array(byteNumbers);
-      byteArrays.push(byteArray);
+      byteArrays.push(new Uint8Array(byteNumbers));
     }
 
     return new Blob(byteArrays as BlobPart[], { type: contentType });

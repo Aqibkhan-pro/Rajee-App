@@ -1,19 +1,39 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 
-interface FirebaseProduct {
-  id: string; // firebase key
-  title?: string;
-  image?: string;
-  price?: string;
-  description?: string;
+interface FirebaseProductRaw {
+  subject?: string;
+  extraInfo?: string;
+  price?: number;
+  phone?: string;
   createdAt?: number;
-  time?: number;
-  section?: string;
-  user?: any;
-  location?: any;
-  comments?: any[];
+
+  images?: string[];
+
+  location?: {
+    displayText?: { en?: string; ar?: string };
+  };
+
+  selection?: {
+    displayText?: { en?: string; ar?: string };
+    section?: { key?: string; en?: string; ar?: string };
+  };
+
+  carDetails?: any;
+
   [key: string]: any;
+}
+
+interface FirebaseProductView extends FirebaseProductRaw {
+  id: string;
+
+  // ✅ computed fields for UI
+  coverImage: string;
+  displaySubject: string;
+  displayExtraInfo: string;
+  displayCategory: string;
+  displayLocation: string;
+  priceDisplay: string;
 }
 
 @Component({
@@ -25,45 +45,64 @@ interface FirebaseProduct {
 export class ManageProductsComponent implements OnInit {
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
 
-  products: FirebaseProduct[] = [];
-  filteredProducts: FirebaseProduct[] = [];
+  products: FirebaseProductView[] = [];
+  filteredProducts: FirebaseProductView[] = [];
   loading = false;
 
   searchText = '';
   idToken: string | null = null;
 
+  // ✅ UI language (for en/ar)
+  selectedLanguage: 'en' | 'ar' = 'en';
+
   constructor(private toastController: ToastController) {}
 
-  ngOnInit() {    // 2️⃣ User data
+  ngOnInit() {
+    const savedLang = localStorage.getItem('lang');
+    this.selectedLanguage = savedLang === 'ar' ? 'ar' : 'en';
+
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-     this.idToken = userData?.idToken;
-    if (!this.idToken) throw new Error('User not authenticated');
+    this.idToken = userData?.idToken;
+
+    // NOTE: your products.read=true so auth not required for load.
+    // but approve/reject write needs auth.
     this.loadProducts();
   }
 
   onSearch(event: any) {
-    this.searchText = event.target.value?.toLowerCase() || '';
+    this.searchText = event?.target?.value?.toLowerCase() || '';
     this.applySearch();
   }
 
-  applySearch() {
+  private applySearch() {
     if (!this.searchText) {
       this.filteredProducts = [...this.products];
       return;
     }
 
-    this.filteredProducts = this.products.filter(p =>
-      (p.title || '').toLowerCase().includes(this.searchText) ||
-      (p.description || '').toLowerCase().includes(this.searchText) ||
-      (p.section || '').toLowerCase().includes(this.searchText) ||
-      (p.user?.name || '').toLowerCase().includes(this.searchText)
-    );
+    const q = this.searchText;
+
+    this.filteredProducts = this.products.filter(p => {
+      const subject = (p.displaySubject || '').toLowerCase();
+      const desc = (p.displayExtraInfo || '').toLowerCase();
+      const cat = (p.displayCategory || '').toLowerCase();
+      const loc = (p.displayLocation || '').toLowerCase();
+      const section = (p.selection?.section?.key || '').toLowerCase();
+      return (
+        subject.includes(q) ||
+        desc.includes(q) ||
+        cat.includes(q) ||
+        loc.includes(q) ||
+        section.includes(q)
+      );
+    });
   }
 
   async loadProducts() {
     this.loading = true;
     try {
-      const url = `${this.FIREBASE_DB_URL}/products.json?auth=${this.idToken}`;
+      // ✅ read is public according to your rules
+      const url = `${this.FIREBASE_DB_URL}/products.json`;
       const res = await fetch(url);
       const data = await res.json();
 
@@ -73,13 +112,13 @@ export class ManageProductsComponent implements OnInit {
         return;
       }
 
-      const arr: FirebaseProduct[] = Object.keys(data).map(key => ({
-        id: key,
-        ...data[key],
-      }));
+      const arr: FirebaseProductView[] = Object.keys(data).map((key) => {
+        const raw: FirebaseProductRaw = data[key] || {};
+        return this.mapToView(key, raw);
+      });
 
       // newest first
-      arr.sort((a, b) => ((b.createdAt || b.time || 0) - (a.createdAt || a.time || 0)));
+      arr.sort((a, b) => ((b.createdAt || 0) - (a.createdAt || 0)));
 
       this.products = arr;
       this.applySearch();
@@ -91,30 +130,70 @@ export class ManageProductsComponent implements OnInit {
     }
   }
 
+  private mapToView(id: string, raw: FirebaseProductRaw): FirebaseProductView {
+    const lang = this.selectedLanguage;
+
+    const coverImage =
+      raw?.images?.[0] ||
+      (raw as any)?.image ||
+      'assets/imgs/placeholder.png';
+
+    const displaySubject = (raw?.subject ?? '').trim();
+
+    const displayExtraInfo = (raw?.extraInfo ?? '').trim();
+
+    const displayCategory =
+      raw?.selection?.displayText?.[lang] ||
+      raw?.selection?.displayText?.en ||
+      '';
+
+    const displayLocation =
+      raw?.location?.displayText?.[lang] ||
+      raw?.location?.displayText?.en ||
+      '';
+
+    const priceDisplay =
+      raw?.price === null || raw?.price === undefined
+        ? 'N/A'
+        : String(raw.price);
+
+    return {
+      id,
+      ...raw,
+      coverImage,
+      displaySubject,
+      displayExtraInfo,
+      displayCategory,
+      displayLocation,
+      priceDisplay,
+    };
+  }
+
   // ✅ APPROVE: copy to approvedProducts then delete from products
-  async approve(p: FirebaseProduct) {
+  async approve(p: FirebaseProductView) {
     try {
+      if (!this.idToken) {
+        this.showToast('Login required to approve', 'danger');
+        return;
+      }
+
       const approvedPayload = {
         ...p,
         approvedAt: Date.now(),
-        status: 'approved'
+        status: 'approved',
       };
 
-      // 1) Add into approvedProducts (use same id so easy to track)
       const putUrl = `${this.FIREBASE_DB_URL}/approvedProducts/${p.id}.json?auth=${this.idToken}`;
       const putRes = await fetch(putUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(approvedPayload),
       });
-
       if (!putRes.ok) throw new Error(await putRes.text());
 
-      // 2) Remove from products
       await this.deleteFromProducts(p.id);
 
-      // 3) Remove locally
-      this.products = this.products.filter(x => x.id !== p.id);
+      this.products = this.products.filter((x) => x.id !== p.id);
       this.applySearch();
 
       this.showToast('Approved ✅ moved to approvedProducts', 'success');
@@ -124,16 +203,16 @@ export class ManageProductsComponent implements OnInit {
     }
   }
 
-  // ✅ REJECT: remove from products
-  // If you want "move to rejectedProducts" enable OPTIONAL section below.
-  async reject(p: FirebaseProduct) {
+  async reject(p: FirebaseProductView) {
     try {
-      // OPTIONAL: move to rejectedProducts instead of only delete
-      // await this.moveToRejectedProducts(p);
+      if (!this.idToken) {
+        this.showToast('Login required to reject', 'danger');
+        return;
+      }
 
       await this.deleteFromProducts(p.id);
 
-      this.products = this.products.filter(x => x.id !== p.id);
+      this.products = this.products.filter((x) => x.id !== p.id);
       this.applySearch();
 
       this.showToast('Rejected ❌ removed from products', 'medium');
@@ -147,23 +226,6 @@ export class ManageProductsComponent implements OnInit {
     const delUrl = `${this.FIREBASE_DB_URL}/products/${productId}.json?auth=${this.idToken}`;
     const delRes = await fetch(delUrl, { method: 'DELETE' });
     if (!delRes.ok) throw new Error(await delRes.text());
-  }
-
-  // OPTIONAL helper if you want rejectedProducts
-  private async moveToRejectedProducts(p: FirebaseProduct) {
-    const rejectedPayload = {
-      ...p,
-      rejectedAt: Date.now(),
-      status: 'rejected'
-    };
-
-    const putUrl = `${this.FIREBASE_DB_URL}/rejectedProducts/${p.id}.json?auth=${this.idToken}`;
-    const putRes = await fetch(putUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rejectedPayload),
-    });
-    if (!putRes.ok) throw new Error(await putRes.text());
   }
 
   private async showToast(message: string, color: string = 'danger') {

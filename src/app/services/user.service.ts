@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 
 export interface User {
   uid: string;
@@ -20,6 +21,16 @@ export class UserService {
   private followingCache: string[] = [];
 
   constructor() {}
+
+  private openLogin = new Subject<string>();
+
+  get getOpenSubject(): Observable<string> {
+    return this.openLogin.asObservable();
+  }
+
+  set setOpenSubject(value: any) {
+    this.openLogin.next(value);
+  }
 
   /** Get current logged-in user info from localStorage */
   private getAuthData() {

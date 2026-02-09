@@ -21,24 +21,34 @@
 
     <ion-card *ngFor="let p of filteredProducts" mode="ios">
       <ion-item lines="none" class="card-item">
-        <img [src]="p?.image || p?.images[0]" class="card-image" />
+        <!-- ✅ image -->
+        <img [src]="p?.coverImage" class="card-image" />
 
         <div class="card-body">
-          <div class="title">{{ p.title }}</div>
+          <!-- ✅ title -->
+          <div class="title">{{ p.displaySubject || '-' }}</div>
+
+          <!-- ✅ category line -->
+          <div class="desc" *ngIf="p.displayCategory">{{ p.displayCategory }}</div>
 
           <div class="meta">
             <div class="meta-item">
               <ion-icon name="pricetag-outline"></ion-icon>
-              <span>{{ p.price || 'N/A' }}</span>
+              <span>{{ p.priceDisplay }}</span>
             </div>
 
             <div class="meta-item">
               <ion-icon name="time-outline"></ion-icon>
-              <span>{{ (p.createdAt || p.time || 0) | date:'dd MMM yy' }}</span>
+              <span>{{ (p.createdAt || 0) | date:'dd MMM yy' }}</span>
             </div>
           </div>
 
-          <div class="desc" *ngIf="p.description">{{ p.description }}</div>
+
+          <!-- ✅ location -->
+          <div class="desc" *ngIf="p.displayLocation">
+            📍 {{ p.displayLocation }}
+          </div>
+
         </div>
       </ion-item>
 
@@ -57,7 +67,7 @@
     </ion-card>
 
     <!-- Empty -->
-    <div class="empty" *ngIf="!loading && products.length === 0">
+    <div class="empty" *ngIf="!loading && filteredProducts.length === 0">
       <ion-icon name="cube-outline"></ion-icon>
       <p>No pending products</p>
     </div>

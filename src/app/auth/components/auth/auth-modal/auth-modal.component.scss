@@ -30,13 +30,13 @@ ion-label {
   .forgot-text {
     text-align: end;
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--primary-color);
   }
 
   .create-text {
     text-align: center;
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-black);
   }
 }
 
@@ -52,13 +52,17 @@ ion-item,
 ion-list,
 ion-header,
 ion-toolbar {
-  --background: var(--primary-color);
-  background: var(--primary-color);
+  --background: var(--secondary-color) !important;
+  background: var(--secondary-color) !important;
+}
+
+ion-title{
+  color:var(--text-black);
 }
 
 .input-item {
   border: 1px solid var(--card-border-color);
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 ion-button {
@@ -71,7 +75,8 @@ ion-button {
 }
 
 .custom-input {
-  --background: var(--secondary-color) !important;
+  --background: var(--secondary-color-3) !important;
+  background: var(--secondary-color-3) !important;
   --color: #000000 !important;
   --placeholder-color: #ddd;
   --placeholder-opacity: 0.8;
@@ -84,4 +89,21 @@ ion-button {
 
 .mt-16{
   margin-top: 16px;
+}
+
+.text-14{
+  color: var(--text-black);
+  font-weight: bold;
+}
+
+
+ion-button{
+  --background: var(--primary-color);
+  color: #fff;
+
+}
+
+ion-header , ion-toolbar{
+  margin: 0 !important;
+  padding: 0 !important;
 }

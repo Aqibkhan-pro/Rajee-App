@@ -3,9 +3,9 @@ ion-toolbar {
   --background: var(--primary-color);
 }
 
-.back{
+.back {
   --background: var(--primary-color);
-  --color:var(--button-color);
+  --color: var(--button-color);
 }
 
 ion-title {
@@ -23,15 +23,9 @@ ion-title {
   --padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
-
-.step-indicator {
-  font-size: 14px;
-  // opacity: 0.8;
-}
-
 .steps-wrap {
   position: relative;
-  height: calc(100vh - 110px); // header space adjust
+  height: calc(100vh - 110px);
 }
 
 .step-panel {
@@ -40,24 +34,15 @@ ion-title {
 }
 
 .step-card {
-  height: 100%;
   margin: 0;
   background: transparent !important;
-  display: flex;
-  flex-direction: column;
-  -webkit-box-shadow: 0 ;
+  -webkit-box-shadow: 0;
   box-shadow: none;
-}
-
-.step-body {
-  flex: 1;
-  overflow: auto;
 }
 
 .step-actions {
   padding: 12px;
 }
-
 
 /* List + items background */
 .form-list,
@@ -67,16 +52,9 @@ ion-item {
   color: #f0f0f0 !important;
 }
 
-/* ✅ Remove default item padding so your boxes align nicely */
-.no-pad {
-  --padding-start: 0px;
-  --inner-padding-end: 0px;
-}
-
 /* ===================================================== */
 /* ✅ Attractive horizontal image picker + image list */
 /* ===================================================== */
-
 .images-row {
   width: 100%;
   display: flex;
@@ -91,7 +69,7 @@ ion-item {
   height: 110px;
   border-radius: 16px;
   border: 1px dashed rgba(0, 0, 0, 0.18);
-  background: #f4f4f4;
+  background: var(--secondary-color-3);
   display: grid;
   place-items: center;
   gap: 6px;
@@ -135,7 +113,7 @@ ion-item {
   height: 120px;
   border-radius: 14px;
   overflow: hidden;
-  background: #eaeaea;
+  background: var(--secondary-color-3);
   scroll-snap-align: start;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
@@ -170,8 +148,7 @@ ion-item {
   padding: 12px 0px;
   width: 100%;
   margin-top: 16px;
-  background-color: #f4f4f4;
-  // border-radius: 12px;
+  background-color: var(--secondary-color-3);
 }
 
 .sub_select_location {
@@ -186,19 +163,20 @@ ion-item {
     font-size: smaller;
   }
 
-  .location_filled{
+  .location_filled {
     margin: 3px;
     font-size: 16px;
     font-weight: 600;
     margin-top: 8px;
     color: var(--primary-color);
   }
+
   .change_subject {
     font-size: smaller;
     margin-top: 8px;
     min-height: 25px;
     font-family: system-ui;
-    --placeholder-color: #343434;
+    --placeholder-color: var(--text-black);
     color: var(--primary-color);
   }
 
@@ -207,25 +185,7 @@ ion-item {
   }
 }
 
-ion-breadcrumb {
-  --color: var(--primary-color);
-  --color-active: var(--primary-color);
-  --color-hover: var(--primary-color);
-}
-s
-
-.my-breadcrumbs {
-  --separator-padding: 4px;
-  --padding-start: 0px;
-  --padding-end: 0px;
-}
-
-.my-breadcrumbs ion-breadcrumb::part(native) {
-  padding-inline: 2px;
-  padding-block: 4px;
-}
-
-.next_button{
+.next_button {
   --background: var(--primary-color);
   --background-activated: var(--primary-color);
   --background-hover: var(--primary-color);
@@ -234,19 +194,94 @@ s
   --background-hover-opacity: var(--primary-color);
   --background-focused-opacity: var(--primary-color);
   --color: var(--button-color);
-  color:var(--button-color);
+  color: var(--button-color);
 }
 
-.clickable { cursor: pointer; }
+.clickable {
+  cursor: pointer;
+}
 
-.location-row{
+.location-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
-.chev{
+.chev {
   font-size: 18px;
   color: var(--primary-color);
+}
+
+.title_sell {
+  font-size: 16px;
+  color: var(--text-black);
+  font-weight: 600;
+}
+
+.p-10 {
+  padding: 16px;
+}
+
+ion-segment {
+  --background: #a0a0a0;
+  border-radius: 13px;
+  height: 45px;
+
+  ion-segment-button {
+    --color: #ffffff;
+    --indicator-color: var(--primary-color);
+  }
+}
+
+.sell_or_waiver {
+  --inner-padding-end: 0px;
+  --padding-start: 0px;
+  --padding-bottom: 12px;
+    --padding-top: 6px;
+    margin-bottom: 12px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+ion-range {
+  padding-inline-start: 16px;
+  padding-inline-end: 16px;
+  padding-top: 0;
+}
+
+ion-chip {
+  background: var(--secondary-color-3);
+  --background-activated: var(--primary-color);
+  --background-hover: var(--primary-color);
+  --background-focused: var(--primary-color);
+  --background-activated-opacity: var(--primary-color);
+  --background-hover-opacity: var(--primary-color);
+  --background-focused-opacity: var(--primary-color);
+  --color: var(--button-color);
+  color: var(--button-color);
+}
+
+/* ✅ readonly look */
+.readonly-box {
+  opacity: 0.95;
+
+  .location_filled {
+    user-select: text;
+  }
+}
+
+
+.price{
+  background: var(--secondary-color-3);
+  --highlight-color: var(--primary-color);
+  color: var(--text-black);
+  margin: 0px 10px;
+  border-radius: 8px;
+  max-height: 44px;
+  min-height: 45px;
+  --padding-end: 10px;
+  --padding-start: 9px;
 }

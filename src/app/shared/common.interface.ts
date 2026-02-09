@@ -8,6 +8,7 @@ export interface User {
 
 
 export interface Product {
+  id: string;
   title: string;
   price: number;
   section: string;

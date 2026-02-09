@@ -27,6 +27,19 @@
           <ion-icon name="id-card-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
           <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'admin_panel'| translate }}</ion-label>
         </ion-item>
+        <ion-item button (click)="onMenuItemClick('favorites')" lines="none">
+          <ion-icon name="heart-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">
+            {{ 'favorites' | translate }}
+          </ion-label>
+        </ion-item>
+
+        <ion-item button (click)="onMenuItemClick('share')" lines="none">
+          <ion-icon name="share-social-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
+          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">
+            {{ 'share' | translate }}
+          </ion-label>
+        </ion-item>
 
         <ion-item button (click)="onMenuItemClick('policies')" lines="none">
           <ion-icon name="shield-checkmark-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
@@ -35,20 +48,12 @@
           </ion-label>
         </ion-item>
 
-        <!-- <ion-item button (click)="onMenuItemClick('settings')" lines="none">
-          <ion-icon name="settings-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
-          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'settings'| translate }}</ion-label>
-        </ion-item> -->
-
         <ion-item button (click)="onMenuItemClick('about')" lines="none">
           <ion-icon name="information-circle-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
           <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'about'| translate}}</ion-label>
         </ion-item>
 
-        <!-- <ion-item button (click)="onMenuItemClick('help')" lines="none">
-          <ion-icon name="help-circle-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'"></ion-icon>
-          <ion-label [style.text-align]="selectedLanguage=='en' ? 'start': 'end'">{{'help' | translate}}</ion-label>
-        </ion-item> -->
+
       </ion-list>
     </ion-content>
 
@@ -76,10 +81,17 @@
         </ion-item>
 
         <!-- Logout -->
-        <ion-item lines="none" button (click)="onMenuItemClick('logout')" class="logout-item">
+        <ion-item lines="none" button (click)="onMenuItemClick('logout')" class="logout-item"
+        *ngIf="userEmail ; else notLoggedIn">
           <ion-icon name="log-out-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'" color="danger"></ion-icon>
           <ion-label color="danger">{{'logout'| translate}}</ion-label>
         </ion-item>
+        <ng-template #notLoggedIn>
+          <ion-item lines="none" button (click)="openLoginModal()" class="logout-item">
+            <ion-icon name="log-out-outline" [slot]="selectedLanguage=='en' ? 'start': 'end'" color="danger"></ion-icon>
+            <ion-label color="primary">{{'login'| translate}}</ion-label>
+          </ion-item>
+        </ng-template>
       </ion-list>
     </ion-footer>
   </ion-menu>
@@ -131,14 +143,14 @@
       </ion-text>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile"
-      [class.selected]="selectedTab === 'profile'" (click)="selectTab('profile')">
+    <ion-tab-button tab="noti"
+      [class.selected]="selectedTab === 'noti'" (click)="selectTab('noti')">
       <ion-icon
-        name="person"
-        [ngClass]="selectedTab=='profile' ? 'selected' : ''">
+        name="notifications"
+        [ngClass]="selectedTab=='noti' ? 'selected' : ''">
       </ion-icon>
-      <ion-text [ngClass]="selectedTab=='profile' ? 'selected' : ''">
-        {{ 'profile' | translate }}
+      <ion-text [ngClass]="selectedTab=='noti' ? 'selected' : ''">
+        {{ 'notification' | translate }}
       </ion-text>
     </ion-tab-button>
 
