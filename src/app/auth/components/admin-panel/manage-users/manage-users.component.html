@@ -1,10 +1,10 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="topbar">
     <ion-buttons slot="start">
-      <ion-back-button style="color: var(--secondary-color) !important;"></ion-back-button>
+      <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
     </ion-buttons>
 
-    <ion-title class="title">Manage Users</ion-title>
+    <ion-title class="title">{{ t('manageUsers') }}</ion-title>
 
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="loadUsers()">
@@ -14,12 +14,15 @@
   </ion-toolbar>
 
   <ion-toolbar class="searchbar-wrap">
-    <ion-searchbar
-      placeholder="Search name / email / phone..."
+    <div [attr.dir]="currentLang !== 'en' ? 'rtl' : 'ltr'">
+ <ion-searchbar
+      [placeholder]="t('searchPlaceholder')"
       (ionInput)="onSearch($event)"
       mode="ios"
       class="searchbar">
     </ion-searchbar>
+    </div>
+   
   </ion-toolbar>
 </ion-header>
 
@@ -28,13 +31,13 @@
   <!-- Loading -->
   <div class="state" *ngIf="loading">
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading users...</p>
+    <p>{{ t('loadingUsers') }}</p>
   </div>
 
   <!-- Empty -->
   <div class="state" *ngIf="!loading && users.length === 0">
     <ion-icon name="people-outline"></ion-icon>
-    <p>No users found</p>
+    <p>{{ t('noUsersFound') }}</p>
   </div>
 
   <!-- Users -->
@@ -53,19 +56,19 @@
             <div class="name">{{ u.name || 'N/A' }}</div>
 
             <div class="status-pill" [class.inactive]="(u.status || 'active') !== 'active'">
-              {{ (u.status || 'active') === 'active' ? 'Active' : 'Inactive' }}
+              {{ (u.status || 'active') === 'active' ? t('active') : t('inactive') }}
             </div>
           </div>
 
           <div class="meta">
             <div class="meta-item">
               <ion-icon name="mail-outline"></ion-icon>
-              <span>{{ u.email || 'No email' }}</span>
+              <span>{{ u.email || t('noEmail') }}</span>
             </div>
 
             <div class="meta-item">
               <ion-icon name="call-outline"></ion-icon>
-              <span>{{ u.phone || 'No phone' }}</span>
+              <span>{{ u.phone || t('noPhone') }}</span>
             </div>
 
             <div class="meta-item muted">
@@ -78,10 +81,10 @@
 
       <!-- Action -->
       <ion-button
-       [ngClass]="(u.status || 'active') === 'active' ? 'danger' : 'success'"
-        class=" action" shape="round"
+        [ngClass]="(u.status || 'active') === 'active' ? 'danger' : 'success'"
+        class="action" shape="round"
         (click)="toggleUserStatus(u)">
-        {{ (u.status || 'active') === 'active' ? 'Deactivate' : 'Activate' }}
+        {{ (u.status || 'active') === 'active' ? t('deactivate') : t('activate') }}
       </ion-button>
 
     </div>

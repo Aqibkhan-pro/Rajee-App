@@ -25,6 +25,50 @@ export class ManageUsersComponent implements OnInit {
   loading = false;
   searchText = '';
   idToken: string | null = null;
+
+  // ✅ Language support
+  currentLang: string = 'en';
+  translations: any = {
+    en: {
+      manageUsers: 'Manage Users',
+      searchPlaceholder: 'Search name / email / phone...',
+      loadingUsers: 'Loading users...',
+      noUsersFound: 'No users found',
+      active: 'Active',
+      inactive: 'Inactive',
+      deactivate: 'Deactivate',
+      activate: 'Activate',
+      deactivateUserTitle: 'Deactivate User?',
+      activateUserTitle: 'Activate User?',
+      setUserTo: 'Set "{name}" to {status}?',
+      cancel: 'Cancel',
+      yes: 'Yes',
+      userIsNow: 'User is now {status}',
+      failedLoadUsers: 'Failed to load users',
+      noEmail: 'No email',
+      noPhone: 'No phone'
+    },
+    ar: {
+      manageUsers: 'إدارة المستخدمين',
+      searchPlaceholder: 'البحث عن الاسم / البريد الإلكتروني / الهاتف...',
+      loadingUsers: 'جاري تحميل المستخدمين...',
+      noUsersFound: 'لم يتم العثور على مستخدمين',
+      active: 'نشط',
+      inactive: 'غير نشط',
+      deactivate: 'إلغاء التفعيل',
+      activate: 'تفعيل',
+      deactivateUserTitle: 'إلغاء تفعيل المستخدم؟',
+      activateUserTitle: 'تفعيل المستخدم؟',
+      setUserTo: 'تعيين "{name}" إلى {status}؟',
+      cancel: 'إلغاء',
+      yes: 'نعم',
+      userIsNow: 'المستخدم الآن {status}',
+      failedLoadUsers: 'فشل تحميل المستخدمين',
+      noEmail: 'لا يوجد بريد إلكتروني',
+      noPhone: 'لا يوجد هاتف'
+    }
+  };
+
   constructor(
     private toastController: ToastController,
     private alertController: AlertController
@@ -34,7 +78,24 @@ export class ManageUsersComponent implements OnInit {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.idToken = userData?.idToken;
     if (!this.idToken) throw new Error('User not authenticated');
+
+    // ✅ Load language from localStorage
+    this.currentLang = localStorage.getItem('lang') || 'en';
+    
     this.loadUsers();
+  }
+
+  // ✅ Get translation by key
+  t(key: string, replacements?: { [key: string]: string }): string {
+    let text = this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
+    
+    if (replacements) {
+      Object.keys(replacements).forEach(k => {
+        text = text.replace(`{${k}}`, replacements[k]);
+      });
+    }
+    
+    return text;
   }
 
   onSearch(ev: any) {
@@ -80,7 +141,7 @@ export class ManageUsersComponent implements OnInit {
       this.applySearch();
     } catch (e: any) {
       console.error(e);
-      this.showToast(e.message || 'Failed to load users', 'danger');
+      this.showToast(this.t('failedLoadUsers'), 'danger');
     } finally {
       this.loading = false;
     }
@@ -89,14 +150,15 @@ export class ManageUsersComponent implements OnInit {
   async toggleUserStatus(user: AppUser) {
     const current = user.status || 'active';
     const next: 'active' | 'inactive' = current === 'active' ? 'inactive' : 'active';
+    const statusLabel = next === 'active' ? this.t('active').toUpperCase() : this.t('inactive').toUpperCase();
 
     const alert = await this.alertController.create({
-      header: next === 'inactive' ? 'Deactivate User?' : 'Activate User?',
-      message: `Set "${user.name}" to ${next.toUpperCase()}?`,
+      header: next === 'inactive' ? this.t('deactivateUserTitle') : this.t('activateUserTitle'),
+      message: this.t('setUserTo', { name: user.name, status: statusLabel }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: this.t('cancel'), role: 'cancel' },
         {
-          text: 'Yes',
+          text: this.t('yes'),
           handler: async () => {
             await this.updateUserStatus(user.key, next);
 
@@ -104,7 +166,7 @@ export class ManageUsersComponent implements OnInit {
             this.users = this.users.map(u => u.key === user.key ? { ...u, status: next } : u);
             this.applySearch();
 
-            this.showToast(`User is now ${next}`, 'success');
+            this.showToast(this.t('userIsNow', { status: next === 'active' ? this.t('active') : this.t('inactive') }), 'success');
           }
         }
       ]
@@ -137,8 +199,6 @@ export class ManageUsersComponent implements OnInit {
     toast.present();
   }
 
-  // Add these methods to your component class
-
   getInitial(name: string): string {
     if (!name) return '?';
     return name.charAt(0).toUpperCase();
@@ -156,5 +216,4 @@ export class ManageUsersComponent implements OnInit {
 
     return `linear-gradient(135deg, hsl(${hue1}, 80%, 45%), hsl(${hue2}, 85%, 55%))`;
   }
-
 }

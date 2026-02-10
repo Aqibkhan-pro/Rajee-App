@@ -1,46 +1,57 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button style="color: var(--secondary-color) !important;"></ion-back-button>
+      <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
     </ion-buttons>
-    <ion-title class="page-title">Remove Products</ion-title>
+    <ion-title class="page-title">{{ t('removeProducts') }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="doRefresh($event)" style="color: var(--button-color) !important;">
+        <ion-icon slot="icon-only" name="refresh-outline" style="font-size: 24px;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 
   <ion-toolbar>
+     <div [attr.dir]="currentLang !== 'en' ? 'rtl' : 'ltr'">
     <ion-searchbar
       mode="ios"
       class="searchbar"
-      placeholder="Search approved products..."
+      [placeholder]="t('searchPlaceholder')"
       (ionInput)="onSearch($event)">
     </ion-searchbar>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="page-content">
 
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content pullingIcon="chevron-down-circle-outline"></ion-refresher-content>
+    <ion-refresher-content 
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
   </ion-refresher>
 
   <div class="list-container">
 
     <!-- Loading Skeleton -->
     <ng-container *ngIf="loading">
-      <ion-card class="product-card" *ngFor="let x of [1,2,3,4]" mode="ios">
+      <ion-card class="product-card" *ngFor="let x of [1,2,3,4,5]" mode="ios">
         <ion-item lines="none" class="card-item">
           <ion-thumbnail slot="start" class="thumb">
-            <ion-skeleton-text animated style="width: 88px; height: 88px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 100px; height: 100px;"></ion-skeleton-text>
           </ion-thumbnail>
 
           <ion-label class="card-body">
-            <ion-skeleton-text animated style="width: 70%; height: 14px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 45%; height: 12px; margin-top: 10px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 90%; height: 10px; margin-top: 12px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 75%; height: 16px; border-radius: 8px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 85%; height: 12px; margin-top: 12px; border-radius: 6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 60%; height: 12px; margin-top: 8px; border-radius: 6px;"></ion-skeleton-text>
           </ion-label>
         </ion-item>
 
         <div class="card-actions">
-          <ion-skeleton-text animated style="width: 120px; height: 34px; border-radius: 10px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 130px; height: 40px; border-radius: 12px;"></ion-skeleton-text>
         </div>
       </ion-card>
     </ng-container>
@@ -54,56 +65,65 @@
 
         <ion-item lines="none" class="card-item">
           <ion-thumbnail slot="start" class="thumb">
-            <img [src]="p?.image || p?.images?.[0]" (error)="onImgError($event)"  />
+            <img 
+              [src]="p?.coverImage || p?.images?.[0]" 
+              (error)="onImgError($event)"
+              alt="Product Image" />
           </ion-thumbnail>
 
           <ion-label class="card-body">
+            <!-- Top Row: Title + Status Badge -->
             <div class="top-row">
-              <div class="title">{{ p.title || 'Untitled' }}</div>
-              <ion-chip class="status-chip" color="success">
-                <ion-icon name="checkmark-circle-outline"></ion-icon>
-                <ion-label>Approved</ion-label>
-              </ion-chip>
+              <div class="title">{{ p.displaySubject || 'Untitled'  | titlecase }}</div>
             </div>
 
-            <div class="chips-row">
+            <!-- Info Chips Row -->
+            <!-- <div class="chips-row">
               <ion-chip class="chip">
-                <ion-icon name="pricetag-outline"></ion-icon>
-                <ion-label>{{ p.price || 'N/A' }}</ion-label>
+                <ion-icon name="pricetag-outline" slot="start"></ion-icon>
+                <ion-label>{{ p.priceDisplay || p.price || 'N/A' }}</ion-label>
               </ion-chip>
 
-              <ion-chip class="chip" *ngIf="p.section">
-                <ion-icon name="grid-outline"></ion-icon>
-                <ion-label>{{ p.section }}</ion-label>
+              <ion-chip class="chip" *ngIf="p.displayCategory">
+                <ion-icon name="grid-outline" slot="start"></ion-icon>
+                <ion-label>{{ p.displayCategory }}</ion-label>
               </ion-chip>
 
-              <ion-chip class="chip">
-                <ion-icon name="time-outline"></ion-icon>
-                <ion-label>{{ getProductTime(p) | date:'dd MMM yyyy' }}</ion-label>
-              </ion-chip>
+            </div> -->
+
+      
+            <!-- Location -->
+            <div class="location-row" style="font-size: 13px; margin-top: 10px; color: #8c8c8c; --color:#8c8c8c" *ngIf="p.displayLocation">
+              <ion-icon name="location-outline"></ion-icon>
+              <span style="margin: 0px 10px;">{{ p.displayLocation }}</span>
             </div>
 
-            <div class="desc" *ngIf="p.description">{{ p.description }}</div>
-
+            <!-- Seller Info -->
             <div class="user-row" *ngIf="p.user?.name">
-              <ion-icon name="person-outline"></ion-icon>
-              <span>{{ p.user?.name }}</span>
+              <ion-icon name="person-circle-outline"></ion-icon>
+              <span >{{ p.user?.name | titlecase}}</span>
             </div>
           </ion-label>
         </ion-item>
 
-        <div class="card-actions">
-          <ion-button class="btn-delete" color="danger" fill="solid" (click)="confirmDelete(p)">
+        <!-- Action Button -->
+        <ion-item class="card-actions" >
+
+          <ion-chip class="chip" slot="start">
+                <ion-icon name="calender-outline" slot="start"></ion-icon>
+                <ion-label>{{ getProductTime(p) | date:'dd MMM yy' }}</ion-label>
+              </ion-chip>
+          <ion-button class="btn-delete" (click)="confirmDelete(p)" slot="end">
             <ion-icon name="trash-outline" slot="start"></ion-icon>
-            Remove
+            {{ t('remove') }}
           </ion-button>
-        </div>
+        </ion-item>
       </ion-card>
 
-      <!-- Empty -->
+      <!-- Empty State -->
       <div class="empty" *ngIf="filteredProducts.length === 0">
         <ion-icon name="cube-outline"></ion-icon>
-        <p>No approved products found</p>
+        <p>{{ t('noProductsFound') }}</p>
       </div>
     </ng-container>
 

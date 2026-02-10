@@ -1,17 +1,19 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button style="color: var(--secondary-color) !important;"></ion-back-button>
+      <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: var(--secondary-color) !important;">Manage Products</ion-title>
+    <ion-title style="color: var(--button-color) !important;">{{ t('manageProducts') }}</ion-title>
   </ion-toolbar>
 
   <ion-toolbar>
+     <div [attr.dir]="currentLang !== 'en' ? 'rtl' : 'ltr'">
     <ion-searchbar
-      placeholder="Search products..."
+      [placeholder]="t('searchPlaceholder')"
       (ionInput)="onSearch($event)"
       mode="ios">
     </ion-searchbar>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -43,7 +45,6 @@
             </div>
           </div>
 
-
           <!-- ✅ location -->
           <div class="desc" *ngIf="p.displayLocation">
             📍 {{ p.displayLocation }}
@@ -56,12 +57,12 @@
       <div class="actions">
         <ion-button expand="block" (click)="approve(p)">
           <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          Approve
+          {{ t('approve') }}
         </ion-button>
 
         <ion-button expand="block" color="danger" fill="outline" (click)="reject(p)">
           <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-          Reject
+          {{ t('reject') }}
         </ion-button>
       </div>
     </ion-card>
@@ -69,13 +70,13 @@
     <!-- Empty -->
     <div class="empty" *ngIf="!loading && filteredProducts.length === 0">
       <ion-icon name="cube-outline"></ion-icon>
-      <p>No pending products</p>
+      <p>{{ t('noPendingProducts') }}</p>
     </div>
 
     <!-- Loading -->
     <div class="empty" *ngIf="loading">
       <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading...</p>
+      <p>{{ t('loadingProducts') }}</p>
     </div>
 
   </div>

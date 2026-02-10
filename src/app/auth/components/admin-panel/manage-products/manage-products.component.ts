@@ -53,13 +53,45 @@ export class ManageProductsComponent implements OnInit {
   idToken: string | null = null;
 
   // ✅ UI language (for en/ar)
-  selectedLanguage: 'en' | 'ar' = 'en';
+  currentLang: 'en' | 'ar' = 'en';
+
+  // ✅ Language support
+  translations: any = {
+    en: {
+      manageProducts: 'Manage Products',
+      searchPlaceholder: 'Search products...',
+      loadingProducts: 'Loading products...',
+      noPendingProducts: 'No pending products',
+      approve: 'Approve',
+      reject: 'Reject',
+      approvedSuccess: 'Approved ✅ moved to approvedProducts',
+      rejectedSuccess: 'Rejected ❌ removed from products',
+      approvedFailed: 'Approve failed',
+      rejectedFailed: 'Reject failed',
+      loginRequired: 'Login required to perform this action',
+      failedToLoad: 'Failed to load products'
+    },
+    ar: {
+      manageProducts: 'إدارة المنتجات',
+      searchPlaceholder: 'البحث عن المنتجات...',
+      loadingProducts: 'جاري تحميل المنتجات...',
+      noPendingProducts: 'لا توجد منتجات قيد الانتظار',
+      approve: 'الموافقة',
+      reject: 'رفض',
+      approvedSuccess: 'تمت الموافقة ✅ تم نقله إلى المنتجات المعتمدة',
+      rejectedSuccess: 'تم الرفض ❌ تم حذفه من المنتجات',
+      approvedFailed: 'فشلت الموافقة',
+      rejectedFailed: 'فشل الرفض',
+      loginRequired: 'يجب تسجيل الدخول لإجراء هذا الإجراء',
+      failedToLoad: 'فشل تحميل المنتجات'
+    }
+  };
 
   constructor(private toastController: ToastController) {}
 
   ngOnInit() {
-    const savedLang = localStorage.getItem('lang');
-    this.selectedLanguage = savedLang === 'ar' ? 'ar' : 'en';
+    // ✅ Load language from localStorage
+    this.currentLang = (localStorage.getItem('lang') || 'en') as 'en' | 'ar';
 
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.idToken = userData?.idToken;
@@ -67,6 +99,11 @@ export class ManageProductsComponent implements OnInit {
     // NOTE: your products.read=true so auth not required for load.
     // but approve/reject write needs auth.
     this.loadProducts();
+  }
+
+  // ✅ Get translation by key
+  t(key: string): string {
+    return this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
   }
 
   onSearch(event: any) {
@@ -124,14 +161,14 @@ export class ManageProductsComponent implements OnInit {
       this.applySearch();
     } catch (e: any) {
       console.error(e);
-      this.showToast(e.message || 'Failed to load products', 'danger');
+      this.showToast(this.t('failedToLoad'), 'danger');
     } finally {
       this.loading = false;
     }
   }
 
   private mapToView(id: string, raw: FirebaseProductRaw): FirebaseProductView {
-    const lang = this.selectedLanguage;
+    const lang = this.currentLang;
 
     const coverImage =
       raw?.images?.[0] ||
@@ -173,7 +210,7 @@ export class ManageProductsComponent implements OnInit {
   async approve(p: FirebaseProductView) {
     try {
       if (!this.idToken) {
-        this.showToast('Login required to approve', 'danger');
+        this.showToast(this.t('loginRequired'), 'danger');
         return;
       }
 
@@ -196,17 +233,17 @@ export class ManageProductsComponent implements OnInit {
       this.products = this.products.filter((x) => x.id !== p.id);
       this.applySearch();
 
-      this.showToast('Approved ✅ moved to approvedProducts', 'success');
+      this.showToast(this.t('approvedSuccess'), 'success');
     } catch (e: any) {
       console.error(e);
-      this.showToast(e.message || 'Approve failed', 'danger');
+      this.showToast(e.message || this.t('approvedFailed'), 'danger');
     }
   }
 
   async reject(p: FirebaseProductView) {
     try {
       if (!this.idToken) {
-        this.showToast('Login required to reject', 'danger');
+        this.showToast(this.t('loginRequired'), 'danger');
         return;
       }
 
@@ -215,10 +252,10 @@ export class ManageProductsComponent implements OnInit {
       this.products = this.products.filter((x) => x.id !== p.id);
       this.applySearch();
 
-      this.showToast('Rejected ❌ removed from products', 'medium');
+      this.showToast(this.t('rejectedSuccess'), 'medium');
     } catch (e: any) {
       console.error(e);
-      this.showToast(e.message || 'Reject failed', 'danger');
+      this.showToast(e.message || this.t('rejectedFailed'), 'danger');
     }
   }
 

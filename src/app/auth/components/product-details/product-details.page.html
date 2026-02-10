@@ -4,7 +4,7 @@
       <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
     </ion-buttons>
 
-    <ion-title>{{ 'detail' | translate }}</ion-title>
+    <ion-title>{{ t('detail') }}</ion-title>
 
     <ion-buttons slot="end">
       <!-- ✅ Share -->
@@ -53,7 +53,7 @@
       <span class="card-info-item" style="justify-content:right">
         <ion-icon name="location-outline"></ion-icon>
         <span *ngIf="product?.provinceName">
-          {{ selectedLanguage === 'en' ? product?.provinceName?.en : product?.provinceName?.ar }}
+          {{ currentLang === 'en' ? product?.provinceName?.en : product?.provinceName?.ar }}
         </span>
 
         <span *ngIf="!product?.provinceName">N/A</span>
@@ -102,8 +102,8 @@
       *ngIf="product?.contactPhone"
       (click)="callUserData(product?.contactPhone)"
       style="--background: #035e9f; color: #fff; margin-top: 12px;">
-      <ion-icon name="call-sharp"></ion-icon>
-      Contact
+      <ion-icon slot="start" name="call-sharp"></ion-icon>
+      {{ t('contact') }}
     </ion-button>
 
     <ion-button
@@ -112,15 +112,86 @@
       expand="block"
       (click)="openChat(product)"
       style="--background: #035e9f; color: #fff; margin-top: 12px;">
-      <ion-icon name="chatbubble"></ion-icon>
-      Send Message
+      <ion-icon slot="start" name="chatbubble"></ion-icon>
+      {{ t('sendMessage') }}
     </ion-button>
   </ion-list>
+
+  <!-- ✅ RELATED PRODUCTS SECTION -->
+  <div class="related-products-section" *ngIf="!loadingRelatedProducts && relatedProducts.length > 0">
+    <div class="section-header">
+      <h3>{{ t('relatedProducts') }}</h3>
+    </div>
+
+    <!-- Products grid -->
+    <div class="products-scroll">
+      <ion-card 
+        class="related-product-card"
+        *ngFor="let relatedProduct of relatedProducts; trackBy: trackByProduct"
+        (click)="viewProductDetail(relatedProduct)">
+        
+        <div class="product-image-container">
+          <img 
+            [src]="relatedProduct?.coverImage || relatedProduct?.images?.[0]" 
+            alt="Product"
+            class="product-image"
+            (error)="onImgError($event)" />
+          
+          <div class="product-price-badge">
+            {{ relatedProduct?.priceDisplay || relatedProduct?.price || 'N/A' }}
+          </div>
+        </div>
+
+        <div class="product-info">
+          <h4 class="product-name">{{ relatedProduct?.displaySubject || 'Untitled' }}</h4>
+          
+          <p class="product-category" *ngIf="relatedProduct?.displayCategory">
+            {{ relatedProduct?.displayCategory }}
+          </p>
+
+          <div class="product-footer">
+            <span class="product-location" *ngIf="relatedProduct?.displayLocation">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{ relatedProduct?.displayLocation }}</span>
+            </span>
+          </div>
+        </div>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div class="related-products-section" *ngIf="loadingRelatedProducts">
+    <div class="section-header">
+      <h3>{{ t('relatedProducts') }}</h3>
+    </div>
+
+    <div class="products-scroll">
+      <ion-card class="related-product-card" *ngFor="let x of [1,2,3,4,5]">
+        <div class="product-image-container">
+          <ion-skeleton-text animated style="width: 100%; height: 140px;"></ion-skeleton-text>
+        </div>
+        <div class="product-info">
+          <ion-skeleton-text animated style="width: 85%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 65%; height: 12px; margin-top: 6px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 75%; height: 10px; margin-top: 10px;"></ion-skeleton-text>
+        </div>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- No related products -->
+  <div class="related-products-section" *ngIf="!loadingRelatedProducts && relatedProducts.length === 0">
+    <div class="no-related">
+      <ion-icon name="cube-outline"></ion-icon>
+      <p>{{ t('noRelatedProducts') }}</p>
+    </div>
+  </div>
 
   <!-- Ratings Summary -->
   <div class="product-rating">
     <div class="rating-header">
-      <h3 style="color: var(--primary-color);">Rating & Reviews</h3>
+      <h3 style="color: var(--primary-color);">{{ t('ratingReviews') }}</h3>
 
       <!-- Action menu button (only rating now) -->
       <ion-button fill="clear" (click)="openActionsMenu()" style="--background: var(--secondary-color);">
@@ -157,7 +228,7 @@
   <!-- ✅ COMMENTS INLINE (no modal) -->
   <div class="product-comments">
     <div class="comments-header">
-      <h3>Comments ({{ product?.comments?.length || 0 }})</h3>
+      <h3>{{ t('comments') }} ({{ product?.comments?.length || 0 }})</h3>
     </div>
 
     <ion-list *ngIf="product?.comments?.length > 0; else noComments" class="comments-preview">
@@ -178,8 +249,8 @@
     <ng-template #noComments>
       <div class="no-comments-full">
         <ion-icon name="chatbubbles-outline"></ion-icon>
-        <h3>No comments yet</h3>
-        <p>Be the first to share your thoughts!</p>
+        <h3>{{ t('noCommentsYet') }}</h3>
+        <p>{{ t('beFirstToShare') }}</p>
       </div>
     </ng-template>
   </div>
@@ -192,7 +263,7 @@
     <div class="comment-input-container">
       <ion-input
         [(ngModel)]="newComment"
-        placeholder="Write a comment..."
+        [placeholder]="t('writeComment')"
         class="comment-input">
       </ion-input>
 
@@ -220,7 +291,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Rate this Product</ion-title>
+        <ion-title>{{ t('rateThisProduct') }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="closeRatingModal()" style="background: var(--primary-color);">
             <ion-icon name="close"></ion-icon>
@@ -231,7 +302,7 @@
 
     <ion-content class="rating-modal-content">
       <div class="rating-container">
-        <h2>How would you rate this product?</h2>
+        <h2>{{ t('howWouldYouRate') }}</h2>
         <div class="large-stars">
           <ion-icon
             *ngFor="let star of [1,2,3,4,5]"
@@ -249,12 +320,12 @@
           (click)="submitRating()"
           [disabled]="selectedRating === 0"
           style="--background: #035e9f; color: #fff; margin-top: 24px;">
-          Submit Rating
+          {{ t('submitRating') }}
         </ion-button>
       </div>
 
       <div class="existing-ratings" *ngIf="product?.ratings?.length > 0">
-        <h3>All Ratings</h3>
+        <h3>{{ t('allRatings') }}</h3>
         <ion-list>
           <ion-item *ngFor="let rating of product?.ratings" lines="none">
             <div class="rating-item">

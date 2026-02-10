@@ -29,10 +29,53 @@ export class ProductDetailsPage implements OnInit {
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
   productUser: ProductUser | null = null;
 
+  // ✅ NEW: Related products
+  relatedProducts: any[] = [];
+  loadingRelatedProducts = false;
+
   // Rating and comment
   newComment = '';
   averageRating = 0;
   userData: any;
+
+  // ✅ Language support
+  currentLang: 'en' | 'ar' = 'en';
+  translations: any = {
+    en: {
+      detail: 'Product Details',
+      contact: 'Contact',
+      sendMessage: 'Send Message',
+      call: 'Call',
+      ratingReviews: 'Rating & Reviews',
+      comments: 'Comments',
+      noCommentsYet: 'No comments yet',
+      beFirstToShare: 'Be the first to share your thoughts!',
+      writeComment: 'Write a comment...',
+      rateThisProduct: 'Rate this product?',
+      howWouldYouRate: 'How would you rate this product?',
+      submitRating: 'Submit Rating',
+      allRatings: 'All Ratings',
+      relatedProducts: 'Related Products',
+      noRelatedProducts: 'No related products found'
+    },
+    ar: {
+      detail: 'تفاصيل المنتج',
+      contact: 'تواصل',
+      sendMessage: 'إرسال رسالة',
+      call: 'اتصال',
+      ratingReviews: 'التقييمات والتعليقات',
+      comments: 'التعليقات',
+      noCommentsYet: 'لا توجد تعليقات بعد',
+      beFirstToShare: 'كن أول من يشارك أفكارك!',
+      writeComment: 'اكتب تعليقاً...',
+      rateThisProduct: 'هل تريد تقييم هذا المنتج؟',
+      howWouldYouRate: 'كيف تقيم هذا المنتج؟',
+      submitRating: 'إرسال التقييم',
+      allRatings: 'جميع التقييمات',
+      relatedProducts: 'منتجات ذات صلة',
+      noRelatedProducts: 'لم يتم العثور على منتجات ذات صلة'
+    }
+  };
 
   // Modal states
   isActionSheetOpen = false;
@@ -69,14 +112,91 @@ export class ProductDetailsPage implements OnInit {
   }
 
   async ngOnInit() {
+    // ✅ Load language
+    this.currentLang = (localStorage.getItem('lang') || 'en') as 'en' | 'ar';
+
     // ✅ 1) Resolve product first (state OR route id)
     await this.resolveProductFromStateOrRoute();
 
     // ✅ 2) After product loaded, then run your existing init logic
     await this.initAfterProductLoaded();
+
+    // ✅ 3) Load related products
+    await this.loadRelatedProducts();
   }
 
-  // ✅ NEW: state OR /product-details/:id se product load
+  // ✅ GET TRANSLATION
+  t(key: string): string {
+    return this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
+  }
+
+  // ✅ NEW: Load related products from approvedProducts
+  async loadRelatedProducts(): Promise<void> {
+    this.loadingRelatedProducts = true;
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const idToken = userData?.idToken;
+
+      if (!idToken) {
+        console.log('No auth token, skipping related products');
+        this.relatedProducts = [];
+        return;
+      }
+
+      const url = `${this.FIREBASE_DB_URL}/approvedProducts.json?auth=${idToken}`;
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch approved products');
+      }
+
+      const data = await res.json();
+
+      if (!data) {
+        this.relatedProducts = [];
+        return;
+      }
+
+      // Convert to array and map
+      let products = Object.keys(data).map(key => ({
+        id: key,
+        ...data[key],
+      }));
+
+      // Filter: exclude current product, optionally same category
+      products = products.filter(p => {
+        // Exclude current product
+        if (p.id === String(this.product?.createdAt)) return false;
+        
+        // Optional: filter by same category
+        // if (p.displayCategory !== this.product?.displayCategory) return false;
+        
+        return true;
+      });
+
+      // Sort newest first
+      products.sort((a, b) => ((b.createdAt || 0) - (a.createdAt || 0)));
+
+      // Take first 5
+      this.relatedProducts = products.slice(0, 5);
+
+      console.log('Related products loaded:', this.relatedProducts.length);
+    } catch (error) {
+      console.error('Error loading related products:', error);
+      this.relatedProducts = [];
+    } finally {
+      this.loadingRelatedProducts = false;
+    }
+  }
+
+  // ✅ Navigate to product details
+  async viewProductDetail(product: any) {
+    this.navCtrl.navigateForward(['/product-details', product.id], {
+      state: { product }
+    });
+  }
+
+  // ✅ NEW: Resolve product first (state OR route id)
   private async resolveProductFromStateOrRoute(): Promise<void> {
     try {
       // If already available from state
@@ -132,6 +252,10 @@ export class ProductDetailsPage implements OnInit {
 
   trackByComment(index: number, item: any) {
     return item?.createdAt || index;
+  }
+
+  trackByProduct(index: number, item: any) {
+    return item?.id || index;
   }
 
   // ------------------- USER FETCH -------------------
@@ -501,10 +625,6 @@ export class ProductDetailsPage implements OnInit {
       const desc = this.product?.description || '';
       const phone = this.product?.contactPhone ? `Contact: ${this.product.contactPhone}` : '';
 
-      // ✅ This will become:
-      // http://localhost:4200/product-details/177048...
-      // OR https://yourdomain.com/product-details/177048...
-      // const url = `${Capacitor.getPlatform() === 'ios' ? 'https://apps.apple.com/us/app/%D8%B1%D8%AC%D9%8A%D8%B9/id6756187788' : window.location.href}/product-details/${this.product.createdAt}`;
       const url = `https://apps.apple.com/us/app/%D8%B1%D8%AC%D9%8A%D8%B9/id6756187788/product-details/${this.product.createdAt}`;
 
       const text = [title, price, desc, phone, `Open: ${url}`].filter(Boolean).join('\n');
@@ -517,7 +637,6 @@ export class ProductDetailsPage implements OnInit {
       });
     } catch (error) {
       console.error('shareProduct error:', error);
-      // await this.presentToast('Unable to share', 'danger');
     }
   }
 }

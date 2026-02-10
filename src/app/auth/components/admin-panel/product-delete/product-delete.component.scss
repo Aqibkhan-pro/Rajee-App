@@ -5,7 +5,7 @@
 }
 
 .page-title {
-  color: var(--secondary-color) !important;
+  color: var(--button-color) !important;
   font-weight: 700;
 }
 
@@ -67,7 +67,7 @@ ion-searchbar {
 .title {
   font-weight: 800;
   font-size: 14px;
-  color: #0b5136;
+  color: var(--text-black);
   line-height: 1.2;
 }
 
@@ -121,7 +121,7 @@ ion-searchbar {
 }
 
 .card-actions {
-  background: #ffffff;
+  background: var(--secondary-color-3);
   padding: 10px 12px 12px 12px;
   display: flex;
   justify-content: flex-end;
@@ -153,4 +153,9 @@ ion-searchbar {
     font-size: 15px;
     font-weight: 700;
   }
+}
+
+.card-item{
+  --background: var(--secondary-color-3) !important;
+  background: var(--secondary-color-3) !important;
 }

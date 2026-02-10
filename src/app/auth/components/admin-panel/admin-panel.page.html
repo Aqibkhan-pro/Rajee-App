@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button style="color: var(--secondary-color) !important;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: var(--secondary-color) !important;">Admin Panel</ion-title>
+    <ion-title style="color: var(--secondary-color) !important;">{{ t('adminPanel') }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -20,18 +20,18 @@
             <div class="icon-circle blue">
               <ion-icon name="people-outline"></ion-icon>
             </div>
-            <span class="badge blue">Users</span>
+            <span class="badge blue">{{ t('totalUsers') }}</span>
           </div>
 
-          <h2>Manage Users</h2>
-          <p>Add, edit, delete and view all user accounts in the system</p>
+          <h2>{{ t('manageUsers') }}</h2>
+          <p>{{ t('usersDesc') }}</p>
 
           <div class="card-footer">
             <div>
               <h3>{{ totalUsers }}</h3>
-              <span>Total Users</span>
+              <span>{{ t('totalUsers') }}</span>
             </div>
-            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">Open</ion-button>
+            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
           </div>
 
           <div class="card-strip blue"></div>
@@ -46,91 +46,51 @@
             <div class="icon-circle indigo">
               <ion-icon name="cube-outline"></ion-icon>
             </div>
-            <span class="badge indigo">Products</span>
+            <span class="badge indigo">{{ t('products') }}</span>
           </div>
 
-          <h2>Manage Products</h2>
-          <p>Approved and Rejected products in Rajee.</p>
+          <h2>{{ t('manageProducts') }}</h2>
+          <p>{{ t('productsDesc') }}</p>
 
           <div class="card-footer">
             <div>
               <h3>{{ totalProducts }}</h3>
-              <span>Total Products</span>
+              <span>{{ t('totalProducts') }}</span>
             </div>
-            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">Open</ion-button>
+            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
           </div>
 
           <div class="card-strip indigo"></div>
         </ion-card>
       </ion-col>
 
-        <!-- Manage Products -->
-        <ion-col size="12" size-md="6">
-          <ion-card mode="ios" class="admin-card" (click)="openRemoveProduct()">
+      <!-- Remove Products -->
+      <ion-col size="12" size-md="6">
+        <ion-card mode="ios" class="admin-card" (click)="openRemoveProduct()">
 
-            <div class="card-header">
-              <div class="icon-circle indigo">
-                <ion-icon name="cube-outline"></ion-icon>
-              </div>
-              <span class="badge indigo">Products</span>
+          <div class="card-header">
+            <div class="icon-circle indigo">
+              <ion-icon name="cube-outline"></ion-icon>
             </div>
+            <span class="badge indigo">{{ t('products') }}</span>
+          </div>
 
-            <h2>Remove Products</h2>
-            <p>Remove products in Rajee.</p>
+          <h2>{{ t('removeProducts') }}</h2>
+          <p>{{ t('removeDesc') }}</p>
 
-            <div class="card-footer">
-              <div>
-                <h3>{{ totalProducts }}</h3>
-                <span> Products</span>
-              </div>
-              <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">Open</ion-button>
+          <div class="card-footer">
+            <div>
+              <h3>{{ totalProducts }}</h3>
+              <span>{{ t('products') }}</span>
             </div>
+            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
+          </div>
 
-            <div class="card-strip indigo"></div>
-          </ion-card>
-        </ion-col>
+          <div class="card-strip indigo"></div>
+        </ion-card>
+      </ion-col>
 
     </ion-row>
   </ion-grid>
-
-
-  <!-- Quick Stats -->
-  <!-- <ion-grid class="stats">
-    <ion-row>
-
-      <h3 style="color: var(--primary-color); margin-left: 12px;">User</h3>
-
-      <ion-col size="12" size-md="4">
-        <div class="stat-card">
-          <p>Active Users</p>
-          <h3>{{ activeUsers }}</h3>
-        </div>
-      </ion-col>
-
-      <ion-col size="12" size-md="4">
-        <div class="stat-card">
-          <p>Deactive Users</p>
-          <h3>{{ deactiveUsers }}</h3>
-        </div>
-      </ion-col>
-
-      <h3 style="color: var(--primary-color); margin-left: 12px;">Products</h3>
-
-     <ion-col size="12" size-md="4">
-        <div class="stat-card">
-          <p>Pending Request</p>
-          <h3>{{ pendingProducts }}</h3>
-        </div>
-      </ion-col>
-
-      <ion-col size="12" size-md="4">
-        <div class="stat-card">
-          <p>Reject Request</p>
-          <h3>{{ rejectedProducts }}</h3>
-        </div>
-      </ion-col>
-
-    </ion-row>
-  </ion-grid> -->
 
 </ion-content>

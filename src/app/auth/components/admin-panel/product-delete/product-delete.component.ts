@@ -2,18 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 
 interface FirebaseProduct {
-  id: string; // firebase key
-  title?: string;
-  image?: string;
+  id: string;
+  displaySubject?: string;
+  displayExtraInfo?: string;
+  displayCategory?: string;
+  displayLocation?: string;
+  priceDisplay?: string;
+  price?: string | number;
   images?: string[];
-  price?: string;
-  description?: string;
+  coverImage?: string;
   createdAt?: number;
-  time?: number;
-  section?: string;
   user?: any;
-  location?: any;
-  comments?: any[];
   [key: string]: any;
 }
 
@@ -34,21 +33,82 @@ export class ProductDeleteComponent implements OnInit {
   searchText = '';
   idToken: string | null = null;
 
+  // ✅ Language support
+  currentLang: 'en' | 'ar' = 'en';
+  translations: any = {
+    en: {
+      removeProducts: 'Remove Products',
+      searchPlaceholder: 'Search approved products...',
+      loadingProducts: 'Loading products...',
+      noProductsFound: 'No approved products found',
+      approved: 'Approved',
+      price: 'Price',
+      category: 'Category',
+      date: 'Date',
+      description: 'Description',
+      seller: 'Seller',
+      remove: 'Remove',
+      removeProduct: 'Remove product?',
+      removeMessage: 'This will permanently remove <b>{title}</b> from approvedProducts.',
+      cancel: 'Cancel',
+      yes: 'Yes, Remove',
+      removedSuccess: 'Removed from approvedProducts ✅',
+      removeFailed: 'Remove failed',
+      notAuthenticated: 'User not authenticated'
+    },
+    ar: {
+      removeProducts: 'حذف المنتجات',
+      searchPlaceholder: 'البحث عن المنتجات المعتمدة...',
+      loadingProducts: 'جاري تحميل المنتجات...',
+      noProductsFound: 'لم يتم العثور على منتجات معتمدة',
+      approved: 'معتمد',
+      price: 'السعر',
+      category: 'الفئة',
+      date: 'التاريخ',
+      description: 'الوصف',
+      seller: 'البائع',
+      remove: 'حذف',
+      removeProduct: 'هل تريد حذف المنتج؟',
+      removeMessage: 'سيؤدي هذا إلى حذف <b>{title}</b> بشكل دائم من المنتجات المعتمدة.',
+      cancel: 'إلغاء',
+      yes: 'نعم، احذفه',
+      removedSuccess: 'تم الحذف من المنتجات المعتمدة ✅',
+      removeFailed: 'فشل الحذف',
+      notAuthenticated: 'يجب تسجيل الدخول'
+    }
+  };
+
   constructor(
     private toastController: ToastController,
     private alertController: AlertController
   ) {}
 
   ngOnInit() {
+    // ✅ Load language from localStorage
+    this.currentLang = (localStorage.getItem('lang') || 'en') as 'en' | 'ar';
+
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     this.idToken = userData?.idToken;
 
     if (!this.idToken) {
-      this.showToast('User not authenticated', 'danger');
+      this.showToast(this.t('notAuthenticated'), 'danger');
       return;
     }
 
     this.loadApprovedProducts();
+  }
+
+  // ✅ Get translation by key
+  t(key: string, replacements?: { [key: string]: string }): string {
+    let text = this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
+    
+    if (replacements) {
+      Object.keys(replacements).forEach(k => {
+        text = text.replace(`{${k}}`, replacements[k]);
+      });
+    }
+    
+    return text;
   }
 
   trackById(_: number, item: FirebaseProduct) {
@@ -56,7 +116,6 @@ export class ProductDeleteComponent implements OnInit {
   }
 
   onSearch(ev: any) {
-    // ion-searchbar uses ev.detail.value
     this.searchText = (ev?.detail?.value || '').toLowerCase();
     this.applySearch();
   }
@@ -69,9 +128,9 @@ export class ProductDeleteComponent implements OnInit {
 
     const q = this.searchText;
     this.filteredProducts = this.products.filter(p =>
-      (p.title || '').toLowerCase().includes(q) ||
-      (p.description || '').toLowerCase().includes(q) ||
-      (p.section || '').toLowerCase().includes(q) ||
+      (p.displaySubject || '').toLowerCase().includes(q) ||
+      (p.displayExtraInfo || '').toLowerCase().includes(q) ||
+      (p.displayCategory || '').toLowerCase().includes(q) ||
       (p.user?.name || '').toLowerCase().includes(q)
     );
   }
@@ -82,10 +141,8 @@ export class ProductDeleteComponent implements OnInit {
   }
 
   getProductTime(p: FirebaseProduct): number {
-    return (p?.createdAt || p?.time || Date.now());
+    return (p?.createdAt || Date.now());
   }
-
-
 
   onImgError(ev: any) {
     ev.target.src = 'assets/image/four.jpg';
@@ -124,12 +181,12 @@ export class ProductDeleteComponent implements OnInit {
 
   async confirmDelete(p: FirebaseProduct) {
     const alert = await this.alertController.create({
-      header: 'Remove product?',
-      message: `This will permanently remove <b>${p.title || 'this product'}</b> from approvedProducts.`,
+      header: this.t('removeProduct'),
+      message: this.t('removeMessage', { title: p.displaySubject || 'this product' }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: this.t('cancel'), role: 'cancel' },
         {
-          text: 'Remove',
+          text: this.t('yes'),
           role: 'destructive',
           handler: () => this.deleteApprovedProduct(p)
         }
@@ -146,14 +203,13 @@ export class ProductDeleteComponent implements OnInit {
 
       if (!delRes.ok) throw new Error(await delRes.text());
 
-      // remove locally
       this.products = this.products.filter(x => x.id !== p.id);
       this.applySearch();
 
-      this.showToast('Removed from approvedProducts ✅', 'success');
+      this.showToast(this.t('removedSuccess'), 'success');
     } catch (e: any) {
       console.error(e);
-      this.showToast(e?.message || 'Remove failed', 'danger');
+      this.showToast(e?.message || this.t('removeFailed'), 'danger');
     }
   }
 

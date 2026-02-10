@@ -1,14 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
 ion-toolbar {
   --background: var(--primary-color);
 }
 
 ion-title {
   color: var(--secondary-color-2) !important;
+  font-family: 'Tajawal', sans-serif !important;
 }
 
 ion-content {
---background: var(--secondary-color-2) !important;
+  --background: var(--secondary-color-2) !important;
 }
+
 .admin-card {
   background: var(--secondary-color-2) !important;
   border-radius: 20px;
@@ -17,23 +21,26 @@ ion-content {
   cursor: pointer;
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-d
+  font-family: 'Tajawal', sans-serif;
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
   }
 
   h2 {
-    color: #1b1b1b;
+    color: var(--text-black);
     font-size: 22px;
     font-weight: 700;
     margin: 12px 0 6px;
+    font-family: 'Tajawal', sans-serif;
   }
 
   p {
-    color: #6b7280;
+    color: #7f7f7f;
     font-size: 14px;
     margin-bottom: 16px;
+    font-family: 'Tajawal', sans-serif;
   }
 }
 
@@ -75,6 +82,7 @@ d
   padding: 4px 12px;
   border-radius: 999px;
   font-weight: 500;
+  font-family: 'Tajawal', sans-serif;
 
   &.blue {
     background: #eff6ff;
@@ -95,15 +103,17 @@ d
   padding-top: 12px;
 
   h3 {
-    color: #1b1b1b;
+    color: var(--text-black);
     font-size: 26px;
     font-weight: 700;
     margin: 0;
+    font-family: 'Tajawal', sans-serif;
   }
 
   span {
     font-size: 12px;
-    color: #6b7280;
+    color: #7f7f7f;
+    font-family: 'Tajawal', sans-serif;
   }
 }
 
@@ -133,10 +143,11 @@ d
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+  font-family: 'Tajawal', sans-serif;
 
   p {
     font-size: 13px;
-    color: #6b7280;
+    color: #7f7f7f;
     margin-bottom: 4px;
   }
 

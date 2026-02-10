@@ -16,23 +16,63 @@ export class AdminPanelPage implements OnInit {
   activeUsers = 0;
   deactiveUsers = 0;
 
-  pendingProducts = 0;      // from /products
-  approvedProducts = 0;     // from /approvedProducts
-  rejectedProducts = 0;     // from /rejectedProducts
-  totalProducts = 0;        // approved + pending (you can change logic)
+  pendingProducts = 0;
+  approvedProducts = 0;
+  rejectedProducts = 0;
+  totalProducts = 0;
+
+  // ✅ Language support
+  currentLang: string = 'en';
+  translations: any = {
+    en: {
+      adminPanel: 'Admin Panel',
+      manageUsers: 'Manage Users',
+      usersDesc: 'Add, edit, delete and view all user accounts in the system',
+      totalUsers: 'Total Users',
+      manageProducts: 'Manage Products',
+      productsDesc: 'Approved and Rejected products in Rajee.',
+      totalProducts: 'Total Products',
+      removeProducts: 'Remove Products',
+      removeDesc: 'Remove products in Rajee.',
+      products: 'Products',
+      open: 'Open'
+    },
+    ar: {
+      adminPanel: 'لوحة التحكم',
+      manageUsers: 'إدارة المستخدمين',
+      usersDesc: 'إضافة وتعديل وحذف وعرض جميع حسابات المستخدمين في النظام',
+      totalUsers: 'إجمالي المستخدمين',
+      manageProducts: 'إدارة المنتجات',
+      productsDesc: 'المنتجات المعتمدة والمرفوضة في راجي.',
+      totalProducts: 'إجمالي المنتجات',
+      removeProducts: 'حذف المنتجات',
+      removeDesc: 'حذف المنتجات في راجي.',
+      products: 'المنتجات',
+      open: 'فتح'
+    }
+  };
 
   constructor(
     private navCtrl: NavController,
     private toastController: ToastController
   ) {}
 
-
   idToken: string | null = null;
-  ngOnInit() {    // 2️⃣ User data
+  ngOnInit() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-     this.idToken = userData?.idToken;
+    this.idToken = userData?.idToken;
     if (!this.idToken) throw new Error('User not authenticated');
+    
+    // ✅ Load language from localStorage
+    this.currentLang = localStorage.getItem('lang') || 'en';
+    console.log('AdminPanelPage initialized with language:', this.currentLang);
+    
     this.loadCounts();
+  }
+
+  // ✅ Get translation by key
+  t(key: string): string {
+    return this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
   }
 
   openUsers() {
@@ -43,7 +83,7 @@ export class AdminPanelPage implements OnInit {
     this.navCtrl.navigateForward(['/admin-panel/manage-products']);
   }
 
-  openRemoveProduct(){
+  openRemoveProduct() {
     this.navCtrl.navigateForward(['/admin-panel/delete-products']);
   }
 
@@ -58,7 +98,6 @@ export class AdminPanelPage implements OnInit {
         this.fetchObject('/rejectedProducts'),
       ]);
 
-      // ✅ total users
       const usersArr = this.objToArray(users);
       this.totalUsers = usersArr.length;
 
@@ -68,12 +107,10 @@ export class AdminPanelPage implements OnInit {
 
       this.deactiveUsers = this.totalUsers - this.activeUsers;
 
-      // ✅ products counts
-      this.pendingProducts = this.countObject(pending);    // /products
-      this.approvedProducts = this.countObject(approved);  // /approvedProducts
-      this.rejectedProducts = this.countObject(rejected);  // /rejectedProducts
+      this.pendingProducts = this.countObject(pending);
+      this.approvedProducts = this.countObject(approved);
+      this.rejectedProducts = this.countObject(rejected);
 
-      // ✅ total products (choose your own)
       this.totalProducts = this.pendingProducts + this.approvedProducts;
 
     } catch (e: any) {

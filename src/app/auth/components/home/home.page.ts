@@ -338,15 +338,38 @@ async openLoginModal() {
     const uid = userData?.uid;
     const token = userData?.idToken;
 
+    // allow viewing home without auth
     if (!uid || !token) {
-      this.selectedTab = 'home';
-      return;
+      if (tab !== 'home') {
+        // redirect to home when not logged in
+        this.selectedTab = 'home';
+        this.navCtrl.navigateRoot(['/main']);
+        return;
+      }
     }
 
-    if (tab.includes('home')) this.selectedTab = 'home';
-    else if (tab.includes('favorites')) this.selectedTab = 'favorites';
-    else if (tab.includes('chat')) this.selectedTab = 'chat';
-    else if (tab.includes('profile')) this.selectedTab = 'profile';
+    this.selectedTab = tab;
+
+    // navigate to proper route for each tab
+    switch (tab) {
+      case 'home':
+        this.navCtrl.navigateRoot(['/main']);
+        break;
+      case 'favorites':
+        this.navCtrl.navigateForward(['/main/favorites']);
+        break;
+      case 'chat':
+        this.navCtrl.navigateForward(['/main/chat']);
+        break;
+      case 'noti':
+        this.navCtrl.navigateForward(['/main/noti']);
+        break;
+      case 'profile':
+        this.navCtrl.navigateForward(['/main/profile']);
+        break;
+      default:
+        this.navCtrl.navigateRoot(['/main']);
+    }
   }
 
 
