@@ -19,6 +19,7 @@ import { PoliciesComponent } from './policies/policies.component';
 import { AboutComponent } from './about/about.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { FollowersComponent } from '../menu/followers/followers.component';
+import { TimeAgoPipe } from './dashboard/time-ago.pipe.ts/time-ago.pipe.ts.pipe';
 
 @NgModule({
   imports: [
@@ -31,7 +32,8 @@ import { FollowersComponent } from '../menu/followers/followers.component';
     ReactiveFormsModule,
     IsArabicPipe,
     AngularFireModule.initializeApp(environment.firebase),
-    AngularFireDatabaseModule
+    AngularFireDatabaseModule,
+    TimeAgoPipe
   ],
   declarations: [
     HomePage,

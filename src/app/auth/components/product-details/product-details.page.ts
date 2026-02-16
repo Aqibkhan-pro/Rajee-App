@@ -130,64 +130,61 @@ export class ProductDetailsPage implements OnInit {
     return this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
   }
 
-  // ✅ NEW: Load related products from approvedProducts
-  async loadRelatedProducts(): Promise<void> {
-    this.loadingRelatedProducts = true;
-    try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const idToken = userData?.idToken;
+// ✅ NEW: Load related products from approvedProducts (NO TOKEN)
+async loadRelatedProducts(): Promise<void> {
+  this.loadingRelatedProducts = true;
 
-      if (!idToken) {
-        console.log('No auth token, skipping related products');
-        this.relatedProducts = [];
-        return;
-      }
+  try {
+    // ✅ current product key (state OR route)
+    const routeId = this.route.snapshot.paramMap.get('id'); // if opened via URL
+    const currentKey =
+      String((this.product as any)?.id || routeId || this.product?.createdAt || '');
 
-      const url = `${this.FIREBASE_DB_URL}/approvedProducts.json?auth=${idToken}`;
-      const res = await fetch(url);
+    // ✅ FAST: only last 60 items (adjust as you want)
+    const url =
+      `${this.FIREBASE_DB_URL}/approvedProducts.json` +
+      `?orderBy="createdAt"&limitToLast=60`;
 
-      if (!res.ok) {
-        throw new Error('Failed to fetch approved products');
-      }
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch approved products');
 
-      const data = await res.json();
-
-      if (!data) {
-        this.relatedProducts = [];
-        return;
-      }
-
-      // Convert to array and map
-      let products = Object.keys(data).map(key => ({
-        id: key,
-        ...data[key],
-      }));
-
-      // Filter: exclude current product, optionally same category
-      products = products.filter(p => {
-        // Exclude current product
-        if (p.id === String(this.product?.createdAt)) return false;
-        
-        // Optional: filter by same category
-        // if (p.displayCategory !== this.product?.displayCategory) return false;
-        
-        return true;
-      });
-
-      // Sort newest first
-      products.sort((a, b) => ((b.createdAt || 0) - (a.createdAt || 0)));
-
-      // Take first 5
-      this.relatedProducts = products.slice(0, 5);
-
-      console.log('Related products loaded:', this.relatedProducts.length);
-    } catch (error) {
-      console.error('Error loading related products:', error);
+    const data = await res.json();
+    if (!data) {
       this.relatedProducts = [];
-    } finally {
-      this.loadingRelatedProducts = false;
+      return;
     }
+
+    // ✅ Convert to array
+    let products = Object.keys(data).map((key) => ({
+      id: key,
+      ...data[key],
+    }));
+
+    // ✅ Exclude current product (by key AND createdAt)
+    const currentCreatedAt = Number(this.product?.createdAt || 0);
+
+    products = products.filter((p: any) => {
+      if (String(p.id) === currentKey) return false; // same key
+      if (currentCreatedAt && Number(p.createdAt || 0) === currentCreatedAt) return false; // same createdAt
+      return true;
+    });
+
+    // ✅ Optional: same category/section filter (uncomment if you want)
+    // const mySection = String((this.product as any)?.sectionKey || '');
+    // if (mySection) products = products.filter(p => String(p.sectionKey || '') === mySection);
+
+    // ✅ newest first
+    products.sort((a: any, b: any) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+    // ✅ Take first 5
+    this.relatedProducts = products.slice(0, 5);
+  } catch (error) {
+    console.error('Error loading related products:', error);
+    this.relatedProducts = [];
+  } finally {
+    this.loadingRelatedProducts = false;
   }
+}
 
   // ✅ Navigate to product details
   async viewProductDetail(product: any) {

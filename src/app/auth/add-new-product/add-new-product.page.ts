@@ -98,8 +98,7 @@ export class AddNewProductPage implements OnInit {
   selectedModelObj: CatItem | null = null;
 
   carDisplayText = 'Select';
-
-  carClassOptions: string[] = ['Riyal', 'LS', 'LTZ', 'SS', 'Bermimam'];
+carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
 
   // ✅ Realtime DB base
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';

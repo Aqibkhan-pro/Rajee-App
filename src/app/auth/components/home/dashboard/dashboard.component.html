@@ -1,5 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
+
     <ion-buttons [slot]="selectedLanguage == 'en' ? 'start' : 'end'">
       <ion-menu-button menu="homeMenu"></ion-menu-button>
     </ion-buttons>
@@ -15,23 +16,23 @@
     </div>
 
     <ion-buttons [slot]="selectedLanguage !== 'en' ? 'start' : 'end'">
-      <ion-button
-        fill="clear"
-        (click)="toggleLayout()"
+      <ion-button fill="clear" (click)="toggleLayout()"
         style="color: var(--secondary-color); --background: var(--primary-color);">
-        <ion-icon
-          [name]="isGrid ? 'list' : 'grid'"
-          style="color: var(--button-color) !important">
-        </ion-icon>
+        <ion-icon [name]="isGrid ? 'list' : 'grid'" style="color: var(--button-color) !important"></ion-icon>
       </ion-button>
     </ion-buttons>
+
+    <!-- ✅ Non-blocking loading indicator -->
+    <ion-progress-bar *ngIf="pageLoading" type="indeterminate"></ion-progress-bar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content id="main-content" [scrollY]="false">
+
   <div class="home-wrapper">
 
     <div class="home-top">
+
       <!-- ✅ STORIES -->
       <div class="stories-wrapper" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <div class="stories-header">
@@ -70,17 +71,27 @@
               </div>
             </div>
 
+            <!-- ✅ Story Skeleton ONLY when no cached stories -->
+            <ng-container *ngIf="storiesLoading && stories.length === 0">
+              <div class="story-item" *ngFor="let _ of skeletonStories">
+                <div class="story-ring story-skel">
+                  <div class="story-avatar">
+                    <ion-skeleton-text animated style="width:58px;height:58px;border-radius:50%"></ion-skeleton-text>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
             <!-- Story List -->
-            <div class="story-item" *ngFor="let s of stories" (click)="openStoryViewer(s)">
+            <div class="story-item" *ngFor="let s of stories; trackBy: trackByStoryId" (click)="openStoryViewer(s)">
               <div class="story-ring" [class.seen]="s.seen">
                 <div class="story-avatar">
-                  <img [src]="s?.image" alt="Story" *ngIf="s?.image">
+                  <img [src]="s?.image" alt="Story" *ngIf="s?.image" loading="lazy">
                   <div class="story-initial" *ngIf="!s?.image">
                     {{ getInitial(s.userName) }}
                   </div>
                 </div>
               </div>
-              <!-- <div class="story-name">{{ s.userName }}</div> -->
             </div>
 
           </div>
@@ -90,11 +101,10 @@
       <!-- ✅ Category Chips -->
       <div class="category-chips-container" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <ion-chip
-          *ngFor="let category of categories"
+          *ngFor="let category of categories; trackBy: trackByCategoryKey"
           [color]="category.selected ? 'primary' : 'medium'"
           [outline]="!category.selected"
           (click)="onCategorySelect(category)">
-
           <ion-icon [name]="category.icon"></ion-icon>
           <ion-label style="margin-top: 4px;">
             {{ selectedLanguage == 'en' ? category.en : category.ar }}
@@ -103,10 +113,7 @@
       </div>
 
       <!-- ✅ Sub Category -->
-      <div class="subcat-bar"
-           *ngIf="selectedSectionKey !== 'all'"
-           [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
-
+      <div class="subcat-bar" *ngIf="selectedSectionKey !== 'all'" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
         <ion-select
           interface="popover"
           class="subcat-select"
@@ -118,7 +125,7 @@
             {{ selectedLanguage=='en' ? 'All' : 'الكل' }}
           </ion-select-option>
 
-          <ion-select-option *ngFor="let sc of subCategoryOptions" [value]="sc.key">
+          <ion-select-option *ngFor="let sc of subCategoryOptions; trackBy: trackBySubKey" [value]="sc.key">
             {{ selectedLanguage === 'en' ? sc.en : sc.ar }}
           </ion-select-option>
 
@@ -126,18 +133,34 @@
       </div>
     </div>
 
-    <!-- ✅ LIST AREA -->
-    <div class="home-list">
+    <!-- ✅ LIST AREA (scroll only this) -->
+    <div class="home-list" #listScroll (scroll)="onListScroll()">
       <div class="card-container" [class.grid-view]="isGrid">
 
-        <ion-card *ngFor="let item of filteredItems" mode="ios">
+        <!-- ✅ Skeleton cards ONLY when no cached products -->
+        <ng-container *ngIf="productsLoading && items.length === 0">
+          <ion-card *ngFor="let _ of skeletonCards" mode="ios">
+            <div class="skel-card" [class.skel-grid]="isGrid">
+              <ion-skeleton-text animated class="skel-img"></ion-skeleton-text>
+              <div class="skel-body">
+                <ion-skeleton-text animated class="skel-line w80"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skel-line w60"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skel-line w40"></ion-skeleton-text>
+              </div>
+            </div>
+          </ion-card>
+        </ng-container>
+
+        <!-- ✅ Real cards -->
+        <ion-card *ngFor="let item of filteredItems; trackBy: trackByItemId" mode="ios">
 
           <!-- LIST VIEW -->
           <ion-item class="card-item" lines="none" (click)="onCardClick(item)" *ngIf="!isGrid">
             <img
               [src]="(item?.images?.[0] || item?.image || 'assets/images/img/usr.png')"
               [alt]="item?.title"
-              class="card-image" />
+              class="card-image"
+              loading="lazy" />
 
             <div class="card-details">
               <div class="card-title"
@@ -154,7 +177,7 @@
 
                 <div class="meta">
                   <ion-icon name="time-outline"></ion-icon>
-                  <span style="margin-top: 4px;">{{ getTimeAgo(item.time) }}</span>
+                  <span style="margin-top: 4px;">{{ item.time | timeAgo: nowTs : selectedLanguage }}</span>
                 </div>
               </div>
 
@@ -180,7 +203,8 @@
             <img
               [src]="(item?.images?.[0] || item?.image || 'assets/images/img/usr.png')"
               [alt]="item?.title"
-              class="card-image" />
+              class="card-image"
+              loading="lazy" />
 
             <div class="card-title"
                  style="margin: 8px; font-size: 13px;"
@@ -197,20 +221,34 @@
 
               <div class="meta">
                 <ion-icon name="time-outline"></ion-icon>
-                <span>{{ getTimeAgo(item.time) }}</span>
+                <span>{{ item.time | timeAgo: nowTs : selectedLanguage }}</span>
               </div>
             </div>
           </div>
 
         </ion-card>
 
-        <!-- Empty State -->
-        <div *ngIf="filteredItems.length === 0" class="empty-state">
+        <!-- ✅ Empty State (only after load) -->
+        <div *ngIf="!productsLoading && filteredItems.length === 0" class="empty-state">
           <ion-icon name="basket-outline" size="large"></ion-icon>
           <p>{{ 'no_items' | translate }}</p>
         </div>
 
       </div>
+
+      <!-- ✅ Load more button -->
+      <div class="load-more-wrap" *ngIf="!productsLoading && hasMore">
+        <ion-button expand="block" class="load-more-btn" [disabled]="loadingMore" (click)="loadMoreProducts()">
+          <ng-container *ngIf="!loadingMore">
+            {{ selectedLanguage=='en' ? 'Load more' : 'تحميل المزيد' }}
+          </ng-container>
+          <ng-container *ngIf="loadingMore">
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            {{ selectedLanguage=='en' ? 'Loading…' : 'جارٍ التحميل…' }}
+          </ng-container>
+        </ion-button>
+      </div>
+
     </div>
   </div>
 
@@ -276,16 +314,13 @@
           </ion-textarea>
 
           <div class="hint-row">
-            <span class="hint">
-              {{ selectedLanguage=='en' ? 'Tip: keep it short' : 'نصيحة: اجعل الوصف قصيراً' }}
-            </span>
+            <span class="hint">{{ selectedLanguage=='en' ? 'Tip: keep it short' : 'نصيحة: اجعل الوصف قصيراً' }}</span>
             <span class="count">{{ (newStoryCaption?.length || 0) }}/120</span>
           </div>
         </div>
 
         <div class="story-actions mt16">
           <ion-button expand="block" class="story-submit" [disabled]="uploadingStory" (click)="addStory()">
-
             <ng-container *ngIf="!uploadingStory">
               <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
               {{ selectedLanguage=='en' ? 'Post Story' : 'نشر القصة' }}
@@ -295,7 +330,6 @@
               <ion-spinner name="crescent" slot="start"></ion-spinner>
               {{ selectedLanguage=='en' ? 'Uploading...' : 'جارٍ الرفع...' }}
             </ng-container>
-
           </ion-button>
         </div>
       </ion-content>
@@ -327,4 +361,5 @@
       </ion-content>
     </ng-template>
   </ion-modal>
+
 </ion-content>

@@ -36,7 +36,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
   address = 'Pakistan';
   lastUpdated = '18 Jan 2026';
 
-  defaultOpenSectionId = 'privacy';
+  defaultOpenSectionId = 'intro';
 
   query = '';
   selectedLanguage = 'en';
@@ -224,12 +224,12 @@ export class PoliciesComponent implements OnInit, OnDestroy {
       ],
     },
 
-    {
-      id: 'contact',
-      titleKey: 'policies.sections.contact.title',
-      icon: 'mail-outline',
-      blocks: [{ type: 'p', textKey: 'policies.sections.contact.p1' }],
-    },
+    // {
+    //   id: 'contact',
+    //   titleKey: 'policies.sections.contact.title',
+    //   icon: 'mail-outline',
+    //   blocks: [{ type: 'p', textKey: 'policies.sections.contact.p1' }],
+    // },
   ];
 
   // localized sections (UI uses this)

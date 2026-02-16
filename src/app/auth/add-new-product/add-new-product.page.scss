@@ -285,3 +285,25 @@ ion-chip {
   --padding-end: 10px;
   --padding-start: 9px;
 }
+
+ion-item{
+  ion-chip{
+        background: #a0a0a0;
+        color: #ffffff;
+  }
+
+}
+
+  .ionlabel{
+  width: 100%;
+    display: flex;
+}
+.j_right{
+
+    justify-content: right;
+}
+.j_left{
+
+    justify-content: left;
+}
+

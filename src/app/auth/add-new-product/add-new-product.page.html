@@ -6,11 +6,11 @@
       </ion-button>
     </ion-buttons>
 
-    <ion-title>Offer Posting</ion-title>
+    <ion-title>{{'offer_posting'| translate}}</ion-title>
 
     <ion-buttons slot="end">
       <ion-button fill="clear" class="back" (click)="prevStep()">
-        Cancel
+        {{'cancel' | translate}}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -25,14 +25,7 @@
     <div class="step-panel" *ngIf="step === 0">
       <ion-card class="step-card">
         <!-- Hidden file input for images -->
-        <input
-          #imgInput
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          (change)="onFilesPicked($event)"
-        />
+        <input #imgInput type="file" accept="image/*" multiple hidden (change)="onFilesPicked($event)" />
 
         <ion-item style="margin-top: 12px; --padding-start:0px" lines="none">
           <div class="images-row">
@@ -76,11 +69,8 @@
           <div class="select_location" style="margin-top: 1px;">
             <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
               <p class="location">{{ 'offer_subject' | translate }}</p>
-              <ion-input
-                [(ngModel)]="model.subject"
-                [placeholder]="'offer_subject' | translate"
-                class="change_subject"
-              ></ion-input>
+              <ion-input [(ngModel)]="model.subject" [placeholder]="'offer_subject' | translate"
+                class="change_subject"></ion-input>
             </div>
           </div>
         </ion-item>
@@ -98,11 +88,8 @@
                 </p>
 
                 <!-- ✅ Click on icon to reset and re-pick -->
-                <ion-icon
-                  class="chev clickable"
-                  name="create-outline"
-                  (click)="$event.stopPropagation(); onEditCategory()"
-                ></ion-icon>
+                <ion-icon class="chev clickable" name="create-outline"
+                  (click)="$event.stopPropagation(); onEditCategory()"></ion-icon>
               </div>
             </div>
           </div>
@@ -110,7 +97,7 @@
 
         <div class="step-actions">
           <ion-button expand="block" mode="ios" (click)="nextStep()" class="next_button">
-            Next
+            {{ 'next' | translate }}
           </ion-button>
         </div>
       </ion-card>
@@ -119,106 +106,109 @@
     <!-- ===================== -->
     <!-- STEP 2 -->
     <!-- ===================== -->
-    <div class="step-panel"  *ngIf="step === 1 && isCarsSelected()">
+    <div class="step-panel" *ngIf="step === 1 && isCarsSelected()">
       <ion-card class="step-card p-10" style="padding-bottom: 100px; overflow-y: auto;">
 
-        <ion-label class="title_sell">Sell or Waiver</ion-label>
+        <!-- Sell / Waiver -->
+        <ion-label class="title_sell ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'sell_or_waiver' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
           <ion-segment [(ngModel)]="model.dealType" mode="ios">
             <ion-segment-button value="sell" style="--border-radius: 12px 0px 0px 12px;">
-              <ion-label>Sell</ion-label>
+              <ion-label>{{ 'deal_type_sell' | translate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button value="waiver" style="--border-radius: 0px 12px 12px 0px;">
-              <ion-label>Waiver</ion-label>
+              <ion-label>{{ 'deal_type_waiver' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
         </ion-item>
 
-        <ion-label class="title_sell mt10">Car Condition</ion-label>
+        <!-- Condition -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'car_condition' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
           <ion-segment [(ngModel)]="model.condition" mode="ios">
             <ion-segment-button value="new" style="--border-radius: 12px 0px 0px 12px;">
-              <ion-label>New</ion-label>
+              <ion-label>{{ 'condition_new' | translate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button value="used" style="--border-radius: 0px 0px 0px 0px;">
-              <ion-label>Used</ion-label>
+              <ion-label>{{ 'condition_used' | translate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button value="damaged" style="--border-radius: 0px 12px 12px 0px;">
-              <ion-label>Damaged</ion-label>
+              <ion-label>{{ 'condition_damaged' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
         </ion-item>
 
-        <ion-label class="title_sell mt10">Gear Type</ion-label>
+        <!-- Gear -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'gear_type' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
           <ion-segment [(ngModel)]="model.gearType" mode="ios">
             <ion-segment-button value="manual" style="--border-radius: 12px 0px 0px 12px;">
-              <ion-label>Manual</ion-label>
+              <ion-label>{{ 'gear_manual' | translate }}</ion-label>
             </ion-segment-button>
-
             <ion-segment-button value="automatic" style="--border-radius: 0px 12px 12px 0px;">
-              <ion-label>Automatic</ion-label>
+              <ion-label>{{ 'gear_automatic' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
         </ion-item>
 
-        <ion-label class="title_sell mt10">Fuel Type</ion-label>
+        <!-- Fuel -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'fuel_type' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
           <ion-segment [(ngModel)]="model.fuelType" mode="ios">
             <ion-segment-button value="gasoline" style="--border-radius: 12px 0px 0px 12px;">
-              <ion-label>Gasoline</ion-label>
+              <ion-label>{{ 'fuel_gasoline' | translate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button value="diesel" style="--border-radius: 0px 0px 0px 0px;">
-              <ion-label>Diesel</ion-label>
+              <ion-label>{{ 'fuel_diesel' | translate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button value="hybrid" style="--border-radius: 0px 12px 12px 0px;">
-              <ion-label>Hybrid</ion-label>
+              <ion-label>{{ 'fuel_hybrid' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
         </ion-item>
 
-        <ion-label class="title_sell mt10">Mileage ({{ model.mileage }} km)</ion-label>
+        <!-- Mileage -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">
+          {{ 'mileage_km' | translate:{ value: model.mileage } }}
+        </ion-label>
         <ion-item lines="full" class="sell_or_waiver">
-          <ion-range
-            [(ngModel)]="model.mileage"
-            [min]="0"
-            [max]="100"
-            [step]="1"
-            [pin]="true"
-            (ionChange)="onMileageChange($event)"
-          ></ion-range>
+          <ion-range [(ngModel)]="model.mileage" [min]="0" [max]="100" [step]="1" [pin]="true"
+            (ionChange)="onMileageChange($event)"></ion-range>
         </ion-item>
 
-
-        <ion-label class="title_sell mt10">Is 4WD</ion-label>
+        <!-- 4WD -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'is_4wd' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
           <ion-segment [(ngModel)]="model.is4wd" mode="ios">
             <ion-segment-button value="yes" style="--border-radius: 12px 0px 0px 12px;">
-              <ion-label>Yes</ion-label>
+              <ion-label>{{ 'yes' | translate }}</ion-label>
             </ion-segment-button>
-
             <ion-segment-button value="no" style="--border-radius: 0px 12px 12px 0px;">
-              <ion-label>No</ion-label>
+              <ion-label>{{ 'no' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
         </ion-item>
 
-        <ion-label class="title_sell mt10">Car Class</ion-label>
+        <!-- Car Class -->
+        <ion-label class="title_sell mt10 ionlabel" [ngClass]="selectedLanguage == 'ar' ? 'j_right' : 'j_left'">{{
+          'car_class' | translate }}</ion-label>
         <ion-item lines="full" class="sell_or_waiver">
-          <ion-chip
-            *ngFor="let c of carClassOptions"
-            (click)="toggleCarClass(c)"
-            [outline]="!isCarClassSelected(c)"
-          >
-            {{ c }}
+          <ion-chip *ngFor="let c of carClassOptions" (click)="toggleCarClass(c)" [outline]="!isCarClassSelected(c)">
+            {{ ('car_class_' + c) | translate }}
           </ion-chip>
         </ion-item>
 
         <div class="step-actions">
           <ion-button expand="block" mode="ios" (click)="nextStep()" class="next_button">
-            Next
+            {{ 'next' | translate }}
           </ion-button>
         </div>
+
       </ion-card>
     </div>
 
@@ -263,72 +253,44 @@
         </div>
 
 
-           <!-- ✅ Readonly Preview: Section -->
-           <div class="select_location readonly-box">
-            <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
-              <p class="location">{{ 'enter_description' | translate }}</p>
-              <div class="location-row">
-                <ion-textarea
-                [(ngModel)]="model.extraInfo"
-                autoGrow="true"
-                [placeholder]="'description_label' | translate "
-                style="min-height: 140px;"
-              ></ion-textarea>
-              </div>
+        <!-- ✅ Readonly Preview: Section -->
+        <div class="select_location readonly-box">
+          <div class="sub_select_location" [attr.dir]="selectedLanguage !== 'en' ? 'rtl' : 'ltr'">
+            <p class="location">{{ 'enter_description' | translate }}</p>
+            <div class="location-row">
+              <ion-textarea [(ngModel)]="model.extraInfo" autoGrow="true"
+                [placeholder]="'description_label' | translate " style="min-height: 140px;"></ion-textarea>
             </div>
           </div>
+        </div>
 
 
-       <!-- ✅ Price -->
-       <ion-item lines="full" class="sell_or_waiver" style="margin-top: 20px;">
-        <ion-text style="color: var(--text-black);">Price</ion-text>
+        <!-- ✅ Price -->
+        <ion-item lines="full" class="sell_or_waiver" style="margin-top: 20px;">
+          <ion-text style="color: var(--text-black);">Price</ion-text>
 
-        <ion-input
-          class="price"
-          fill="outline"
-          type="number"
-          inputmode="numeric"
-          [(ngModel)]="model.price"
-          placeholder="xxxxxxx"
-          [disabled]="disablePrice"
-        >
-          <ion-icon slot="end" name="cash"></ion-icon>
-        </ion-input>
+          <ion-input class="price" fill="outline" type="number" inputmode="numeric" [(ngModel)]="model.price"
+            placeholder="xxxxxxx" [disabled]="disablePrice">
+            <ion-icon slot="end" name="cash"></ion-icon>
+          </ion-input>
 
-        <ion-toggle
-          slot="end"
-          mode="ios"
-          [checked]="disablePrice"
-          (ionChange)="onPriceToggle($event)"
-          style="--track-background:#C7C7C7"
-        ></ion-toggle>
-      </ion-item>
+          <ion-toggle slot="end" mode="ios" [checked]="disablePrice" (ionChange)="onPriceToggle($event)"
+            style="--track-background:#C7C7C7"></ion-toggle>
+        </ion-item>
 
 
-<!-- ✅ Phone -->
-<ion-item lines="full" class="sell_or_waiver">
-  <ion-text style="color: var(--text-black);">Phone</ion-text>
+        <!-- ✅ Phone -->
+        <ion-item lines="full" class="sell_or_waiver">
+          <ion-text style="color: var(--text-black);">Phone</ion-text>
 
-  <ion-input
-    class="price"
-    fill="outline"
-    type="tel"
-    inputmode="tel"
-    [(ngModel)]="model.phone"
-    placeholder="xx xxx-xxxxxxx"
-    [disabled]="disablePhone"
-  >
-  <ion-icon slot="end" name="call"></ion-icon>
-</ion-input>
+          <ion-input class="price" fill="outline" type="tel" inputmode="tel" [(ngModel)]="model.phone"
+            placeholder="xx xxx-xxxxxxx" [disabled]="disablePhone">
+            <ion-icon slot="end" name="call"></ion-icon>
+          </ion-input>
 
-  <ion-toggle
-    slot="end"
-    mode="ios"
-    [checked]="disablePhone"
-    (ionChange)="onPhoneToggle($event)"
-    style="--track-background:#C7C7C7"
-  ></ion-toggle>
-</ion-item>
+          <ion-toggle slot="end" mode="ios" [checked]="disablePhone" (ionChange)="onPhoneToggle($event)"
+            style="--track-background:#C7C7C7"></ion-toggle>
+        </ion-item>
 
 
 
