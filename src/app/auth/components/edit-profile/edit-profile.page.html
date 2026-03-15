@@ -1,0 +1,310 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/main/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'profile_settings' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ 'uploading' | translate }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && user">
+    <!-- Tabs -->
+    <ion-toolbar class="tabs-toolbar">
+      <ion-segment 
+        [(ngModel)]="currentTab"
+        (ionChange)="switchTab($event.detail.value)">
+        <ion-segment-button value="profile">
+          <ion-icon name="person"></ion-icon>
+          <span>{{ 'profile' | translate }}</span>
+        </ion-segment-button>
+        <ion-segment-button value="reputation">
+          <ion-icon name="star"></ion-icon>
+          <span>{{ 'reputation' | translate }}</span>
+        </ion-segment-button>
+        <ion-segment-button value="password">
+          <ion-icon name="lock"></ion-icon>
+          <span>{{ 'password' | translate }}</span>
+        </ion-segment-button>
+        <ion-segment-button value="verification">
+          <ion-icon name="checkmark-circle"></ion-icon>
+          <span>{{ 'verification' | translate }}</span>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+
+    <!-- Profile Tab -->
+    <form *ngIf="currentTab === 'profile'" [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      <!-- Profile Picture -->
+      <ion-card class="profile-card">
+        <ion-card-content>
+          <div class="profile-picture-container">
+            <img 
+              [src]="selectedProfile || user.profileImage || 'assets/image/default-profile.png'"
+              alt="Profile Picture"
+              class="profile-picture">
+            <ion-button 
+              fill="clear"
+              color="primary"
+              (click)="uploadProfilePicture()"
+              type="button">
+              <ion-icon slot="start" name="camera"></ion-icon>
+              {{ 'change_photo' | translate }}
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Profile Information -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ 'personal_info' | translate }}</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Name -->
+          <ion-item>
+            <ion-label position="floating">{{ 'name' | translate }} *</ion-label>
+            <ion-input
+              formControlName="name"
+              placeholder="Your full name"
+              [class.error]="hasError('name', profileForm)">
+            </ion-input>
+          </ion-item>
+          <small *ngIf="hasError('name', profileForm)" class="error-message">
+            {{ getErrorMessage('name', profileForm) }}
+          </small>
+
+          <!-- Email -->
+          <ion-item>
+            <ion-label position="floating">{{ 'email' | translate }} *</ion-label>
+            <ion-input
+              formControlName="email"
+              type="email"
+              placeholder="your.email@example.com"
+              readonly
+              [class.error]="hasError('email', profileForm')">
+            </ion-input>
+          </ion-item>
+
+          <!-- Phone -->
+          <ion-item>
+            <ion-label position="floating">{{ 'phone_number' | translate }} *</ion-label>
+            <ion-input
+              formControlName="phone"
+              placeholder="05xxxxxxxx"
+              [class.error]="hasError('phone', profileForm)">
+            </ion-input>
+          </ion-item>
+          <small *ngIf="hasError('phone', profileForm)" class="error-message">
+            {{ getErrorMessage('phone', profileForm) }}
+          </small>
+
+          <!-- Bio -->
+          <ion-item>
+            <ion-label position="floating">{{ 'bio' | translate }}</ion-label>
+            <ion-textarea
+              formControlName="bio"
+              rows="4"
+              placeholder="Tell us about yourself..."
+              [class.error]="hasError('bio', profileForm)">
+            </ion-textarea>
+          </ion-item>
+
+          <!-- Language -->
+          <ion-item>
+            <ion-label>{{ 'language' | translate }}</ion-label>
+            <ion-select formControlName="languagePreference">
+              <ion-select-option value="en">English</ion-select-option>
+              <ion-select-option value="ar">العربية</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Action Buttons -->
+      <div class="button-group">
+        <ion-button 
+          expand="block"
+          color="primary"
+          type="submit"
+          [disabled]="!profileForm.valid || isSubmitting">
+          <ion-spinner *ngIf="isSubmitting" name="dots"></ion-spinner>
+          <span *ngIf="!isSubmitting">{{ 'save_changes' | translate }}</span>
+        </ion-button>
+      </div>
+    </form>
+
+    <!-- Reputation Tab -->
+    <div *ngIf="currentTab === 'reputation'" class="reputation-tab">
+      <ion-card class="reputation-card">
+        <ion-card-content>
+          <div class="reputation-badge">
+            {{ getReputationBadge() }}
+          </div>
+
+          <div class="rating-container">
+            <h2>{{ stats.averageRating.toFixed(1) }}/5.0</h2>
+            <div class="stars">{{ getRatingStars(stats.averageRating) }}</div>
+            <small>{{ stats.totalReviews }} {{ 'reviews' | translate }}</small>
+          </div>
+
+          <div class="reputation-stats">
+            <div class="stat">
+              <span class="stat-value">{{ stats.totalReviews }}</span>
+              <span class="stat-label">{{ 'total_reviews' | translate }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">{{ stats.isTrustedSeller ? '✓' : '✗' }}</span>
+              <span class="stat-label">{{ 'trusted_seller' | translate }}</span>
+            </div>
+          </div>
+
+          <ion-text color="medium" *ngIf="stats.totalReviews === 0">
+            <p class="no-reviews">{{ 'no_reviews_yet' | translate }}</p>
+          </ion-text>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-button 
+        expand="block"
+        fill="outline"
+        [routerLink]="['/auth/my-reviews']">
+        {{ 'view_all_reviews' | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Password Tab -->
+    <form *ngIf="currentTab === 'password'" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ 'change_password' | translate }}</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Current Password -->
+          <ion-item>
+            <ion-label position="floating">{{ 'current_password' | translate }} *</ion-label>
+            <ion-input
+              formControlName="currentPassword"
+              type="password"
+              placeholder="Enter current password"
+              [class.error]="hasError('currentPassword', passwordForm)">
+            </ion-input>
+          </ion-item>
+
+          <!-- New Password -->
+          <ion-item>
+            <ion-label position="floating">{{ 'new_password' | translate }} *</ion-label>
+            <ion-input
+              formControlName="newPassword"
+              type="password"
+              placeholder="Enter new password"
+              [class.error]="hasError('newPassword', passwordForm)">
+            </ion-input>
+          </ion-item>
+          <small class="password-hint">
+            {{ 'password_hint' | translate }}
+          </small>
+          <small *ngIf="hasError('newPassword', passwordForm)" class="error-message">
+            {{ getErrorMessage('newPassword', passwordForm) }}
+          </small>
+
+          <!-- Confirm Password -->
+          <ion-item>
+            <ion-label position="floating">{{ 'confirm_password' | translate }} *</ion-label>
+            <ion-input
+              formControlName="confirmPassword"
+              type="password"
+              placeholder="Confirm new password"
+              [class.error]="hasError('confirmPassword', passwordForm') || passwordForm.hasError('passwordMismatch')">
+            </ion-input>
+          </ion-item>
+          <small *ngIf="passwordForm.hasError('passwordMismatch')" class="error-message">
+            {{ 'passwords_do_not_match' | translate }}
+          </small>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Action Buttons -->
+      <div class="button-group">
+        <ion-button 
+          expand="block"
+          color="primary"
+          type="submit"
+          [disabled]="!passwordForm.valid || isSubmitting">
+          <ion-spinner *ngIf="isSubmitting" name="dots"></ion-spinner>
+          <span *ngIf="!isSubmitting">{{ 'update_password' | translate }}</span>
+        </ion-button>
+      </div>
+    </form>
+
+    <!-- Verification Tab -->
+    <div *ngIf="currentTab === 'verification'" class="verification-tab">
+      <ion-card class="verification-card">
+        <ion-card-header>
+          <ion-card-title>{{ 'account_verification' | translate }}</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Email Verification -->
+          <div class="verification-item">
+            <div class="verification-header">
+              <h3>{{ 'email_verification' | translate }}</h3>
+              <ion-badge color="success" *ngIf="user.emailVerified">
+                ✓ {{ 'verified' | translate }}
+              </ion-badge>
+              <ion-badge color="warning" *ngIf="!user.emailVerified">
+                ⏳ {{ 'pending' | translate }}
+              </ion-badge>
+            </div>
+            <p>{{ user.email }}</p>
+            <ion-button 
+              *ngIf="!user.emailVerified"
+              expand="block"
+              fill="outline"
+              (click)="sendVerificationEmail()">
+              {{ 'send_verification_email' | translate }}
+            </ion-button>
+          </div>
+
+          <!-- Phone Verification -->
+          <div class="verification-item">
+            <div class="verification-header">
+              <h3>{{ 'phone_verification' | translate }}</h3>
+              <ion-badge color="success" *ngIf="user.phoneVerified">
+                ✓ {{ 'verified' | translate }}
+              </ion-badge>
+              <ion-badge *ngIf="!user.phoneVerified" color="warning">
+                ⏳ {{ 'pending' | translate }}
+              </ion-badge>
+            </div>
+            <p>{{ user.phone }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="button-group logout-group">
+      <ion-button 
+        expand="block"
+        fill="outline"
+        color="danger"
+        (click)="logout()">
+        <ion-icon slot="start" name="log-out"></ion-icon>
+        {{ 'logout' | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Spacer -->
+    <div class="spacer"></div>
+  </div>
+</ion-content>

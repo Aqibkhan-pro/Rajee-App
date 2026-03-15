@@ -5,8 +5,11 @@ import {
   RangeCustomEvent,
   ToggleCustomEvent,
   LoadingController,
-  ToastController
+  ToastController,
+  ActionSheetController
 } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 import { Province, District } from 'src/app/shared/saudi-provinces';
 import { LocationPickerModalComponent } from './location-picker-modal/location-picker-modal.component';
@@ -110,14 +113,16 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
     private navCtrl: NavController,
     private modalCtrl: ModalController,
     private loadingCtrl: LoadingController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private translate: TranslateService,
+    private actionSheetCtrl: ActionSheetController
   ) {}
 
   ngOnInit() {
     const savedLang = localStorage.getItem('lang');
     this.selectedLanguage = savedLang === 'ar' ? 'ar' : 'en';
 
-    this.carDisplayText = this.selectedLanguage === 'ar' ?  "اختر القسم" : 'Select Section';
+    this.carDisplayText = this.translate.instant('select_section');
     this.refreshLocationDisplay();
   }
 
@@ -167,19 +172,19 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
     const imagesOk = this.pickedImages.length > 0;
 
     if (!imagesOk) {
-      this.toast('Please select at least 1 image', 'danger');
+      this.toast(this.translate.instant('select_at_least_image'), 'danger');
       return false;
     }
     if (!locOk) {
-      this.toast('Please select location', 'danger');
+      this.toast(this.translate.instant('select_location_msg'), 'danger');
       return false;
     }
     if (!subjectOk) {
-      this.toast('Please enter subject', 'danger');
+      this.toast(this.translate.instant('enter_description'), 'danger');
       return false;
     }
     if (!catOk) {
-      this.toast('Please select category', 'danger');
+      this.toast(this.translate.instant('select_category_msg'), 'danger');
       return false;
     }
     return true;
@@ -194,7 +199,7 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
     // ✅ Step-1 validation again (safe)
     if (!this.validateStep1()) return;
 
-    const loading = await this.loadingCtrl.create({ message: 'Uploading...' });
+    const loading = await this.loadingCtrl.create({ message: this.translate.instant('uploading') });
     await loading.present();
 
     try {
@@ -276,7 +281,7 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
 
       await this.saveToRealtimeDb(payload, productId, idToken);
 
-      this.toast('Saved successfully', 'success');
+      this.toast(this.translate.instant('saved_successfully'), 'success');
 
       // reset
       this.resetAll();
@@ -284,7 +289,7 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
 
     } catch (e: any) {
       console.error(e);
-      this.toast(e?.message || 'Failed', 'danger');
+      this.toast(e?.message || this.translate.instant('save_failed'), 'danger');
     } finally {
       loading.dismiss();
     }
@@ -353,15 +358,84 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
     this.selectedBrandObj = null;
     this.selectedModelObj = null;
 
-    this.carDisplayText = this.selectedLanguage === 'ar' ? "اختر القسم" : 'Select Section';
+    this.carDisplayText = this.translate.instant('select_section');
   }
 
   // =========================
   // IMAGES (pick 100 + compress)
   // =========================
+  async showPhotoPicker() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: this.translate.instant('add_image'),
+      buttons: [
+        {
+          text: this.translate.instant('photo_library'),
+          icon: 'image',
+          handler: () => this.openPhotoLibrary()
+        },
+        {
+          text: this.translate.instant('take_photo'),
+          icon: 'camera',
+          handler: () => this.takePhoto()
+        },
+        {
+          text: this.translate.instant('cancel'),
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  private async openPhotoLibrary() {
+    try {
+      const result = await Camera.pickImages({
+        quality: 80,
+        limit: this.MAX_IMAGES - this.pickedImages.length,
+      });
+
+      if (result?.photos && result.photos.length > 0) {
+        for (const photo of result.photos) {
+          const blob = await this.photoURLToBlob(photo.webPath!);
+          const file = new File([blob], `image_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const compressed = await this.compressToJpeg(file, 1280, 0.40);
+          this.pickedImages.push(compressed);
+        }
+      }
+    } catch (err: any) {
+      console.error('Photo library error:', err);
+    }
+  }
+
+  private async takePhoto() {
+    try {
+      const result = await Camera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+      });
+
+      if (result?.webPath) {
+        const blob = await this.photoURLToBlob(result.webPath);
+        const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const compressed = await this.compressToJpeg(file, 1280, 0.40);
+        this.pickedImages.push(compressed);
+      }
+    } catch (err: any) {
+      console.error('Camera error:', err);
+    }
+  }
+
+  private async photoURLToBlob(photoURL: string): Promise<Blob> {
+    const response = await fetch(photoURL);
+    return response.blob();
+  }
+
   pickMultipleImages(input: HTMLInputElement) {
-    input.value = '';
-    input.click();
+    // This function is no longer used - functionality moved to showPhotoPicker()
+    this.showPhotoPicker();
   }
 
   async onFilesPicked(ev: Event) {
@@ -481,7 +555,7 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
     }
 
     if (!this.selectedProvinceKey || !this.selectedDistrictKey) {
-      this.locationDisplayText = this.selectedLanguage === 'ar' ? 'اختر الموقع' : 'Select Location';
+      this.locationDisplayText = this.translate.instant('select_location_msg');
       return;
     }
 
@@ -536,8 +610,8 @@ carClassOptions: string[] = ['riyal', 'ls', 'ltz', 'ss', 'bermimam'];
       // ✅ display text
       this.carDisplayText =
         this.selectedLanguage === 'ar'
-          ? this.buildCategoryText('ar') || 'اختر'
-          : this.buildCategoryText('en') || 'Select';
+          ? this.buildCategoryText('ar') || this.translate.instant('select_category')
+          : this.buildCategoryText('en') || this.translate.instant('select_category');
 
       // ✅ if user is on step 1 (car-details) and switched to device/auction -> jump to step 2
       if (this.step === 1 && !this.isCarsSelected()) {

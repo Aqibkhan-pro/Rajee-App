@@ -1,96 +1,166 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button style="color: var(--button-color) !important;"></ion-back-button>
+      <ion-back-button defaultHref="/main/home"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: var(--button-color) !important;">{{ t('adminPanel') }}</ion-title>
+    <ion-title>{{ t('adminPanel') }}</ion-title>
+  </ion-toolbar>
+
+  <!-- Admin Tabs -->
+  <ion-toolbar class="admin-tabs">
+    <ion-segment 
+      [(ngModel)]="currentTab"
+      (ionChange)="switchTab($event.detail.value)">
+      <ion-segment-button value="dashboard">
+        <ion-icon name="speedometer"></ion-icon>
+        <span>{{ t('dashboard') }}</span>
+      </ion-segment-button>
+      <ion-segment-button value="reports">
+        <ion-icon name="alert-circle"></ion-icon>
+        <span>{{ t('reports') }}</span>
+      </ion-segment-button>
+      <ion-segment-button value="users">
+        <ion-icon name="people"></ion-icon>
+        <span>{{ t('users') }}</span>
+      </ion-segment-button>
+      <ion-segment-button value="ads">
+        <ion-icon name="pricetag"></ion-icon>
+        <span>{{ t('ads') }}</span>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen class="admin-bg">
+<ion-content [fullscreen]="true">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading...</p>
+  </div>
 
-  <ion-grid>
-    <ion-row>
-
-      <!-- Manage Users -->
-      <ion-col size="12" size-md="6">
-        <ion-card mode="ios" class="admin-card" (click)="openUsers()">
-
-          <div class="card-header">
-            <div class="icon-circle blue">
-              <ion-icon name="people-outline"></ion-icon>
-            </div>
-            <span class="badge blue">{{ t('totalUsers') }}</span>
-          </div>
-
-          <h2>{{ t('manageUsers') }}</h2>
-          <p>{{ t('usersDesc') }}</p>
-
-          <div class="card-footer">
-            <div>
-              <h3>{{ totalUsers }}</h3>
-              <span>{{ t('totalUsers') }}</span>
-            </div>
-            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
-          </div>
-
-          <div class="card-strip blue"></div>
+  <!-- Dashboard Tab -->
+  <div *ngIf="currentTab === 'dashboard' && !isLoading" class="dashboard-content">
+    <!-- Users Stats -->
+    <div class="stats-section">
+      <h2>{{ t('users') }}</h2>
+      <div class="stats-grid">
+        <ion-card class="stat-card">
+          <div class="stat-number">{{ stats.totalUsers }}</div>
+          <div class="stat-label">{{ t('totalUsers') }}</div>
         </ion-card>
-      </ion-col>
-
-      <!-- Manage Products -->
-      <ion-col size="12" size-md="6">
-        <ion-card mode="ios" class="admin-card" (click)="openProducts()">
-
-          <div class="card-header">
-            <div class="icon-circle indigo">
-              <ion-icon name="cube-outline"></ion-icon>
-            </div>
-            <span class="badge indigo">{{ t('products') }}</span>
-          </div>
-
-          <h2>{{ t('manageProducts') }}</h2>
-          <p>{{ t('productsDesc') }}</p>
-
-          <div class="card-footer">
-            <div>
-              <h3>{{ totalProducts }}</h3>
-              <span>{{ t('totalProducts') }}</span>
-            </div>
-            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
-          </div>
-
-          <div class="card-strip indigo"></div>
+        <ion-card class="stat-card accent">
+          <div class="stat-number">{{ stats.activeUsers }}</div>
+          <div class="stat-label">{{ t('activeUsers') }}</div>
         </ion-card>
-      </ion-col>
-
-      <!-- Remove Products -->
-      <ion-col size="12" size-md="6">
-        <ion-card mode="ios" class="admin-card" (click)="openRemoveProduct()">
-
-          <div class="card-header">
-            <div class="icon-circle indigo">
-              <ion-icon name="cube-outline"></ion-icon>
-            </div>
-            <span class="badge indigo">{{ t('products') }}</span>
-          </div>
-
-          <h2>{{ t('removeProducts') }}</h2>
-          <p>{{ t('removeDesc') }}</p>
-
-          <div class="card-footer">
-            <div>
-              <h3>{{ totalProducts }}</h3>
-              <span>{{ t('products') }}</span>
-            </div>
-            <ion-button style="--background: var(--primary-color); color: var(--button-color);" size="small" mode="ios" [shape]="'round'">{{ t('open') }}</ion-button>
-          </div>
-
-          <div class="card-strip indigo"></div>
+        <ion-card class="stat-card danger">
+          <div class="stat-number">{{ stats.suspendedUsers }}</div>
+          <div class="stat-label">{{ t('suspendedUsers') }}</div>
         </ion-card>
-      </ion-col>
+      </div>
+    </div>
 
-    </ion-row>
-  </ion-grid>
+    <!-- Ads Stats -->
+    <div class="stats-section">
+      <h2>{{ t('ads') }}</h2>
+      <div class="stats-grid">
+        <ion-card class="stat-card">
+          <div class="stat-number">{{ stats.totalAds }}</div>
+          <div class="stat-label">{{ t('totalAds') }}</div>
+        </ion-card>
+        <ion-card class="stat-card accent">
+          <div class="stat-number">{{ stats.activeAds }}</div>
+          <div class="stat-label">{{ t('activeAds') }}</div>
+        </ion-card>
+        <ion-card class="stat-card warning">
+          <div class="stat-number">{{ stats.pendingAds }}</div>
+          <div class="stat-label">{{ t('pendingAds') }}</div>
+        </ion-card>
+      </div>
+    </div>
 
+    <!-- Reports Stats -->
+    <div class="stats-section">
+      <h2>{{ t('reports') }}</h2>
+      <div class="stats-grid">
+        <ion-card class="stat-card">
+          <div class="stat-number">{{ stats.totalReports }}</div>
+          <div class="stat-label">{{ 'Total Reports' }}</div>
+        </ion-card>
+        <ion-card class="stat-card danger">
+          <div class="stat-number">{{ stats.openReports }}</div>
+          <div class="stat-label">{{ t('openReports') }}</div>
+        </ion-card>
+        <ion-card class="stat-card success">
+          <div class="stat-number">{{ stats.resolvedReports }}</div>
+          <div class="stat-label">{{ t('resolvedReports') }}</div>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h2>Quick Actions</h2>
+      <ion-button expand="block" (click)="navigateToUsers()">
+        <ion-icon slot="start" name="people"></ion-icon>
+        {{ t('manageUsers') }}
+      </ion-button>
+      <ion-button expand="block" (click)="navigateToAds()">
+        <ion-icon slot="start" name="pricetag"></ion-icon>
+        {{ t('manageAds') }}
+      </ion-button>
+      <ion-button expand="block" (click)="navigateToCategories()">
+        <ion-icon slot="start" name="list"></ion-icon>
+        {{ t('categories') }}
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Reports Tab -->
+  <div *ngIf="currentTab === 'reports' && !isLoading" class="reports-content">
+    <h2>{{ t('moderationQueue') }}</h2>
+
+    <div *ngIf="openReports.length === 0" class="empty-state">
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <p>No open reports</p>
+    </div>
+
+    <div *ngFor="let report of openReports" class="report-item">
+      <ion-card (click)="viewReportDetails(report)">
+        <ion-card-content>
+          <div class="report-header">
+            <h3>{{ report.reason }}</h3>
+            <ion-badge color="danger">{{ report.status }}</ion-badge>
+          </div>
+          <p class="report-details">
+            <small>{{ report.evidence }}</small>
+          </p>
+          <div class="report-footer">
+            <small>{{ report.createdAt | date:'short' }}</small>
+            <ion-icon name="chevron-forward"></ion-icon>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="currentTab === 'users' && !isLoading" class="users-content">
+    <h2>{{ t('users') }}</h2>
+    <ion-button expand="block" (click)="navigateToUsers()">
+      <ion-icon slot="start" name="open"></ion-icon>
+      {{ t('manageUsers') }}
+    </ion-button>
+  </div>
+
+  <!-- Ads Tab -->
+  <div *ngIf="currentTab === 'ads' && !isLoading" class="ads-content">
+    <h2>{{ t('ads') }}</h2>
+    <ion-button expand="block" (click)="navigateToAds()">
+      <ion-icon slot="start" name="open"></ion-icon>
+      {{ t('manageAds') }}
+    </ion-button>
+  </div>
+
+  <!-- Spacer -->
+  <div class="spacer"></div>
 </ion-content>

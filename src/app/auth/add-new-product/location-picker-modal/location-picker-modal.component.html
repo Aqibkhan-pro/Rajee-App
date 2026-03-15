@@ -7,17 +7,17 @@
     </ion-buttons>
 
     <ion-title>
-      {{ step === 0 ? 'Select Province' : 'Select District' }}
+      {{ step === 0 ? (lang === 'ar' ? 'اختر المنطقة' : 'Select Province') : (lang === 'ar' ? 'اختر الحي' : 'Select District') }}
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button fill="clear" class="close" (click)="close()">Close</ion-button>
+      <ion-button fill="clear" class="close" (click)="close()">{{ lang === 'ar' ? 'إغلاق' : 'Close' }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="page-content" [fullscreen]="true">
-  <div class="steps-wrap" [@stepAnim]="step">
+  <div class="steps-wrap" [@locationAnim]="step">
 
     <!-- STEP 1: Provinces -->
     <div class="step-panel" *ngIf="step === 0">
@@ -26,7 +26,7 @@
         <div class="top">
           <ion-searchbar
             [(ngModel)]="searchProvince"
-            placeholder="Search province..."
+            [placeholder]="lang === 'ar' ? 'ابحث عن المنطقة...' : 'Search province...'"
             mode="ios"
             class="search">
           </ion-searchbar>
@@ -66,7 +66,7 @@
 
           <ion-searchbar
             [(ngModel)]="searchDistrict"
-            placeholder="Search district..."
+            [placeholder]="lang === 'ar' ? 'ابحث عن الحي...' : 'Search district...'"
             mode="ios"
             class="search">
           </ion-searchbar>

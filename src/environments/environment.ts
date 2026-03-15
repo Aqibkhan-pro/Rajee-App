@@ -5,7 +5,7 @@ export const environment = {
     authDomain: "rajee-198a5.firebaseapp.com",
     databaseURL: "https://rajee-198a5-default-rtdb.firebaseio.com",
     projectId: "rajee-198a5",
-    storageBucket: "rajee-198a5.appspot.com",
+    storageBucket: "rajee-198a5.firebasestorage.app",
     messagingSenderId: "133679087476",
     appId: "1:133679087476:web:5b86f4816ee5cc5c9ef621",
     measurementId: "G-RRZ8XJN323"

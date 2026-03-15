@@ -43,7 +43,7 @@
     <div class="input-container">
       <ion-input
         class="message-input"
-        placeholder="Type a message..."
+        [placeholder]="'type_a_message_placeholder' | translate"
         [(ngModel)]="newMessage"
         (keyup.enter)="sendMessage()">
       </ion-input>

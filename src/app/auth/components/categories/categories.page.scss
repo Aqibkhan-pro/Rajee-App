@@ -1,0 +1,264 @@
+// Grid view styles
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.category-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .category-header {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    ion-icon {
+      font-size: 48px;
+      color: white;
+    }
+  }
+
+  ion-card-content {
+    padding: 12px;
+    text-align: center;
+
+    .category-name {
+      margin: 8px 0 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .category-name-ar {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .ad-count-badge {
+      background: #f3f4f6;
+      border-radius: 20px;
+      padding: 6px 12px;
+      margin-bottom: 8px;
+      display: inline-block;
+
+      span {
+        font-weight: 700;
+        color: #3b82f6;
+        font-size: 14px;
+      }
+
+      small {
+        color: #6b7280;
+        font-size: 11px;
+        margin-left: 4px;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+
+      ion-button {
+        --padding-start: 8px;
+        --padding-end: 8px;
+        height: 32px;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+// List view styles
+.category-list {
+  ion-item {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+
+    ion-avatar {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+
+      ion-icon {
+        font-size: 28px;
+        color: white;
+      }
+    }
+
+    ion-label {
+      h2 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 4px;
+      }
+
+      p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 2px 0;
+
+        &.ad-count {
+          color: #3b82f6;
+          font-weight: 500;
+        }
+      }
+    }
+
+    ion-badge {
+      font-size: 14px;
+      padding: 4px 8px;
+    }
+  }
+}
+
+// No results style
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 20px;
+  }
+
+  p {
+    color: #9ca3af;
+    font-size: 16px;
+  }
+}
+
+// Spinner style
+ion-spinner {
+  display: block;
+  margin: 40px auto;
+  --color: #3b82f6;
+}
+
+// Toolbar customization
+ion-toolbar {
+  --background: #ffffff;
+  --border-color: #e5e7eb;
+}
+
+ion-searchbar {
+  --background: #f3f4f6;
+  --border-radius: 20px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+ion-segment-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  font-size: 12px;
+}
+
+// Refresher styling
+ion-refresher-content {
+  --refresh-spinner-color: #3b82f6;
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .category-card {
+    .category-header {
+      height: 80px;
+
+      ion-icon {
+        font-size: 36px;
+      }
+    }
+
+    ion-card-content {
+      padding: 8px;
+
+      .category-name {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .category-card {
+    .category-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+    }
+
+    ion-card-content {
+      .category-name {
+        color: #f3f4f6;
+      }
+
+      .ad-count-badge {
+        background: #374151;
+
+        span {
+          color: #60a5fa;
+        }
+
+        small {
+          color: #9ca3af;
+        }
+      }
+    }
+  }
+
+  .no-results {
+    ion-icon {
+      color: #4b5563;
+    }
+
+    p {
+      color: #6b7280;
+    }
+  }
+}

@@ -1,0 +1,240 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button (click)="cancelEdit()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'edit_ad' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ 'uploading' | translate }}</p>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!isLoading && ad" [formGroup]="editForm" (ngSubmit)="onSubmit()">
+    <ion-card class="form-card">
+      <!-- Images section -->
+      <ion-card-header>
+        <ion-card-title>{{ 'images' | translate }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content class="images-section">
+        <!-- Image gallery -->
+        <div class="image-gallery">
+          <div *ngFor="let image of selectedImages; let i = index" class="image-item">
+            <img [src]="image" [alt]="'Ad image ' + (i + 1)">
+            <button 
+              type="button"
+              class="remove-image-btn"
+              (click)="removeImage(i)">
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+            <div *ngIf="i === 0" class="primary-badge">
+              Primary
+            </div>
+          </div>
+
+          <!-- Add image button -->
+          <ion-button 
+            *ngIf="selectedImages.length < 10"
+            expand="block"
+            fill="outline"
+            (click)="addImage()"
+            type="button">
+            <ion-icon slot="start" name="camera"></ion-icon>
+            {{ 'add_image' | translate }}
+          </ion-button>
+        </div>
+
+        <small class="image-count">
+          {{ selectedImages.length }}/10 {{ 'images' | translate }}
+        </small>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Basic info section -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>{{ 'basic_info' | translate }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Title -->
+        <ion-item>
+          <ion-label position="floating">{{ 'title' | translate }} *</ion-label>
+          <ion-input
+            formControlName="title"
+            placeholder="Product title"
+            [class.error]="hasError('title')">
+          </ion-input>
+        </ion-item>
+        <small *ngIf="hasError('title')" class="error-message">
+          {{ getErrorMessage('title') }}
+        </small>
+
+        <!-- Category -->
+        <ion-item>
+          <ion-label>{{ 'category' | translate }} *</ion-label>
+          <ion-select formControlName="categoryId">
+            <ion-select-option value="">{{ 'select_category' | translate }}</ion-select-option>
+            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name.en }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Price -->
+        <ion-item>
+          <ion-label position="floating">{{ 'price' | translate }} ('SAR') *</ion-label>
+          <ion-input
+            formControlName="price"
+            type="number"
+            placeholder="0"
+            [class.error]="hasError('price')">
+          </ion-input>
+        </ion-item>
+        <small *ngIf="hasError('price')" class="error-message">
+          {{ getErrorMessage('price') }}
+        </small>
+
+        <!-- Description -->
+        <ion-item>
+          <ion-label position="floating">{{ 'description' | translate }} *</ion-label>
+          <ion-textarea
+            formControlName="description"
+            rows="5"
+            placeholder="Detailed description of your item"
+            [class.error]="hasError('description')">
+          </ion-textarea>
+        </ion-item>
+        <small *ngIf="hasError('description')" class="error-message">
+          {{ getErrorMessage('description') }}
+        </small>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Location & Contact section -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>{{ 'location_contact' | translate }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- City -->
+        <ion-item>
+          <ion-label>{{ 'city' | translate }} *</ion-label>
+          <ion-select formControlName="city">
+            <ion-select-option value="">{{ 'select_city' | translate }}</ion-select-option>
+            <ion-select-option *ngFor="let city of cities" [value]="city">
+              {{ city }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Phone Number -->
+        <ion-item>
+          <ion-label position="floating">{{ 'phone_number' | translate }} *</ion-label>
+          <ion-input
+            formControlName="phoneNumber"
+            placeholder="05xxxxxxxx"
+            [class.error]="hasError('phoneNumber')">
+          </ion-input>
+        </ion-item>
+        <small *ngIf="hasError('phoneNumber')" class="error-message">
+          {{ getErrorMessage('phoneNumber') }}
+        </small>
+
+        <!-- Allow Contact -->
+        <ion-item>
+          <ion-label>{{ 'allow_direct_contact' | translate }}</ion-label>
+          <ion-toggle formControlName="allowContact" slot="end"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Specifications section (optional) -->
+    <ion-card class="form-card" formGroupName="specifications">
+      <ion-card-header>
+        <ion-card-title>{{ 'specifications' | translate }} (Optional)</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Brand -->
+        <ion-item>
+          <ion-label position="floating">{{ 'brand' | translate }}</ion-label>
+          <ion-input formControlName="brand" placeholder="Brand name"></ion-input>
+        </ion-item>
+
+        <!-- Model -->
+        <ion-item>
+          <ion-label position="floating">{{ 'model' | translate }}</ion-label>
+          <ion-input formControlName="model" placeholder="Model number"></ion-input>
+        </ion-item>
+
+        <!-- Condition -->
+        <ion-item>
+          <ion-label>{{ 'condition' | translate }}</ion-label>
+          <ion-select formControlName="condition">
+            <ion-select-option value="new">{{ 'new' | translate }}</ion-select-option>
+            <ion-select-option value="like_new">{{ 'like_new' | translate }}</ion-select-option>
+            <ion-select-option value="excellent">{{ 'excellent' | translate }}</ion-select-option>
+            <ion-select-option value="good">{{ 'good' | translate }}</ion-select-option>
+            <ion-select-option value="fair">{{ 'fair' | translate }}</ion-select-option>
+            <ion-select-option value="poor">{{ 'poor' | translate }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Color -->
+        <ion-item>
+          <ion-label position="floating">{{ 'color' | translate }}</ion-label>
+          <ion-input formControlName="color" placeholder="Color"></ion-input>
+        </ion-item>
+
+        <!-- Material -->
+        <ion-item>
+          <ion-label position="floating">{{ 'material' | translate }}</ion-label>
+          <ion-input formControlName="material" placeholder="Material"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action buttons -->
+    <ion-card class="action-buttons">
+      <ion-button 
+        expand="block"
+        color="primary"
+        type="submit"
+        [disabled]="!editForm.valid || isSubmitting">
+        <ion-spinner *ngIf="isSubmitting" name="dots"></ion-spinner>
+        <span *ngIf="!isSubmitting">{{ 'update_ad' | translate }}</span>
+      </ion-button>
+
+      <ion-button 
+        expand="block"
+        fill="outline"
+        type="button"
+        (click)="cancelEdit()"
+        [disabled]="isSubmitting">
+        {{ 'cancel' | translate }}
+      </ion-button>
+
+      <ion-button 
+        expand="block"
+        fill="outline"
+        color="danger"
+        type="button"
+        (click)="deleteAd()"
+        [disabled]="isSubmitting">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        {{ 'delete_ad' | translate }}
+      </ion-button>
+    </ion-card>
+
+    <!-- Spacing -->
+    <div class="spacer"></div>
+  </form>
+</ion-content>

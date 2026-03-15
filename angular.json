@@ -4,7 +4,7 @@
   "newProjectRoot": "projects",
   "projects": {
     "app": {
-      "projectType": "application",
+      "projectType": "application", 
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -63,8 +63,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": { "buildTarget": "app:build:production" },
-            "development": { "buildTarget": "app:build:development" },
-            "ci": { "progress": false }
+            "development": { "buildTarget": "app:build:development" }
           },
           "defaultConfiguration": "development"
         },

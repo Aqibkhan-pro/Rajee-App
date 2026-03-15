@@ -1,5 +1,24 @@
-import { Component, OnInit } from '@angular/core';
-import { NavController, ToastController } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
+import { NavController, ToastController, AlertController, LoadingController } from '@ionic/angular';
+import { ReportService } from '../../../services/report.service';
+import { UserService } from '../../../services/user.service';
+import { AdService } from '../../../services/ad.service';
+import { StorageService } from '../../../services/storage.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  suspendedUsers: number;
+  totalAds: number;
+  activeAds: number;
+  pendingAds: number;
+  openReports: number;
+  resolvedReports: number;
+  totalReports: number;
+}
 
 @Component({
   selector: 'app-admin-panel',
@@ -7,146 +26,331 @@ import { NavController, ToastController } from '@ionic/angular';
   styleUrls: ['./admin-panel.page.scss'],
   standalone: false
 })
-export class AdminPanelPage implements OnInit {
-
+export class AdminPanelPage implements OnInit, OnDestroy {
   FIREBASE_DB_URL = 'https://rajee-198a5-default-rtdb.firebaseio.com';
 
-  // ✅ counts
-  totalUsers = 0;
-  activeUsers = 0;
-  deactiveUsers = 0;
+  // Stats
+  stats: AdminStats = {
+    totalUsers: 0,
+    activeUsers: 0,
+    suspendedUsers: 0,
+    totalAds: 0,
+    activeAds: 0,
+    pendingAds: 0,
+    openReports: 0,
+    resolvedReports: 0,
+    totalReports: 0
+  };
 
-  pendingProducts = 0;
-  approvedProducts = 0;
-  rejectedProducts = 0;
-  totalProducts = 0;
+  // Tabs
+  currentTab = 'dashboard'; // 'dashboard', 'reports', 'users', 'ads', 'categories'
+  isLoading = false;
 
-  // ✅ Language support
+  // Reports data
+  openReports: any[] = [];
+  selectedReport: any = null;
+
+  private destroy$ = new Subject<void>();
+
+  // Language support
   currentLang: string = 'en';
   translations: any = {
     en: {
       adminPanel: 'Admin Panel',
-      manageUsers: 'Manage Users',
-      usersDesc: 'Add, edit, delete and view all user accounts in the system',
+      dashboard: 'Dashboard',
+      reports: 'Reports',
+      users: 'Users',
+      ads: 'Ads',
+      categories: 'Categories',
       totalUsers: 'Total Users',
-      manageProducts: 'Manage Products',
-      productsDesc: 'Approved and Rejected products in Rajee.',
-      totalProducts: 'Total Products',
-      removeProducts: 'Remove Products',
-      removeDesc: 'Remove products in Rajee.',
-      products: 'Products',
-      open: 'Open'
+      activeUsers: 'Active Users',
+      suspendedUsers: 'Suspended Users',
+      totalAds: 'Total Ads',
+      activeAds: 'Active Ads',
+      pendingAds: 'Pending Ads',
+      openReports: 'Open Reports',
+      resolvedReports: 'Resolved Reports',
+      manageUsers: 'Manage Users',
+      manageAds: 'Manage Ads',
+      moderationQueue: 'Moderation Queue',
+      analytics: 'Analytics'
     },
     ar: {
       adminPanel: 'لوحة التحكم',
-      manageUsers: 'إدارة المستخدمين',
-      usersDesc: 'إضافة وتعديل وحذف وعرض جميع حسابات المستخدمين في النظام',
+      dashboard: 'لوحة المعلومات',
+      reports: 'التقارير',
+      users: 'المستخدمون',
+      ads: 'الإعلانات',
+      categories: 'الفئات',
       totalUsers: 'إجمالي المستخدمين',
-      manageProducts: 'إدارة المنتجات',
-      productsDesc: 'المنتجات المعتمدة والمرفوضة في راجي.',
-      totalProducts: 'إجمالي المنتجات',
-      removeProducts: 'حذف المنتجات',
-      removeDesc: 'حذف المنتجات في راجي.',
-      products: 'المنتجات',
-      open: 'فتح'
+      activeUsers: 'المستخدمون النشطون',
+      suspendedUsers: 'المستخدمون المعلقون',
+      totalAds: 'إجمالي الإعلانات',
+      activeAds: 'الإعلانات النشطة',
+      pendingAds: 'الإعلانات قيد الانتظار',
+      openReports: 'التقارير المفتوحة',
+      resolvedReports: 'التقارير المحلولة',
+      manageUsers: 'إدارة المستخدمين',
+      manageAds: 'إدارة الإعلانات',
+      moderationQueue: 'قائمة الاعتدال',
+      analytics: 'التحليلات'
     }
   };
 
   constructor(
     private navCtrl: NavController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private alertController: AlertController,
+    private loadingController: LoadingController,
+    private reportService: ReportService,
+    private userService: UserService,
+    private adService: AdService,
+    private storageService: StorageService,
+    private router: Router
   ) {}
 
-  idToken: string | null = null;
   ngOnInit() {
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    this.idToken = userData?.idToken;
-    if (!this.idToken) throw new Error('User not authenticated');
-    
-    // ✅ Load language from localStorage
+    this.checkAdminAccess();
     this.currentLang = localStorage.getItem('lang') || 'en';
-    console.log('AdminPanelPage initialized with language:', this.currentLang);
-    
-    this.loadCounts();
+    this.loadDashboardStats();
+    this.loadOpenReports();
   }
 
-  // ✅ Get translation by key
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Check if user is admin
+   */
+  checkAdminAccess() {
+    // Check if user has admin role from localStorage
+    const userData = this.storageService.getItem('userData');
+    const userRole = userData?.role || 'user';
+    
+    if (userRole !== 'admin') {
+      this.showToast('You do not have admin access', 'danger');
+      this.router.navigate(['/main/home']);
+    }
+  }
+
+  /**
+   * Get translation
+   */
   t(key: string): string {
     return this.translations[this.currentLang]?.[key] || this.translations['en']?.[key] || key;
   }
 
-  openUsers() {
-    this.navCtrl.navigateForward(['/admin-panel/manage-users']);
-  }
-
-  openProducts() {
-    this.navCtrl.navigateForward(['/admin-panel/manage-products']);
-  }
-
-  openRemoveProduct() {
-    this.navCtrl.navigateForward(['/admin-panel/delete-products']);
-  }
-
-  // ----------------- ✅ COUNTS -----------------
-
-  async loadCounts() {
+  /**
+   * Load dashboard statistics
+   */
+  async loadDashboardStats() {
     try {
-      const [users, pending, approved, rejected] = await Promise.all([
-        this.fetchObject('/users'),
-        this.fetchObject('/products'),
-        this.fetchObject('/approvedProducts'),
-        this.fetchObject('/rejectedProducts'),
-      ]);
+      this.isLoading = true;
 
-      const usersArr = this.objToArray(users);
-      this.totalUsers = usersArr.length;
+      // Get users
+      const users = await this.userService.loadAllUsers();
+      this.stats.totalUsers = users.length;
+      this.stats.activeUsers = users.filter((u: any) => u.accountStatus === 'active').length;
+      this.stats.suspendedUsers = users.filter((u: any) => u.accountStatus === 'suspended').length;
 
-      this.activeUsers = usersArr.filter(u =>
-        u?.status === 'active' || u?.isActive === true
-      ).length;
+      // Get ads - using active ads observable
+      this.adService.getAllActiveAds(1000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((ads: any) => {
+          this.stats.totalAds = ads.length;
+          this.stats.activeAds = ads.filter((ad: any) => ad.status === 'active').length;
+          this.stats.pendingAds = ads.filter((ad: any) => ad.status === 'pendingApproval').length;
+        });
 
-      this.deactiveUsers = this.totalUsers - this.activeUsers;
+      // Get reports
+      this.reportService.getAllReports()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((reports: any) => {
+          this.stats.totalReports = reports.length;
+          this.stats.openReports = reports.filter((r: any) => r.status === 'open').length;
+          this.stats.resolvedReports = reports.filter((r: any) => r.status === 'resolved').length;
+        });
 
-      this.pendingProducts = this.countObject(pending);
-      this.approvedProducts = this.countObject(approved);
-      this.rejectedProducts = this.countObject(rejected);
-
-      this.totalProducts = this.pendingProducts + this.approvedProducts;
-
-    } catch (e: any) {
-      console.error(e);
-      this.showToast(e?.message || 'Failed to load counts', 'danger');
+      this.isLoading = false;
+    } catch (error) {
+      console.error('❌ Error loading dashboard stats:', error);
+      this.showToast('Error loading statistics', 'danger');
+      this.isLoading = false;
     }
   }
 
-  private async fetchObject(path: string): Promise<any> {
-    const url = `${this.FIREBASE_DB_URL}${path}.json?auth=${this.idToken}`;
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Firebase error (${path}): ${txt}`);
+  /**
+   * Load open reports
+   */
+  async loadOpenReports() {
+    try {
+      this.reportService.getOpenReports()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((reports) => {
+          this.openReports = reports.slice(0, 10); // Show top 10
+        });
+    } catch (error) {
+      console.error('❌ Error loading reports:', error);
     }
-
-    return await res.json();
   }
 
-  private countObject(data: any): number {
-    return Object.keys(data || {}).length;
+  /**
+   * Switch admin tab
+   */
+  switchTab(tab: string) {
+    this.currentTab = tab;
+
+    if (tab === 'reports') {
+      this.loadOpenReports();
+    } else if (tab === 'dashboard') {
+      this.loadDashboardStats();
+    }
   }
 
-  private objToArray(data: any): any[] {
-    if (!data) return [];
-    return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-  }
+  /**
+   * View report details
+   */
+  async viewReportDetails(report: any) {
+    this.selectedReport = report;
 
-  private async showToast(message: string, color: string = 'danger') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      color,
-      position: 'bottom',
+    const alert = await this.alertController.create({
+      header: 'Report Details',
+      subHeader: `Report ID: ${report.id}`,
+      message: `
+        Reason: ${report.reason}<br>
+        Status: ${report.status}<br>
+        Created: ${new Date(report.createdAt).toLocaleDateString()}
+      `,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Resolve',
+          handler: () => this.resolveReport(report)
+        },
+        {
+          text: 'Dismiss',
+          handler: () => this.dismissReport(report)
+        }
+      ]
     });
-    toast.present();
+
+    await alert.present();
+  }
+
+  /**
+   * Resolve report
+   */
+  async resolveReport(report: any) {
+    const alert = await this.alertController.create({
+      header: 'Resolve Report',
+      message: 'Select action to take:',
+      inputs: [
+        {
+          name: 'action',
+          type: 'radio',
+          label: 'Remove Ad',
+          value: 'remove_ad'
+        },
+        {
+          name: 'action',
+          type: 'radio',
+          label: 'Suspend User',
+          value: 'suspend_user',
+          checked: true
+        },
+        {
+          name: 'action',
+          type: 'radio',
+          label: 'Warning',
+          value: 'warning'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirm',
+          handler: async (action) => {
+            const loading = await this.loadingController.create({
+              message: 'Processing...'
+            });
+            await loading.present();
+
+            try {
+              const userData = this.storageService.getItem('userData');
+              const adminId = userData?.id || 'system';
+              await this.reportService.resolveReport(report.id, `Action: ${action}`, action, adminId);
+              await loading.dismiss();
+              this.showToast('Report resolved', 'success');
+              this.loadOpenReports();
+            } catch (error) {
+              console.error('❌ Error resolving report:', error);
+              await loading.dismiss();
+              this.showToast('Error resolving report', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Dismiss report
+   */
+  async dismissReport(report: any) {
+    const userData = this.storageService.getItem('userData');
+    const adminId = userData?.id || 'system';
+    
+    const loading = await this.loadingController.create({
+      message: 'Dismissing report...'
+    });
+    await loading.present();
+
+    try {
+      await this.reportService.dismissReport(report.id, 'Dismissed by admin', adminId);
+      await loading.dismiss();
+      this.showToast('Report dismissed', 'success');
+      this.loadOpenReports();
+    } catch (error) {
+      console.error('❌ Error dismissing report:', error);
+      await loading.dismiss();
+      this.showToast('Error dismissing report', 'danger');
+    }
+  }
+
+  /**
+   * Navigate sections
+   */
+  navigateToUsers() {
+    this.navCtrl.navigateForward(['/auth/admin-panel/manage-users']);
+  }
+
+  navigateToAds() {
+    this.navCtrl.navigateForward(['/auth/admin-panel/manage-ads']);
+  }
+
+  navigateToCategories() {
+    this.navCtrl.navigateForward(['/auth/admin-panel/manage-categories']);
+  }
+
+  /**
+   * Show toast
+   */
+  private showToast(message: string, color: string = 'primary') {
+    this.toastController.create({
+      message,
+      color,
+      duration: 2000,
+      position: 'bottom'
+    }).then(toast => toast.present());
   }
 }

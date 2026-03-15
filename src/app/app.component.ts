@@ -74,7 +74,7 @@ export class AppComponent {
   private setLanguage(lang: string) {
     this.translate.use(lang);
     document.documentElement.lang = lang;
-    // document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }
 
   // =========================

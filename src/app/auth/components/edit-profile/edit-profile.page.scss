@@ -1,0 +1,440 @@
+// Edit Profile Page Styling
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.95rem;
+  }
+}
+
+// Tabs toolbar
+.tabs-toolbar {
+  --background: var(--ion-color-light);
+  --border-color: var(--ion-color-step-150);
+  border-bottom: 1px solid var(--ion-color-step-150);
+
+  ion-segment {
+    width: 100%;
+  }
+
+  ion-segment-button {
+    text-transform: none;
+    font-size: 0.85rem;
+
+    ion-icon {
+      margin-bottom: 0.25rem;
+    }
+
+    span {
+      display: block;
+      font-size: 0.7rem;
+    }
+  }
+}
+
+// Profile picture section
+.profile-card {
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 1rem;
+
+  .profile-picture-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .profile-picture {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--ion-color-primary);
+      background: var(--ion-color-step-100);
+    }
+
+    ion-button {
+      min-width: 160px;
+    }
+  }
+}
+
+// Form items
+ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 0.75rem;
+
+  ion-label {
+    color: var(--ion-color-step-600);
+    font-weight: 500;
+  }
+
+  ion-input,
+  ion-textarea,
+  ion-select {
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+
+    &.error {
+      --ion-text-color: var(--ion-color-danger);
+    }
+  }
+
+  ion-textarea {
+    --padding-top: 0.5rem;
+    --padding-bottom: 0.5rem;
+  }
+}
+
+// Error message
+.error-message {
+  display: block;
+  margin-top: 0.25rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-danger);
+  font-weight: 500;
+}
+
+// Password hint
+.password-hint {
+  display: block;
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+// Button group
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 0.75rem;
+
+  ion-button {
+    margin: 0;
+    --height: 48px;
+    font-weight: 600;
+
+    ion-spinner {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.logout-group {
+  padding-top: 2rem;
+  border-top: 1px solid var(--ion-color-step-150);
+}
+
+// Reputation tab
+.reputation-tab {
+  padding: 1rem 0.75rem;
+
+  .reputation-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+
+    .reputation-badge {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--ion-color-primary);
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--ion-color-primary-light);
+      border-radius: 8px;
+    }
+
+    .rating-container {
+      margin-bottom: 2rem;
+
+      h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+        margin: 0;
+        line-height: 1;
+      }
+
+      .stars {
+        font-size: 1.5rem;
+        margin: 0.5rem 0;
+        letter-spacing: 0.2rem;
+      }
+
+      small {
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .reputation-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+
+      .stat {
+        padding: 1rem;
+        background: var(--ion-color-step-50);
+        border-radius: 8px;
+
+        .stat-value {
+          display: block;
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--ion-color-primary);
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+          display: block;
+          font-size: 0.85rem;
+          color: var(--ion-color-medium);
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    .no-reviews {
+      margin: 2rem 0 0;
+      padding: 1rem;
+      text-align: center;
+    }
+  }
+
+  ion-button {
+    margin: 1rem 0.75rem;
+  }
+}
+
+// Verification tab
+.verification-tab {
+  padding: 1rem 0.75rem;
+
+  .verification-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .verification-item {
+      margin: 1.5rem 0;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--ion-color-step-100);
+
+      &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .verification-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+
+        h3 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--ion-color-step-600);
+          margin: 0;
+        }
+
+        ion-badge {
+          font-size: 0.8rem;
+          padding: 0.4rem 0.8rem;
+        }
+      }
+
+      p {
+        color: var(--ion-color-medium);
+        margin: 0.5rem 0 1rem;
+      }
+
+      ion-button {
+        margin: 0;
+        --height: 44px;
+      }
+    }
+  }
+}
+
+// Cards
+ion-card {
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin: 0.75rem 0;
+  border-radius: 8px;
+
+  ion-card-header {
+    --background: var(--ion-color-step-50);
+    padding: 1rem;
+
+    ion-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-step-600);
+    }
+  }
+
+  ion-card-content {
+    padding: 1rem;
+  }
+}
+
+// Spacer
+.spacer {
+  height: 2rem;
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .tabs-toolbar {
+    --background: var(--ion-color-step-800);
+    --border-color: var(--ion-color-step-700);
+  }
+
+  .profile-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  ion-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    ion-card-header {
+      --background: var(--ion-color-step-700);
+    }
+  }
+
+  .reputation-badge {
+    background: var(--ion-color-primary-shade) !important;
+  }
+
+  .stat {
+    background: var(--ion-color-step-700) !important;
+  }
+
+  .verification-item {
+    border-bottom-color: var(--ion-color-step-700);
+  }
+}
+
+// RTL support
+[dir="rtl"] {
+  .error-message {
+    margin-left: 0;
+    margin-right: 0.5rem;
+    text-align: right;
+  }
+
+  .password-hint {
+    margin-left: 0;
+    margin-right: 0.5rem;
+    text-align: right;
+  }
+
+  .verification-header {
+    flex-direction: row-reverse;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .tabs-toolbar ion-segment-button {
+    font-size: 0.8rem;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+
+    span {
+      font-size: 0.65rem;
+      display: none;
+    }
+  }
+
+  .profile-picture {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .reputation-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .button-group {
+    padding: 0.75rem;
+  }
+
+  .logout-group {
+    padding-top: 1.5rem;
+  }
+}
+
+// Tablet view
+@media (min-width: 768px) {
+  ion-card {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;
+  }
+
+  .button-group {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;
+  }
+
+  .reputation-tab,
+  .verification-tab {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+// Large screens
+@media (min-width: 1024px) {
+  ion-card {
+    max-width: 700px;
+  }
+
+  .button-group {
+    max-width: 700px;
+  }
+}
+
+// Animations
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ion-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+// Button hover effects
+ion-button {
+  transition: all 0.2s ease;
+
+  &:active:not([disabled]) {
+    transform: scale(0.98);
+  }
+}

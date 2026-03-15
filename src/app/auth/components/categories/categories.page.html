@@ -1,0 +1,124 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/main/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'categories' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleViewMode()">
+        <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Search bar -->
+  <ion-toolbar>
+    <ion-searchbar 
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearch($event)"
+      [placeholder]="'search_on_rajee' | translate"
+      clearIcon="close"
+      (ionClear)="clearSearch()">
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Sort options -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="sortBy" (ionChange)="onSortChange(sortBy)">
+      <ion-segment-button value="displayOrder">
+        <ion-label>{{ 'all_categories' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="adCount">
+        <ion-label>{{ 'popular' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="name">
+        <ion-label>A-Z</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading spinner -->
+  <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+
+  <!-- No results -->
+  <div *ngIf="!isLoading && filteredCategories.length === 0" class="no-results">
+    <ion-icon name="search-outline"></ion-icon>
+    <p>{{ 'no_items' | translate }}</p>
+  </div>
+
+  <!-- Grid view -->
+  <div *ngIf="!isLoading && viewMode === 'grid'" class="category-grid">
+    <ion-card 
+      *ngFor="let category of filteredCategories"
+      class="category-card"
+      (click)="openCategory(category)">
+      
+      <!-- Category icon/image background -->
+      <div class="category-header" [ngStyle]="{'background-color': getCategoryColor(category)}">
+        <ion-icon name="folder-open"></ion-icon>
+      </div>
+
+      <ion-card-content>
+        <!-- Category name -->
+        <h2 class="category-name">{{ category.name.en }}</h2>
+        <p class="category-name-ar">{{ category.name.ar }}</p>
+
+        <!-- Ad count badge -->
+        <div class="ad-count-badge">
+          <span>{{ getAdCount(category.id || '') }}</span>
+          <small>{{ 'post' | translate }}</small>
+        </div>
+
+        <!-- Quick action buttons -->
+        <div class="action-buttons">
+          <ion-button 
+            size="small" 
+            expand="block"
+            color="primary"
+            (click)="openCategory(category)">
+            {{ 'post' | translate }}
+          </ion-button>
+          <ion-button 
+            size="small"
+            expand="block"
+            color="secondary"
+            (click)="postInCategory(category, $event)">
+            {{ 'add' | translate }}
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- List view -->
+  <div *ngIf="!isLoading && viewMode === 'list'" class="category-list">
+    <ion-item 
+      *ngFor="let category of filteredCategories"
+      button
+      (click)="openCategory(category)">
+      
+      <ion-avatar slot="start" [ngStyle]="{'background-color': getCategoryColor(category)}">
+        <ion-icon name="folder-open"></ion-icon>
+      </ion-avatar>
+
+      <ion-label>
+        <h2>{{ category.name.en }}</h2>
+        <p>{{ category.name.ar }}</p>
+        <p class="ad-count">
+          {{ getAdCount(category.id || '') }} {{ 'post' | translate }}
+        </p>
+      </ion-label>
+
+      <ion-badge slot="end" color="primary">
+        {{ getAdCount(category.id || '') }}
+      </ion-badge>
+    </ion-item>
+  </div>
+
+  <!-- Refresh on pull-down -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+</ion-content>

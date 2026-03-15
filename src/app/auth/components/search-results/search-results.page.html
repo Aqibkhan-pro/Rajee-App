@@ -1,0 +1,228 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/main/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'search_on_rajee' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleViewMode()">
+        <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Results info bar -->
+  <ion-toolbar class="info-toolbar">
+    <ion-title size="small">
+      {{ totalCount }} {{ 'post' | translate }} {{ 'found' | translate }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ 'uploading' | translate }}</p>
+  </div>
+
+  <!-- No results state -->
+  <div *ngIf="!isLoading && searchResults.length === 0" class="no-results">
+    <ion-icon name="search-outline"></ion-icon>
+    <h2>{{ 'no_items' | translate }}</h2>
+    <p>{{ 'no_favorites_message' | translate }}</p>
+    <ion-button (click)="resetFilters()" expand="block">
+      {{ 'reset' | translate }}
+    </ion-button>
+  </div>
+
+  <!-- Results -->
+  <div *ngIf="!isLoading && searchResults.length > 0">
+    <!-- Filter & Sort bar -->
+    <div class="search-controls">
+      <ion-button 
+        fill="outline"
+        size="small"
+        [color]="isFilterOpen ? 'primary' : 'medium'"
+        (click)="toggleFilters()">
+        <ion-icon name="funnel"></ion-icon>
+        {{ 'filter' | translate }}
+      </ion-button>
+
+      <ion-select 
+        [(ngModel)]="sortBy"
+        (ionChange)="onSortChange(sortBy)"
+        class="sort-select">
+        <ion-select-option value="newest">{{ 'newest' | translate }}</ion-select-option>
+        <ion-select-option value="oldest">{{ 'oldest' | translate }}</ion-select-option>
+        <ion-select-option value="priceLow">{{ 'price' | translate }} (Low)</ion-select-option>
+        <ion-select-option value="priceHigh">{{ 'price' | translate }} (High)</ion-select-option>
+        <ion-select-option value="popular">{{ 'popular' | translate }}</ion-select-option>
+      </ion-select>
+    </div>
+
+    <!-- Filters panel (collapsible) -->
+    <ion-accordion-group *ngIf="isFilterOpen" class="filters-panel">
+      <ion-accordion value="category">
+        <ion-item slot="header">
+          <ion-label>{{ 'category' | translate }}</ion-label>
+        </ion-item>
+        <ion-item slot="content">
+          <ion-select [(ngModel)]="filters.categoryId" placeholder="Select category">
+            <ion-select-option value="">{{ 'all_categories' | translate }}</ion-select-option>
+            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name.en }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-accordion>
+
+      <ion-accordion value="city">
+        <ion-item slot="header">
+          <ion-label>{{ 'city' | translate }}</ion-label>
+        </ion-item>
+        <ion-item slot="content">
+          <ion-select [(ngModel)]="filters.city" placeholder="Select city">
+            <ion-select-option value="">{{ 'all' | translate }}</ion-select-option>
+            <ion-select-option *ngFor="let city of cities" [value]="city">
+              {{ city }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-accordion>
+
+      <ion-accordion value="price">
+        <ion-item slot="header">
+          <ion-label>{{ 'price' | translate }}</ion-label>
+        </ion-item>
+        <ion-item slot="content">
+          <ion-range 
+            [(ngModel)]="filters.priceMin"
+            min="0"
+            max="500000"
+            step="5000"
+            class="price-range">
+            <ion-label slot="start">Min</ion-label>
+            <ion-label slot="end">{{ filters.priceMin | currency }}</ion-label>
+          </ion-range>
+        </ion-item>
+        <ion-item>
+          <ion-range 
+            [(ngModel)]="filters.priceMax"
+            min="0"
+            max="500000"
+            step="5000"
+            class="price-range">
+            <ion-label slot="start">Max</ion-label>
+            <ion-label slot="end">{{ filters.priceMax | currency }}</ion-label>
+          </ion-range>
+        </ion-item>
+      </ion-accordion>
+    </ion-accordion-group>
+
+    <!-- Apply/Reset filter buttons -->
+    <div *ngIf="isFilterOpen" class="filter-actions">
+      <ion-button expand="block" (click)="applyFilters()" color="primary">
+        {{ 'post' | translate }}
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="resetFilters()">
+        {{ 'reset' | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Grid view -->
+    <div *ngIf="viewMode === 'grid'" class="ad-grid">
+      <ion-card 
+        *ngFor="let ad of filteredResults"
+        class="ad-card"
+        (click)="openAdDetails(ad.id)">
+        
+        <!-- Image -->
+        <img 
+          [src]="ad.thumbnail || (ad.images && ad.images[0])"
+          alt="Ad image"
+          class="ad-image">
+
+        <!-- Featured badge -->
+        <div *ngIf="ad.isFeatured" class="featured-badge">
+          <ion-icon name="star"></ion-icon>
+          {{ 'featured' | translate }}
+        </div>
+
+        <!-- Favorite button -->
+        <ion-button 
+          fill="clear"
+          class="favorite-btn"
+          [color]="isFavorited(ad.id) ? 'danger' : 'medium'"
+          (click)="toggleFavorite(ad, $event)">
+          <ion-icon [name]="isFavorited(ad.id) ? 'heart' : 'heart-outline'"></ion-icon>
+        </ion-button>
+
+        <!-- Content -->
+        <ion-card-content class="ad-content">
+          <h3 class="ad-title">{{ ad.title }}</h3>
+          <p class="ad-price">{{ formatPrice(ad.price) }} SAR</p>
+          
+          <div class="ad-meta">
+            <small>{{ getCategoryName(ad.categoryId) }}</small>
+            <small>•</small>
+            <small>{{ ad.city }}</small>
+          </div>
+
+          <small class="ad-date">{{ formatDate(ad.createdAt) }}</small>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- List view -->
+    <div *ngIf="viewMode === 'list'" class="ad-list">
+      <ion-item 
+        *ngFor="let ad of filteredResults"
+        lines="full"
+        (click)="openAdDetails(ad.id)"
+        class="ad-item">
+        
+        <!-- Thumbnail -->
+        <ion-thumbnail slot="start">
+          <img [src]="ad.thumbnail || (ad.images && ad.images[0])" alt="Ad image">
+        </ion-thumbnail>
+
+        <!-- Content -->
+        <ion-label>
+          <h2>{{ ad.title }}</h2>
+          <p class="ad-price">{{ formatPrice(ad.price) }} SAR</p>
+          <p class="ad-meta">
+            {{ getCategoryName(ad.categoryId) }} • {{ ad.city }} • {{ formatDate(ad.createdAt) }}
+          </p>
+        </ion-label>
+
+        <!-- Featured badge -->
+        <ion-badge *ngIf="ad.isFeatured" slot="end" color="success">
+          ⭐
+        </ion-badge>
+
+        <!-- Favorite button -->
+        <ion-button 
+          slot="end"
+          fill="clear"
+          size="small"
+          [color]="isFavorited(ad.id) ? 'danger' : 'medium'"
+          (click)="toggleFavorite(ad, $event)">
+          <ion-icon [name]="isFavorited(ad.id) ? 'heart' : 'heart-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </div>
+
+    <!-- Load more button -->
+    <div *ngIf="hasMore" class="load-more-container">
+      <ion-button expand="block" (click)="loadMore()" fill="outline">
+        {{ 'load_more' | translate }}
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Refresh on pull-down -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+</ion-content>

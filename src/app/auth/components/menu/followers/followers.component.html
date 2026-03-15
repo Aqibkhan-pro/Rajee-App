@@ -1,17 +1,17 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Followers</ion-title>
+    <ion-title>{{ 'followers' | translate }}</ion-title>
   </ion-toolbar>
 
   <ion-toolbar class="seg-toolbar">
     <ion-segment [value]="selectedTab" (ionChange)="onSegmentChange($event)">
       <ion-segment-button value="followers">
-        <ion-label>Followers</ion-label>
+        <ion-label>{{ 'followers' | translate }}</ion-label>
         <ion-badge color="primary">{{ followers?.length || 0 }}</ion-badge>
       </ion-segment-button>
 
       <ion-segment-button value="following">
-        <ion-label>Following</ion-label>
+        <ion-label>{{ 'following' | translate }}</ion-label>
         <ion-badge color="primary">{{ following?.length || 0 }}</ion-badge>
       </ion-segment-button>
     </ion-segment>

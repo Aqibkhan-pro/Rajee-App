@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Messages</ion-title>
+    <ion-title>{{ 'messages' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -27,7 +27,7 @@
         </div>
         <div class="chat-preview">
           <p class="last-message" [class.unread]="getOtherUser(chat)?.unreadCount > 0">
-            {{ chat.lastMessage || 'No messages yet' }}
+            {{ chat.lastMessage || ('no_messages_yet' | translate) }}
           </p>
           <span class="unread-badge" *ngIf="getOtherUser(chat)?.unreadCount > 0">
             {{ getOtherUser(chat)?.unreadCount }}

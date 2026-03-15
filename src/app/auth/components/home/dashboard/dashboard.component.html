@@ -323,12 +323,12 @@
           <ion-button expand="block" class="story-submit" [disabled]="uploadingStory" (click)="addStory()">
             <ng-container *ngIf="!uploadingStory">
               <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
-              {{ selectedLanguage=='en' ? 'Post Story' : 'نشر القصة' }}
+              {{ 'post_story' | translate }}
             </ng-container>
 
             <ng-container *ngIf="uploadingStory">
               <ion-spinner name="crescent" slot="start"></ion-spinner>
-              {{ selectedLanguage=='en' ? 'Uploading...' : 'جارٍ الرفع...' }}
+              {{ 'uploading' | translate }}
             </ng-container>
           </ion-button>
         </div>

@@ -1,0 +1,557 @@
+// My Ads Page Styling
+
+// Loading and empty states
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.95rem;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  padding: 2rem 1rem;
+  text-align: center;
+
+  ion-icon {
+    font-size: 80px;
+    color: var(--ion-color-primary);
+    margin-bottom: 1rem;
+    opacity: 0.6;
+  }
+
+  h2 {
+    color: var(--ion-color-step-600);
+    font-size: 1.3rem;
+    margin: 0.5rem 0;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  ion-button {
+    min-width: 200px;
+  }
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem 1rem;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.95rem;
+  }
+}
+
+// Stats bar
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-step-150);
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-step-100);
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--ion-color-step-600);
+
+      &.active {
+        color: var(--ion-color-success);
+      }
+
+      &.sold {
+        color: var(--ion-color-medium);
+      }
+
+      &.expired {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+}
+
+// Metrics card
+.metrics-card {
+  --box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  margin: 0.75rem;
+
+  ion-card-content {
+    padding: 1rem;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--ion-color-step-100);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    span:first-child {
+      color: var(--ion-color-step-600);
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .metric-value {
+      color: var(--ion-color-primary);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Search bar
+.search-bar {
+  padding: 0.5rem 0;
+  background: var(--ion-color-light);
+
+  ion-searchbar {
+    --background: transparent;
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+    --placeholder-color: var(--ion-color-medium);
+    --placeholder-opacity: 0.7;
+  }
+}
+
+// Filter tabs
+.filter-tabs {
+  --background: var(--ion-color-light);
+  --border-color: var(--ion-color-step-150);
+
+  ion-segment {
+    width: 100%;
+  }
+
+  ion-segment-button {
+    text-transform: none;
+    font-size: 0.85rem;
+  }
+}
+
+// Ad Grid View
+.ad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  .ad-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    position: relative;
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:hover {
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .ad-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--ion-color-step-100);
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+      background: var(--ion-color-primary);
+
+      &[color="success"] {
+        background: var(--ion-color-success);
+      }
+
+      &[color="medium"] {
+        background: var(--ion-color-medium);
+      }
+
+      &[color="danger"] {
+        background: var(--ion-color-danger);
+      }
+
+      &[color="warning"] {
+        background: var(--ion-color-warning);
+      }
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 28px;
+      height: 28px;
+      background: var(--ion-color-warning);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      justify-items: center;
+
+      ion-icon {
+        color: white;
+        font-size: 16px;
+      }
+    }
+
+    .ad-content {
+      padding: 0.75rem;
+
+      .ad-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+        color: var(--ion-color-step-600);
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .ad-price {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+        margin: 0.25rem 0;
+      }
+
+      .ad-stats {
+        margin: 0.5rem 0;
+        --ion-grid-columns: 2;
+
+        small {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.8rem;
+          color: var(--ion-color-medium);
+
+          ion-icon {
+            font-size: 0.9rem;
+          }
+        }
+      }
+
+      .ad-date {
+        font-size: 0.7rem;
+        color: var(--ion-color-step-400);
+        display: block;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+}
+
+// Ad List View
+.ad-list {
+  .ad-item {
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+    --inner-padding-end: 0.5rem;
+    --border-color: var(--ion-color-step-150);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:active {
+      --background: var(--ion-color-step-50);
+    }
+
+    &:hover {
+      --background: var(--ion-color-step-50);
+    }
+
+    ion-thumbnail {
+      width: 80px;
+      height: 80px;
+      margin-inline-end: 1rem;
+      border-radius: 6px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    ion-label {
+      h2 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--ion-color-step-600);
+        margin: 0 0 0.25rem 0;
+      }
+
+      .ad-price {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+        margin: 0.1rem 0;
+      }
+
+      .ad-meta {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+        margin: 0.25rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        ion-badge {
+          font-size: 0.75rem;
+          padding: 0.2rem 0.4rem;
+        }
+      }
+    }
+
+    .item-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-inline-start: 0.5rem;
+
+      div {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+
+        ion-icon {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+// FAB button
+ion-fab-button {
+  --background: var(--ion-color-primary);
+  --background-hover: var(--ion-color-primary-shade);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .stats-bar {
+    background: var(--ion-color-step-800);
+    border-bottom-color: var(--ion-color-step-700);
+
+    .stat-item {
+      background: var(--ion-color-step-700);
+      border-color: var(--ion-color-step-600);
+    }
+  }
+
+  .metrics-card {
+    --box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-bar {
+    background: var(--ion-color-step-800);
+  }
+
+  .filter-tabs {
+    --background: var(--ion-color-step-800);
+  }
+
+  .ad-grid .ad-card {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// RTL support
+[dir="rtl"] {
+  .stats-bar {
+    direction: rtl;
+  }
+
+  .ad-grid,
+  .ad-list {
+    direction: rtl;
+  }
+
+  .status-badge {
+    left: auto;
+    right: 0.5rem;
+  }
+
+  .featured-badge {
+    right: auto;
+    left: 0.5rem;
+  }
+
+  ion-thumbnail {
+    margin-inline-end: 0;
+    margin-inline-start: 1rem;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+    padding: 0.5rem;
+
+    .stat-item {
+      padding: 0.5rem;
+
+      .stat-label {
+        font-size: 0.65rem;
+      }
+
+      .stat-value {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .ad-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+
+    .ad-card .ad-image {
+      height: 140px;
+    }
+  }
+
+  .ad-list .ad-item ion-thumbnail {
+    width: 70px;
+    height: 70px;
+    margin-inline-end: 0.75rem;
+  }
+}
+
+// Tablet view
+@media (min-width: 768px) {
+  .ad-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Large screens / desktop
+@media (min-width: 1024px) {
+  .ad-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .stats-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .metrics-card {
+    max-width: 1400px;
+    margin: 1rem auto;
+  }
+}
+
+// Animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ad-card,
+.ad-item {
+  animation: fadeInUp 0.3s ease-out;
+}

@@ -218,7 +218,7 @@
     <div class="step-panel" *ngIf="step === 2">
       <ion-card class="step-card p-10" style="padding-bottom: 100px; overflow-y: auto;">
 
-        <ion-label class="title_sell">Review Details</ion-label>
+        <ion-label class="title_sell">{{ 'review_details' | translate }}</ion-label>
 
         <!-- ✅ Readonly Preview: Location -->
         <div class="select_location readonly-box">
@@ -267,10 +267,10 @@
 
         <!-- ✅ Price -->
         <ion-item lines="full" class="sell_or_waiver" style="margin-top: 20px;">
-          <ion-text style="color: var(--text-black);">Price</ion-text>
+          <ion-text style="color: var(--text-black);">{{ 'price' | translate }}</ion-text>
 
           <ion-input class="price" fill="outline" type="number" inputmode="numeric" [(ngModel)]="model.price"
-            placeholder="xxxxxxx" [disabled]="disablePrice">
+            [placeholder]="'price_placeholder' | translate" [disabled]="disablePrice">
             <ion-icon slot="end" name="cash"></ion-icon>
           </ion-input>
 
@@ -281,10 +281,10 @@
 
         <!-- ✅ Phone -->
         <ion-item lines="full" class="sell_or_waiver">
-          <ion-text style="color: var(--text-black);">Phone</ion-text>
+          <ion-text style="color: var(--text-black);">{{ 'phone' | translate }}</ion-text>
 
           <ion-input class="price" fill="outline" type="tel" inputmode="tel" [(ngModel)]="model.phone"
-            placeholder="xx xxx-xxxxxxx" [disabled]="disablePhone">
+            [placeholder]="'phone_placeholder' | translate" [disabled]="disablePhone">
             <ion-icon slot="end" name="call"></ion-icon>
           </ion-input>
 
@@ -296,7 +296,7 @@
 
         <div class="step-actions">
           <ion-button expand="block" mode="ios" (click)="save()" class="next_button">
-            Save
+            {{ 'save' | translate }}
           </ion-button>
         </div>
       </ion-card>

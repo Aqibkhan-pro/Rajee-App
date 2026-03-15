@@ -1,0 +1,210 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/main/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'my_ads' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleViewMode()">
+        <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ 'uploading' | translate }}</p>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && isEmpty" class="empty-state">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <h2>{{ 'no_ads' | translate }}</h2>
+    <p>{{ 'you_don_not_have_any_ads' | translate }}</p>
+    <ion-button fill="solid" (click)="navigateToAddAd()" color="primary">
+      <ion-icon slot="start" name="add-circle"></ion-icon>
+      {{ 'post_new_ad' | translate }}
+    </ion-button>
+  </div>
+
+  <!-- Ads content -->
+  <div *ngIf="!isLoading && !isEmpty">
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">{{ 'total' | translate }}</span>
+        <span class="stat-value">{{ stats.total }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">{{ 'active' | translate }}</span>
+        <span class="stat-value active">{{ stats.active }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">{{ 'sold' | translate }}</span>
+        <span class="stat-value sold">{{ stats.sold }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">{{ 'expired' | translate }}</span>
+        <span class="stat-value expired">{{ stats.expired }}</span>
+      </div>
+    </div>
+
+    <!-- Performance metrics -->
+    <ion-card class="metrics-card">
+      <ion-card-content>
+        <div class="metric-row">
+          <span>{{ 'total_views' | translate }}</span>
+          <span class="metric-value">{{ stats.totalViews }}</span>
+        </div>
+        <div class="metric-row">
+          <span>{{ 'total_favorites' | translate }}</span>
+          <span class="metric-value">{{ stats.totalFavorites }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Search and filters -->
+    <div class="search-bar">
+      <ion-searchbar
+        [(ngModel)]="searchQuery"
+        (ionInput)="onSearch($event)"
+        placeholder="Search your ads..."
+        animated="true"
+        (ionClear)="clearSearch()">
+      </ion-searchbar>
+    </div>
+
+    <!-- Status filter tabs -->
+    <ion-toolbar class="filter-tabs">
+      <ion-segment 
+        [(ngModel)]="statusFilter"
+        (ionChange)="onStatusFilterChange($event.detail.value)">
+        <ion-segment-button value="all">
+          <span>{{ 'all' | translate }} ({{ stats.total }})</span>
+        </ion-segment-button>
+        <ion-segment-button value="active">
+          <span>{{ 'active' | translate }} ({{ stats.active }})</span>
+        </ion-segment-button>
+        <ion-segment-button value="sold">
+          <span>{{ 'sold' | translate }} ({{ stats.sold }})</span>
+        </ion-segment-button>
+        <ion-segment-button value="expired">
+          <span>{{ 'expired' | translate }} ({{ stats.expired }})</span>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+
+    <!-- No results state -->
+    <div *ngIf="filteredAds.length === 0" class="no-results">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>{{ 'no_items' | translate }}</p>
+    </div>
+
+    <!-- Grid view -->
+    <div *ngIf="viewMode === 'grid' && filteredAds.length > 0" class="ad-grid">
+      <ion-card 
+        *ngFor="let ad of filteredAds"
+        class="ad-card"
+        (click)="showAdActions(ad)">
+        
+        <!-- Image -->
+        <img 
+          [src]="ad.thumbnail || (ad.images && ad.images[0])"
+          alt="Ad image"
+          class="ad-image">
+
+        <!-- Status badge -->
+        <div class="status-badge" [color]="getStatusColor(ad.status)">
+          {{ getStatusLabel(ad.status) }}
+        </div>
+
+        <!-- Featured indicator -->
+        <div *ngIf="ad.isFeatured" class="featured-badge">
+          <ion-icon name="star"></ion-icon>
+        </div>
+
+        <!-- Content -->
+        <ion-card-content class="ad-content">
+          <h3 class="ad-title">{{ ad.title }}</h3>
+          <p class="ad-price">{{ formatPrice(ad.price) }} SAR</p>
+          
+          <ion-row class="ad-stats">
+            <ion-col size="6">
+              <small>
+                <ion-icon name="eye"></ion-icon>
+                {{ ad.viewCount || 0 }}
+              </small>
+            </ion-col>
+            <ion-col size="6">
+              <small>
+                <ion-icon name="heart"></ion-icon>
+                {{ ad.favoriteCount || 0 }}
+              </small>
+            </ion-col>
+          </ion-row>
+
+          <small class="ad-date">{{ formatDate(ad.createdAt) }}</small>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- List view -->
+    <div *ngIf="viewMode === 'list' && filteredAds.length > 0" class="ad-list">
+      <ion-item 
+        *ngFor="let ad of filteredAds"
+        lines="full"
+        (click)="showAdActions(ad)"
+        class="ad-item">
+        
+        <!-- Thumbnail -->
+        <ion-thumbnail slot="start">
+          <img [src]="ad.thumbnail || (ad.images && ad.images[0])" alt="Ad image">
+        </ion-thumbnail>
+
+        <!-- Content -->
+        <ion-label>
+          <h2>{{ ad.title }}</h2>
+          <p class="ad-price">{{ formatPrice(ad.price) }} SAR</p>
+          <p class="ad-meta">
+            <ion-badge [color]="getStatusColor(ad.status)">
+              {{ getStatusLabel(ad.status) }}
+            </ion-badge>
+            <span>•</span>
+            <small>{{ formatDate(ad.createdAt) }}</small>
+          </p>
+        </ion-label>
+
+        <!-- Stats -->
+        <div slot="end" class="item-stats">
+          <div>
+            <ion-icon name="eye" size="small"></ion-icon>
+            {{ ad.viewCount || 0 }}
+          </div>
+          <div>
+            <ion-icon name="heart" size="small"></ion-icon>
+            {{ ad.favoriteCount || 0 }}
+          </div>
+        </div>
+      </ion-item>
+    </div>
+  </div>
+
+  <!-- Add new ad FAB -->
+  <ion-fab 
+    *ngIf="!isEmpty"
+    vertical="bottom" 
+    horizontal="end" 
+    slot="fixed">
+    <ion-fab-button (click)="navigateToAddAd()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Refresh on pull-down -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+</ion-content>

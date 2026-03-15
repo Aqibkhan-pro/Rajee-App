@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 type NotificationType = 'info' | 'success' | 'warning' | 'danger';
 
 export interface AppNotification {
   id: number;
   type: NotificationType;
-  title: string;
-  message: string;
+  titleKey: string;
+  messageKey: string;
+  messageParams?: Record<string, unknown>;
   createdAt: Date;
   read: boolean;
   link?: string;
@@ -25,36 +27,40 @@ export class NotificationsComponent implements OnInit {
     {
       id: 1,
       type: 'success',
-      title: 'Payment received',
-      message: 'Your invoice #INV-1023 has been paid successfully.',
+      titleKey: 'notifications.payment_received_title',
+      messageKey: 'notifications.payment_received_message',
+      messageParams: { invoice: 'INV-1023' },
       createdAt: new Date(Date.now() - 2 * 60 * 1000),
       read: false
     },
     {
       id: 2,
       type: 'info',
-      title: 'New message',
-      message: 'You have a new message from Support team.',
+      titleKey: 'notifications.new_message_title',
+      messageKey: 'notifications.new_message_message',
       createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
       read: false
     },
     {
       id: 3,
       type: 'warning',
-      title: 'Storage almost full',
-      message: 'Your storage is 90% used. Consider upgrading your plan.',
+      titleKey: 'notifications.storage_full_title',
+      messageKey: 'notifications.storage_full_message',
+      messageParams: { percent: 90 },
       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
       read: true
     },
     {
       id: 4,
       type: 'danger',
-      title: 'Login alert',
-      message: 'A new login was detected from a different device.',
+      titleKey: 'notifications.login_alert_title',
+      messageKey: 'notifications.login_alert_message',
       createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       read: true
     }
   ];
+
+  constructor(private translate: TranslateService) {}
 
   ngOnInit() {}
 
@@ -107,10 +113,10 @@ export class NotificationsComponent implements OnInit {
     const hr = Math.floor(min / 60);
     const day = Math.floor(hr / 24);
 
-    if (sec < 45) return 'just now';
-    if (min < 60) return `${min} min ago`;
-    if (hr < 24) return `${hr} hour${hr > 1 ? 's' : ''} ago`;
-    if (day < 7) return `${day} day${day > 1 ? 's' : ''} ago`;
+    if (sec < 45) return this.translate.instant('notifications.just_now');
+    if (min < 60) return this.translate.instant('notifications.min_ago', { value: min });
+    if (hr < 24) return this.translate.instant('notifications.hour_ago', { value: hr });
+    if (day < 7) return this.translate.instant('notifications.day_ago', { value: day });
 
     return new Date(date).toLocaleDateString();
   }
