@@ -12,9 +12,28 @@ export class RAuthService {
     private storageService: StorageService
   ) {}
 
-  // ✅ Forgot Password / Reset Password
-  resetPassword(email: string) {
-    return this.afAuth.sendPasswordResetEmail(email);
+  // ✅ Forgot Password / Reset Password via Resend OTP (Firebase Cloud Function)
+  async resetPassword(email: string) {
+    const endpoint = 'https://us-central1-rajee-198a5.cloudfunctions.net/sendResetOtp';
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      await res.text();
+      throw new Error('OTP service unavailable. Please try again later.');
+    }
+
+    const result = await res.json();
+    if (result?.success) {
+      return result;
+    }
+
+    throw new Error(result?.message || 'Failed to send password reset OTP');
   }
 
   // Firebase email/password login

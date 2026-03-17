@@ -3,9 +3,8 @@ import { Router } from '@angular/router';
 import { NavController, ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { ReportService } from '../../../services/report.service';
 import { UserService } from '../../../services/user.service';
-import { AdService } from '../../../services/ad.service';
 import { StorageService } from '../../../services/storage.service';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 interface AdminStats {
@@ -60,18 +59,18 @@ export class AdminPanelPage implements OnInit, OnDestroy {
       dashboard: 'Dashboard',
       reports: 'Reports',
       users: 'Users',
-      ads: 'Ads',
+      ads: 'Products',
       categories: 'Categories',
       totalUsers: 'Total Users',
       activeUsers: 'Active Users',
       suspendedUsers: 'Suspended Users',
-      totalAds: 'Total Ads',
-      activeAds: 'Active Ads',
-      pendingAds: 'Pending Ads',
+      totalAds: 'Total Products',
+      activeAds: 'Approved Products',
+      pendingAds: 'Pending Products',
       openReports: 'Open Reports',
       resolvedReports: 'Resolved Reports',
       manageUsers: 'Manage Users',
-      manageAds: 'Manage Ads',
+      manageAds: 'Manage Products',
       moderationQueue: 'Moderation Queue',
       analytics: 'Analytics'
     },
@@ -80,18 +79,18 @@ export class AdminPanelPage implements OnInit, OnDestroy {
       dashboard: 'لوحة المعلومات',
       reports: 'التقارير',
       users: 'المستخدمون',
-      ads: 'الإعلانات',
+      ads: 'المنتجات',
       categories: 'الفئات',
       totalUsers: 'إجمالي المستخدمين',
       activeUsers: 'المستخدمون النشطون',
       suspendedUsers: 'المستخدمون المعلقون',
-      totalAds: 'إجمالي الإعلانات',
-      activeAds: 'الإعلانات النشطة',
-      pendingAds: 'الإعلانات قيد الانتظار',
+      totalAds: 'إجمالي المنتجات',
+      activeAds: 'المنتجات المعتمدة',
+      pendingAds: 'المنتجات قيد الانتظار',
       openReports: 'التقارير المفتوحة',
       resolvedReports: 'التقارير المحلولة',
       manageUsers: 'إدارة المستخدمين',
-      manageAds: 'إدارة الإعلانات',
+      manageAds: 'إدارة المنتجات',
       moderationQueue: 'قائمة الاعتدال',
       analytics: 'التحليلات'
     }
@@ -104,13 +103,14 @@ export class AdminPanelPage implements OnInit, OnDestroy {
     private loadingController: LoadingController,
     private reportService: ReportService,
     private userService: UserService,
-    private adService: AdService,
     private storageService: StorageService,
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.checkAdminAccess();
+  async ngOnInit() {
+    const hasAccess = await this.checkAdminAccess();
+    if (!hasAccess) return;
+
     this.currentLang = localStorage.getItem('lang') || 'en';
     this.loadDashboardStats();
     this.loadOpenReports();
@@ -124,15 +124,35 @@ export class AdminPanelPage implements OnInit, OnDestroy {
   /**
    * Check if user is admin
    */
-  checkAdminAccess() {
-    // Check if user has admin role from localStorage
-    const userData = this.storageService.getItem('userData');
-    const userRole = userData?.role || 'user';
-    
-    if (userRole !== 'admin') {
-      this.showToast('You do not have admin access', 'danger');
-      this.router.navigate(['/main/home']);
+  async checkAdminAccess(): Promise<boolean> {
+    const userData = this.storageService.getItem('userData') || {};
+    const uid = userData?.uid;
+    const token = userData?.idToken;
+
+    if (!uid || !token) {
+      this.showToast('Please login first', 'danger');
+      this.router.navigate(['/main']);
+      return false;
     }
+
+    const user = await this.userService.getUserByIdWithToken(uid, token);
+    const isAdmin = !!(user as any)?.is_admin || !!(user as any)?.isAdmin || (user as any)?.role === 'admin';
+
+    if (!isAdmin) {
+      this.showToast('You do not have admin access', 'danger');
+      this.router.navigate(['/main']);
+      return false;
+    }
+
+    const mergedUserData = {
+      ...userData,
+      ...user,
+      is_admin: true,
+      isAdmin: true,
+      role: 'admin'
+    };
+    this.storageService.setItem('userData', mergedUserData);
+    return true;
   }
 
   /**
@@ -146,39 +166,87 @@ export class AdminPanelPage implements OnInit, OnDestroy {
    * Load dashboard statistics
    */
   async loadDashboardStats() {
+    this.isLoading = true;
+
+    const failedSections: string[] = [];
+
     try {
-      this.isLoading = true;
-
-      // Get users
-      const users = await this.userService.loadAllUsers();
+      const users = await this.userService.loadAllUsers(true);
       this.stats.totalUsers = users.length;
-      this.stats.activeUsers = users.filter((u: any) => u.accountStatus === 'active').length;
-      this.stats.suspendedUsers = users.filter((u: any) => u.accountStatus === 'suspended').length;
-
-      // Get ads - using active ads observable
-      this.adService.getAllActiveAds(1000)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((ads: any) => {
-          this.stats.totalAds = ads.length;
-          this.stats.activeAds = ads.filter((ad: any) => ad.status === 'active').length;
-          this.stats.pendingAds = ads.filter((ad: any) => ad.status === 'pendingApproval').length;
-        });
-
-      // Get reports
-      this.reportService.getAllReports()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((reports: any) => {
-          this.stats.totalReports = reports.length;
-          this.stats.openReports = reports.filter((r: any) => r.status === 'open').length;
-          this.stats.resolvedReports = reports.filter((r: any) => r.status === 'resolved').length;
-        });
-
-      this.isLoading = false;
+      this.stats.activeUsers = users.filter((u: any) => {
+        const status = u.accountStatus || u.status || 'active';
+        return status === 'active';
+      }).length;
+      this.stats.suspendedUsers = users.filter((u: any) => {
+        const status = u.accountStatus || u.status || 'active';
+        return status === 'suspended' || status === 'inactive' || status === 'banned';
+      }).length;
     } catch (error) {
-      console.error('❌ Error loading dashboard stats:', error);
-      this.showToast('Error loading statistics', 'danger');
-      this.isLoading = false;
+      console.error('❌ Error loading users stats:', error);
+      failedSections.push('users');
     }
+
+    try {
+      const [pendingProducts, approvedProducts] = await Promise.all([
+        this.fetchCollection('products'),
+        this.fetchCollection('approvedProducts')
+      ]);
+
+      this.stats.pendingAds = pendingProducts.length;
+      this.stats.activeAds = approvedProducts.length;
+      this.stats.totalAds = pendingProducts.length + approvedProducts.length;
+    } catch (error) {
+      console.error('❌ Error loading product stats:', error);
+      failedSections.push('products');
+    }
+
+    try {
+      const reports: any[] = await firstValueFrom(this.reportService.getAllReports());
+      this.stats.totalReports = reports.length;
+      this.stats.openReports = reports.filter((r: any) => r.status === 'open').length;
+      this.stats.resolvedReports = reports.filter((r: any) => r.status === 'resolved').length;
+    } catch (error) {
+      console.error('❌ Error loading report stats:', error);
+      failedSections.push('reports');
+    }
+
+    if (failedSections.length > 0) {
+      this.showToast(`Error loading ${failedSections.join(', ')}`, 'danger');
+    }
+
+    this.isLoading = false;
+  }
+
+  private async fetchCollection(path: string): Promise<any[]> {
+    const userData = this.storageService.getItem('userData') || {};
+    const token = userData?.idToken;
+    const urls = token
+      ? [
+          `${this.FIREBASE_DB_URL}/${path}.json?auth=${token}`,
+          `${this.FIREBASE_DB_URL}/${path}.json`
+        ]
+      : [`${this.FIREBASE_DB_URL}/${path}.json`];
+
+    let lastError: string | null = null;
+
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          lastError = await res.text();
+          continue;
+        }
+
+        const data = await res.json();
+        if (!data) return [];
+
+        return Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+      } catch (error: any) {
+        lastError = error?.message || 'Unknown fetch error';
+      }
+    }
+
+    throw new Error(lastError || `Failed to load ${path}`);
   }
 
   /**
@@ -331,15 +399,15 @@ export class AdminPanelPage implements OnInit, OnDestroy {
    * Navigate sections
    */
   navigateToUsers() {
-    this.navCtrl.navigateForward(['/auth/admin-panel/manage-users']);
+    this.navCtrl.navigateForward(['/admin-panel/manage-users']);
   }
 
   navigateToAds() {
-    this.navCtrl.navigateForward(['/auth/admin-panel/manage-ads']);
+    this.navCtrl.navigateForward(['/admin-panel/manage-products']);
   }
 
   navigateToCategories() {
-    this.navCtrl.navigateForward(['/auth/admin-panel/manage-categories']);
+    this.showToast('Categories screen is not implemented yet', 'medium');
   }
 
   /**

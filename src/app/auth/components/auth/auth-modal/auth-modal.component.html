@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>{{'login_account' | translate}}</ion-title>
     <ion-button slot="end" fill="clear" (click)="dismiss()" style="--color: #045f9f; --background: transparent;">
-      Cancel
+      {{ 'cancel' | translate }}
     </ion-button>
 
   </ion-toolbar>
@@ -22,7 +22,7 @@
             <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" src="assets/svg/envelope.svg" class="text-20">
             </ion-icon>
             <ion-input type="email"
-              style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
+              style="color: var(--text-black); --color:var(--text-black); padding-inline-end: 10px; --padding-end:10px"
               placeholder="{{ 'email_placeholder' | translate }}" formControlName="email"
               [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
             </ion-input>
@@ -46,7 +46,7 @@
             </ion-icon>
 
             <ion-input [type]="showPassword ? 'text' : 'password'"
-              style="color: var(--text-black); --color:var(--text-black); padding-right: 10px; --padding-end:10px"
+              style="color: var(--text-black); --color:var(--text-black); padding-inline-end: 10px; --padding-end:10px"
               [placeholder]="'password_placeholder' | translate" formControlName="password"
               [style.text-align]="selectedLanguage == 'en' ? 'start' : 'end'">
             </ion-input>
@@ -89,7 +89,7 @@
           <p class="create-text text-14 mt-12" [style.text-align]="selectedLanguage=='en' ? 'start':'end'"
             (click)="creatAccount()">
             {{ 'create_account' | translate }}
-            <u style="color: var(--primary-color); margin-left: 5px;">{{ 'sign_up' | translate }}</u>
+            <u style="color: var(--primary-color); margin-inline-start: 5px;">{{ 'sign_up' | translate }}</u>
           </p>
         </ion-label>
       </ion-list>

@@ -82,9 +82,9 @@ body.lang-ar ion-textarea {
 body {
   /* This ensures the body respects system bars */
   padding-top: env(safe-area-inset-top);
-  padding-right: env(safe-area-inset-right);
+  padding-inline-end: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
+  padding-inline-start: env(safe-area-inset-left);
 }
 
 /* =========================
@@ -260,5 +260,54 @@ ion-button {
     padding-bottom: 8px;
     padding-inline-start: 8px;
     padding-inline-end: 8px;
+  }
+}
+
+/* =========================
+   RTL Support for Forms & Inputs
+========================= */
+html[dir="rtl"] {
+  ion-input,
+  ion-textarea {
+    text-align: right;
+    
+    &::part(native) {
+      text-align: right;
+    }
+  }
+  
+  ion-item {
+    ion-icon[slot="start"] {
+      order: 2;
+      margin-inline-start: auto;
+      margin-inline-end: 8px;
+    }
+    
+    ion-icon[slot="end"] {
+      order: -1;
+      margin-inline-start: 8px;
+      margin-inline-end: auto;
+    }
+  }
+}
+
+html[dir="ltr"] {
+  ion-input,
+  ion-textarea {
+    text-align: left;
+    
+    &::part(native) {
+      text-align: left;
+    }
+  }
+  
+  ion-item {
+    ion-icon[slot="start"] {
+      margin-inline-end: 8px;
+    }
+    
+    ion-icon[slot="end"] {
+      margin-inline-start: 8px;
+    }
   }
 }

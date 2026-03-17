@@ -161,7 +161,7 @@ ion-item {
 .chevron-icon {
   font-size: 18px;
   color: #999999;
-  margin-left: 8px;
+  margin-inline-start: 8px;
 }
 
 /* RTL support */
@@ -185,7 +185,7 @@ ion-item {
 
 .sub_select_location {
   display: grid;
-  padding-left: 12px;
+  padding-inline-start: 12px;
   padding-right: 16px;
 
   .location,

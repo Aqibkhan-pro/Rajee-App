@@ -6,6 +6,9 @@ export interface User {
   name?: string;
   email?: string;
   phone?: string;
+  is_admin?: boolean;
+  isAdmin?: boolean;
+  role?: string;
   createdAt?: number;
 }
 
@@ -92,6 +95,26 @@ export class UserService {
     if (this.allUsers[uid]) return this.allUsers[uid];
     await this.loadAllUsers();
     return this.allUsers[uid] || null;
+  }
+
+  /** Get single user by UID using explicit token (avoids localStorage timing issues after login) */
+  async getUserByIdWithToken(uid: string, token: string): Promise<User | null> {
+    if (!uid || !token) return null;
+
+    try {
+      const res = await fetch(`${this.FIREBASE_DB_URL}/users/${uid}.json?auth=${token}`);
+      if (!res.ok) throw new Error('Failed to fetch user');
+
+      const data = await res.json();
+      if (!data) return null;
+
+      const user = { uid, ...data } as User;
+      this.allUsers[uid] = user;
+      return user;
+    } catch (err) {
+      console.error('Error loading user by id with token:', err);
+      return null;
+    }
   }
 
   /** Load following UIDs (users I follow) */

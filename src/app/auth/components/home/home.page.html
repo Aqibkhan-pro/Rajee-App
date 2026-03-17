@@ -104,55 +104,62 @@
 
   <ion-tab-bar slot="bottom" class="ion-no-border">
 
-    <ion-tab-button tab="home" [routerLink]="['/main']"
-      [class.selected]="selectedTab === 'home'" (click)="selectTab('home')">
-      <ion-icon
-        name="home"
-        [ngClass]="selectedTab=='home' ? 'selected' : ''">
-      </ion-icon>
-      <ion-text [ngClass]="selectedTab=='home' ? 'selected' : ''">
-        {{ 'home' | translate  }}
-      </ion-text>
-    </ion-tab-button>
-
-    <ion-tab-button tab="favorites" class="comments"
-      [class.selected]="selectedTab === 'favorites'" (click)="selectTab('favorites')">
-      <ion-icon
-        name="heart"
-        [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
-      </ion-icon>
-      <ion-text [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
-        {{ 'favorites' | translate  }}
-      </ion-text>
-    </ion-tab-button>
-
-    <!-- Optional Middle SVG -->
-    <svg height="50" viewBox="0 0 100 50" width="100" xmlns="http://www.w3.org/2000/svg">
-      <path d="M100 0v50H0V0c.543 27.153 22.72 49 50 49S99.457 27.153 99.99 0h.01z" fill="red" fill-rule="evenodd">
-      </path>
+    <svg class="footer-notch" viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="sf" x="-5%" y="-50%" width="110%" height="200%">
+          <feDropShadow dx="0" dy="-3" stdDeviation="5" floodColor="rgba(0,0,0,0.12)"/>
+        </filter>
+      </defs>
+      <path d="M0,30 Q0,10 20,10 L120,10 C140,10 150,10 158,22 C163,30 166,40 172,52 C177,63 188,76 200,76 C212,76 223,63 228,52 C234,40 237,30 242,22 C250,10 260,10 280,10 L380,10 Q400,10 400,30 L400,130 L0,130 Z" fill="#ffffff" filter="url(#sf)"/>
     </svg>
 
-    <ion-tab-button tab="chat" class="notifs"
-      [class.selected]="selectedTab === 'chat'" (click)="selectTab('chat')">
-      <ion-icon
-        name="chatbubbles"
-        [ngClass]="selectedTab=='chat' ? 'selected' : ''">
-      </ion-icon>
-      <ion-text [ngClass]="selectedTab=='chat' ? 'selected' : ''">
-        {{ 'chat' | translate  }}
-      </ion-text>
-    </ion-tab-button>
+    <div class="tab-container">
+      <ion-tab-button tab="home" [routerLink]="['/main']"
+        [class.selected]="selectedTab === 'home'" (click)="selectTab('home')">
+        <ion-icon
+          name="home"
+          [ngClass]="selectedTab=='home' ? 'selected' : ''">
+        </ion-icon>
+        <ion-text [ngClass]="selectedTab=='home' ? 'selected' : ''">
+          {{ 'home' | translate  }}
+        </ion-text>
+      </ion-tab-button>
 
-    <ion-tab-button tab="noti"
-      [class.selected]="selectedTab === 'noti'" (click)="selectTab('noti')">
-      <ion-icon
-        name="notifications"
-        [ngClass]="selectedTab=='noti' ? 'selected' : ''">
-      </ion-icon>
-      <ion-text [ngClass]="selectedTab=='noti' ? 'selected' : ''">
-        {{ 'notification' | translate }}
-      </ion-text>
-    </ion-tab-button>
+      <ion-tab-button tab="favorites"
+        [class.selected]="selectedTab === 'favorites'" (click)="selectTab('favorites')">
+        <ion-icon
+          name="heart"
+          [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
+        </ion-icon>
+        <ion-text [ngClass]="selectedTab=='favorites' ? 'selected' : ''">
+          {{ 'favorites' | translate  }}
+        </ion-text>
+      </ion-tab-button>
+
+      <div class="tab-spacer"></div>
+
+      <ion-tab-button tab="noti"
+        [class.selected]="selectedTab === 'noti'" (click)="selectTab('noti')">
+        <ion-icon
+          name="notifications"
+          [ngClass]="selectedTab=='noti' ? 'selected' : ''">
+        </ion-icon>
+        <ion-text [ngClass]="selectedTab=='noti' ? 'selected' : ''">
+          {{ 'notification' | translate }}
+        </ion-text>
+      </ion-tab-button>
+
+      <ion-tab-button tab="messages"
+        [class.selected]="selectedTab === 'messages'" (click)="selectTab('messages')">
+        <ion-icon
+          name="mail"
+          [ngClass]="selectedTab=='messages' ? 'selected' : ''">
+        </ion-icon>
+        <ion-text [ngClass]="selectedTab=='messages' ? 'selected' : ''">
+          {{ 'messages' | translate }}
+        </ion-text>
+      </ion-tab-button>
+    </div>
 
   </ion-tab-bar>
 

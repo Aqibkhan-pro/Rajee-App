@@ -66,45 +66,56 @@ export class AuthModalComponent implements OnInit {
     this.modalCtrl.dismiss(null, 'close');
   }
 
-  // ✅ FORGOT PASSWORD (Firebase)
+  // ✅ FORGOT PASSWORD (OTP API)
   forgotPassword() {
     this.submitted = true;
 
     const email = (this.email?.value || '').trim();
 
     if (!email) {
-      this.toastService.showToast('Please enter your email first', ToastType.ERROR);
+      this.translate.get('email_enter_first').subscribe((msg) => {
+        this.toastService.showToast(msg, ToastType.ERROR);
+      });
       return;
     }
 
     if (this.email.invalid) {
-      this.toastService.showToast('Please enter a valid email', ToastType.ERROR);
+      this.translate.get('email_invalid_format').subscribe((msg) => {
+        this.toastService.showToast(msg, ToastType.ERROR);
+      });
       return;
     }
 
     this.isLoading = true;
 
-    // ✅ This requires: RAuthService.resetPassword(email) -> sendPasswordResetEmail(...)
+    // Sends OTP for password reset (no Firebase reset-link email)
     this.authService
       .resetPassword(email)
       .then(() => {
-        this.toastService.showToast(
-          'Password reset email sent. Check your inbox.',
-          ToastType.SUCCESS
-        );
+        this.translate.get('password_reset_sent').subscribe((msg) => {
+          this.toastService.showToast(msg, ToastType.SUCCESS);
+        });
       })
       .catch((err: any) => {
         console.error('Reset password error:', err);
 
         const code = err?.code;
         if (code === 'auth/user-not-found') {
-          this.toastService.showToast('No user found with this email', ToastType.ERROR);
+          this.translate.get('user_not_found').subscribe((msg) => {
+            this.toastService.showToast(msg, ToastType.ERROR);
+          });
         } else if (code === 'auth/invalid-email') {
-          this.toastService.showToast('Invalid email address', ToastType.ERROR);
+          this.translate.get('invalid_email_error').subscribe((msg) => {
+            this.toastService.showToast(msg, ToastType.ERROR);
+          });
         } else if (code === 'auth/too-many-requests') {
-          this.toastService.showToast('Too many requests. Try again later.', ToastType.ERROR);
+          this.translate.get('too_many_requests').subscribe((msg) => {
+            this.toastService.showToast(msg, ToastType.ERROR);
+          });
         } else {
-          this.toastService.showToast(err?.message || 'Unable to send reset email', ToastType.ERROR);
+          this.translate.get('unable_to_send_reset').subscribe((msg) => {
+            this.toastService.showToast(err?.message || msg, ToastType.ERROR);
+          });
         }
       })
       .finally(() => {
@@ -128,28 +139,38 @@ export class AuthModalComponent implements OnInit {
           const idToken = await res.user?.getIdToken();
           if (!res?.user?.uid) throw new Error('UID missing');
 
+          const dbUser = await this.userService.getUserByIdWithToken(res.user.uid, idToken || '');
+          const isAdmin = !!(dbUser as any)?.is_admin || !!(dbUser as any)?.isAdmin || (dbUser as any)?.role === 'admin';
+
           const userData = {
             uid: res.user.uid,
             email: res.user.email,
-            name: res.user.displayName,
+            name: dbUser?.name || res.user.displayName,
             photoURL: res.user.photoURL,
             emailVerified: res.user.emailVerified,
             loginTime: new Date().toISOString(),
             idToken,
+            is_admin: isAdmin,
+            isAdmin,
+            role: isAdmin ? 'admin' : 'user'
           };
 
           this.storageService.setItem('userData', userData);
           this.storageService.setItem('isLoggedIn', true);
           this.storageService.setItem(constants.Started, true);
 
-          this.toastService.showToast('Login successful...', ToastType.SUCCESS);
+          this.translate.get('login_successful').subscribe((msg) => {
+            this.toastService.showToast(msg, ToastType.SUCCESS);
+          });
           this.modalCtrl.dismiss(null, 'success');
         } catch (err: any) {
           console.error('Login ok, but token/profile failed:', err);
-          this.toastService.showToast(
-            err?.message || 'Unable to load user profile',
-            ToastType.ERROR
-          );
+          this.translate.get('unable_to_load_profile').subscribe((msg) => {
+            this.toastService.showToast(
+              err?.message || msg,
+              ToastType.ERROR
+            );
+          });
           return;
         } finally {
           this.isLoading = false;
@@ -158,8 +179,11 @@ export class AuthModalComponent implements OnInit {
       .catch((err) => {
         this.isLoading = false;
         console.error('Firebase login error:', err);
-        this.toastService.showToast('Login error', ToastType.ERROR);
-        alert(err?.message || 'Login failed. Please try again.');
+        this.translate.get('login_failed_retry').subscribe((msg) => {
+          this.toastService.showToast(msg, ToastType.ERROR);
+          // Optional: Show alert if needed
+          // alert(err?.message || msg);
+        });
       });
   }
 }

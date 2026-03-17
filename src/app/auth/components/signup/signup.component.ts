@@ -119,6 +119,37 @@ export class SignupComponent implements OnInit, OnDestroy {
     toast.present();
   }
 
+  private async requestOtp(fullName: string, phone: string, email: string, password: string) {
+    const endpoint = 'https://us-central1-rajee-198a5.cloudfunctions.net/sendOtp';
+
+    const payload = {
+      fullName,
+      name: fullName,
+      phone,
+      email,
+      password
+    };
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      await res.text();
+      throw new Error('OTP service unavailable. Please try again later.');
+    }
+
+    const result = await res.json();
+    if (result?.success) {
+      return result;
+    }
+
+    throw new Error(result?.message || 'OTP send failed');
+  }
+
   /* ================= Database Helpers via REST API with Auth ================= */
 
   // ✅ GET user from Realtime Database with token
@@ -173,18 +204,11 @@ export class SignupComponent implements OnInit, OnDestroy {
     try {
       const { fullName, phone, email, password } = this.signupForm.value;
 
-      const res = await fetch('https://rajeeac-63le.vercel.app/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: fullName, phone, email, password }),
-      });
-
-      const result = await res.json();
-      if (!result.success) throw new Error(result.message);
+      await this.requestOtp(fullName, phone, email, password);
 
       this.otpSent = true;
       this.startCountdown();
-      this.showToast('OTP sent on email ', 'success');
+      this.showToast('OTP sent. Check Inbox and Spam folder.', 'success');
 
     } catch (err: any) {
       this.showToast(err.message || 'OTP send fail');
@@ -204,8 +228,8 @@ export class SignupComponent implements OnInit, OnDestroy {
     try {
       const { email, password, fullName, phone } = this.signupForm.value;
 
-      /* 🔹 Step 1: Verify OTP via your API */
-      const res = await fetch('https://rajeeac-63le.vercel.app/verify-otp', {
+      /* 🔹 Step 1: Verify OTP via Firebase Functions */
+      const res = await fetch('https://us-central1-rajee-198a5.cloudfunctions.net/verifyOtp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -213,6 +237,12 @@ export class SignupComponent implements OnInit, OnDestroy {
           otp: String(this.otpForm.value.otp),
         }),
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        await res.text();
+        throw new Error('OTP verify service is not deployed correctly (HTML returned).');
+      }
 
       const result = await res.json();
       if (!result.success) throw new Error(result.message);
@@ -289,14 +319,7 @@ export class SignupComponent implements OnInit, OnDestroy {
     try {
       const { fullName, phone, email, password } = this.signupForm.value;
 
-      const res = await fetch('https://rajeeac-63le.vercel.app/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: fullName, phone, email, password }),
-      });
-
-      const result = await res.json();
-      if (!result.success) throw new Error(result.message);
+      await this.requestOtp(fullName, phone, email, password);
 
       this.showToast('Resent OTP', 'success');
       this.startCountdown();

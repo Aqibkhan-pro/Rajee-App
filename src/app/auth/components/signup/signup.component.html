@@ -24,8 +24,6 @@
 
         <!-- Full Name -->
         <ion-item class="custom-input mt-12 input-item" lines="none">
-          <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" name="person" class="text-20">
-          </ion-icon>
           <ion-input style="color: var(--text-black); --color: var(--text-black)" type="text"
             placeholder="{{ 'full_name' | translate }}" formControlName="fullName"
             [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
@@ -38,8 +36,6 @@
 
         <!-- Phone -->
         <ion-item class="custom-input mt-12 input-item" lines="none">
-          <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" name="call" class="text-20">
-          </ion-icon>
           <ion-input style="color: var(--text-black); --color: var(--text-black)" type="tel"
             placeholder="{{ 'phone' | translate }}" formControlName="phone"
             [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
@@ -54,8 +50,6 @@
 
         <!-- Email -->
         <ion-item class="custom-input mt-12 input-item" lines="none">
-          <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" name="mail" class="text-20">
-          </ion-icon>
           <ion-input style="color: var(--text-black); --color: var(--text-black)" type="email"
             placeholder="{{ 'email' | translate }}" formControlName="email"
             [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
@@ -70,8 +64,6 @@
 
         <!-- Password -->
         <ion-item class="custom-input mt-12 input-item" lines="none">
-          <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" name="lock-closed" class="text-20">
-          </ion-icon>
           <ion-input style="color: var(--text-black); --color: var(--text-black)" type="password"
             placeholder="{{ 'password' | translate }}" formControlName="password"
             [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
@@ -86,8 +78,6 @@
 
         <!-- Confirm Password -->
         <ion-item class="custom-input mt-12 input-item" lines="none">
-          <ion-icon slot="{{ selectedLanguage=='en' ? 'start':'end' }}" name="lock-closed" class="text-20">
-          </ion-icon>
           <ion-input style="color: var(--text-black); --color: var(--text-black)" type="password"
             placeholder="{{ 'confirm_password' | translate }}" formControlName="confirmPassword"
             [style.text-align]="selectedLanguage=='en' ? 'start':'end'">
@@ -114,7 +104,7 @@
           <p class="login-text text-14 mt-12" [style.text-align]="selectedLanguage=='en' ? 'start':'end'"
             (click)="goToLogin()">
             {{ 'already_have_account' | translate }}
-            <u style="color: var(--primary-color); margin-left: 5px;">{{ 'login' | translate }}</u>
+            <u style="color: var(--primary-color); margin-inline-start: 5px;">{{ 'login' | translate }}</u>
           </p>
         </ion-label>
       </ion-list>
@@ -130,6 +120,9 @@
 
             <!-- ✅ NEW: Spam folder note -->
             <p class="spam-note" style="color: var(--text-black)">{{ 'otp_spam_note' | translate }}</p>
+
+            <!-- ✅ NEW: Look for Rajee branded email -->
+            <p style="color: var(--primary-color); font-weight: 600; font-size: 14px; margin-top: 8px;">{{ 'otp_from_rajee' | translate }}</p>
 
             <p class="email-highlight" style="color: var(--primary-color)">{{ signupForm.value.email }}</p>
 

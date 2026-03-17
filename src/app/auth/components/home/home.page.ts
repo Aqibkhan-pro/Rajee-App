@@ -265,10 +265,22 @@ onMenuClosed() {
     const token = userData?.idToken;
 
     if (!uid || !token) {
+      // Show login modal if not authenticated
       await this.openLoginModal();
+      
+      // After login modal closes, check if login was successful
+      const updatedUserData = this.getLocalUserData();
+      const updatedUid = updatedUserData?.uid;
+      const updatedToken = updatedUserData?.idToken;
+
+      if (updatedUid && updatedToken) {
+        // User successfully logged in/registered, now show add form
+        this.navCtrl.navigateForward(['/add-product']);
+      }
       return;
     }
 
+    // User already logged in, show add form directly
     this.navCtrl.navigateForward(['/add-product']);
   }
 
@@ -361,6 +373,9 @@ async openLoginModal() {
         this.navCtrl.navigateForward(['/main/favorites']);
         break;
       case 'chat':
+        this.navCtrl.navigateForward(['/main/chat']);
+        break;
+      case 'messages':
         this.navCtrl.navigateForward(['/main/chat']);
         break;
       case 'noti':

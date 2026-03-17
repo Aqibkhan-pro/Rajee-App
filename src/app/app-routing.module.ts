@@ -5,6 +5,7 @@ import { ChatComponent } from './auth/components/home/chat/chat.component';
 import { PoliciesComponent } from './auth/components/home/policies/policies.component';
 import { AboutComponent } from './auth/components/home/about/about.component';
 import { FollowersComponent } from './auth/components/menu/followers/followers.component';
+import { AdminGuard } from './auth/services/admin.guard';
 
 const routes: Routes = [
   {
@@ -37,6 +38,7 @@ const routes: Routes = [
     loadChildren: () => import('./auth/components/product-details/product-details.module').then( m => m.ProductDetailsPageModule)
   },  {
     path: 'admin-panel',
+    canActivate: [AdminGuard],
     loadChildren: () => import('./auth/components/admin-panel/admin-panel.module').then( m => m.AdminPanelPageModule)
   },
   {
